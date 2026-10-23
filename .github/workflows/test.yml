@@ -1,0 +1,248 @@
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch: {}
+
+name: Test
+
+permissions:
+  contents: read
+
+# We only want the latest commit to test for any non-main ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name != 'main' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  # Zig unit tests plus the Swift unit tests (`zig build test` runs
+  # `xcodebuild test` when no test filter is given).
+  test:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Ensure Metal toolchain
+        run: xcrun -sdk macosx metal --version || xcodebuild -downloadComponent MetalToolchain
+
+      - name: Test
+        run: zig build test -Dxcframework-target=native --summary all
+
+      # zig only reports xcodebuild's exit code, so read the result bundle
+      # to prove the Swift tests actually ran.
+      - name: Swift test summary
+        run: |
+          result=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 4 \
+            -path '*/Ghostty-*/Logs/Test/Test-Ghostty-*.xcresult' \
+            | awk -F/ '{print $NF "\t" $0}' | sort | tail -1 | cut -f2)
+          xcrun xcresulttool get test-results summary --path "$result" > summary.json
+          python3 - <<'EOF'
+          import json
+          d = json.load(open("summary.json"))
+          c = d["devicesAndConfigurations"][0]
+          print(f'{d["result"]}: {c["passedTests"]} passed, '
+                f'{c["failedTests"]} failed, {c["skippedTests"]} skipped')
+          assert d["result"] == "Passed" and c["passedTests"] > 0
+          EOF
+
+  # The release app bundle, built the same way as locally, plus the
+  # benchmark executables.
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Ensure Metal toolchain
+        run: xcrun -sdk macosx metal --version || xcodebuild -downloadComponent MetalToolchain
+
+      - name: Build Nubb.app
+        run: zig build -Doptimize=ReleaseFast -Dxcframework-target=native
+
+      - name: Check app bundle
+        run: |
+          test -x zig-out/Nubb.app/Contents/MacOS/ghostty
+          zig-out/Nubb.app/Contents/MacOS/ghostty +version
+
+      - name: Build benchmarks
+        run: zig build -Demit-bench
+
+  # Runs esctest against the terminal core. Report-only: many tests fail
+  # today (see test/esctest/README.md), so this never fails the run.
+  esctest:
+    runs-on: macos-26
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+
+      - name: Run esctest
+        working-directory: test/esctest
+        run: zig build run > esctest.log || true
+
+      - name: Summarize
+        if: always()
+        working-directory: test/esctest
+        run: |
+          {
+            echo '## esctest'
+            echo
+            grep 'tests passed' esctest.log || echo 'esctest wrote no summary.'
+            echo
+            echo '<details><summary>Failing tests</summary>'
+            echo
+            echo '```'
+            sed -n '/^Failing tests:$/,$p' esctest.log
+            echo '```'
+            echo
+            echo '</details>'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: esctest-log
+          path: test/esctest/esctest.log
+          if-no-files-found: ignore
+
+  fuzz:
+    name: Build test/fuzz-libghostty
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+
+      - name: Install AFL++
+        run: |
+          brew install afl++
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix lld)/bin" >> "$GITHUB_PATH"
+
+      - name: Verify AFL++ is available
+        run: afl-cc --version
+
+      - name: Build fuzzer harness
+        working-directory: test/fuzz-libghostty
+        run: zig build
+
+  swiftlint:
+    runs-on: macos-26
+    timeout-minutes: 15
+    env:
+      SWIFTLINT_VERSION: 0.65.1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install SwiftLint
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/swiftlint.zip" \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          unzip -q "$RUNNER_TEMP/swiftlint.zip" -d "$RUNNER_TEMP/swiftlint"
+          echo "$RUNNER_TEMP/swiftlint" >> "$GITHUB_PATH"
+
+      - name: swiftlint check
+        run: swiftlint lint --strict
+
+  zig-fmt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          use-cache: false
+
+      - name: zig fmt
+        run: zig fmt --check .
+
+  prettier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: prettier check
+        run: npx --yes prettier@3.9.10 --check .
+
+  typos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: typos check
+        uses: crate-ci/typos@7f9d0819ca1c008ade73f4b41fa9d258d48f605b # v1.51.1
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHELLCHECK_VERSION: 0.11.0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install shellcheck
+        run: |
+          curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | tar xJ -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/shellcheck-v${SHELLCHECK_VERSION}" >> "$GITHUB_PATH"
+
+      - name: shellcheck
+        run: |
+          shellcheck --version
+          git ls-files -z '*.sh' '*.bash' | xargs -0 shellcheck \
+            --check-sourced \
+            --color=always \
+            --severity=warning
+
+  # Every `uses:` must be pinned to a full commit SHA.
+  pinact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PINACT_VERSION: 5.0.1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pinact
+        run: |
+          curl -fsSL "https://github.com/suzuki-shunsuke/pinact/releases/download/v${PINACT_VERSION}/pinact_linux_amd64.tar.gz" \
+            | tar xz -C "$RUNNER_TEMP" pinact
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: pinact check
+        run: pinact run --check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
