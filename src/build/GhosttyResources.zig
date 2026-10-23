@@ -164,66 +164,6 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Ghostty
         try steps.append(b.allocator, &install_step.step);
     }
 
-    // Vim and Neovim plugin
-    {
-        const wf = b.addWriteFiles();
-
-        {
-            const run = b.addRunArtifact(build_data_exe);
-            run.addArg("+vim-syntax");
-            _ = wf.addCopyFile(run.captureStdOut(.{}), "syntax/ghostty.vim");
-        }
-        {
-            const run = b.addRunArtifact(build_data_exe);
-            run.addArg("+vim-ftdetect");
-            _ = wf.addCopyFile(run.captureStdOut(.{}), "ftdetect/ghostty.vim");
-        }
-        {
-            const run = b.addRunArtifact(build_data_exe);
-            run.addArg("+vim-ftplugin");
-            _ = wf.addCopyFile(run.captureStdOut(.{}), "ftplugin/ghostty.vim");
-        }
-        {
-            const run = b.addRunArtifact(build_data_exe);
-            run.addArg("+vim-compiler");
-            _ = wf.addCopyFile(run.captureStdOut(.{}), "compiler/ghostty.vim");
-        }
-
-        const vim_step = b.addInstallDirectory(.{
-            .source_dir = wf.getDirectory(),
-            .install_dir = .prefix,
-            .install_subdir = "share/vim/vimfiles",
-        });
-        try steps.append(b.allocator, &vim_step.step);
-
-        const neovim_step = b.addInstallDirectory(.{
-            .source_dir = wf.getDirectory(),
-            .install_dir = .prefix,
-            .install_subdir = "share/nvim/site",
-        });
-        try steps.append(b.allocator, &neovim_step.step);
-    }
-
-    // Sublime syntax highlighting for bat cli tool
-    // NOTE: The current implementation requires symlinking the generated
-    // 'ghostty.sublime-syntax' file from zig-out to the '~.config/bat/syntaxes'
-    // directory. The syntax then needs to be mapped to the correct language in
-    // the config file within the '~.config/bat' directory
-    // (ex: --map-syntax "/Users/user/.config/ghostty/config.ghostty:Ghostty Config").
-    {
-        const run = b.addRunArtifact(build_data_exe);
-        run.addArg("+sublime");
-        const wf = b.addWriteFiles();
-        _ = wf.addCopyFile(run.captureStdOut(.{}), "ghostty.sublime-syntax");
-
-        const install_step = b.addInstallDirectory(.{
-            .source_dir = wf.getDirectory(),
-            .install_dir = .prefix,
-            .install_subdir = "share/bat/syntaxes",
-        });
-        try steps.append(b.allocator, &install_step.step);
-    }
-
     return .{ .steps = steps.items };
 }
 
