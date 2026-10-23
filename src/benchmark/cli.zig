@@ -17,7 +17,6 @@ pub const Action = enum {
     @"terminal-formatter",
     @"terminal-parser",
     @"terminal-resize",
-    @"terminal-snapshot",
     @"terminal-stream",
     @"is-symbol",
     @"osc-parser",
@@ -43,7 +42,6 @@ pub const Action = enum {
             .@"terminal-formatter" => @import("TerminalFormatter.zig"),
             .@"terminal-parser" => @import("TerminalParser.zig"),
             .@"terminal-resize" => @import("TerminalResize.zig"),
-            .@"terminal-snapshot" => @import("TerminalSnapshot.zig"),
             .@"is-symbol" => @import("IsSymbol.zig"),
             .@"osc-parser" => @import("OscParser.zig"),
         };

@@ -9,7 +9,6 @@ pub const ScreenClone = @import("ScreenClone.zig");
 pub const TerminalFormatter = @import("TerminalFormatter.zig");
 pub const TerminalParser = @import("TerminalParser.zig");
 pub const TerminalResize = @import("TerminalResize.zig");
-pub const TerminalSnapshot = @import("TerminalSnapshot.zig");
 pub const IsSymbol = @import("IsSymbol.zig");
 pub const PageCompression = @import("PageCompression.zig");
 pub const ScrollbackCompression = @import("ScrollbackCompression.zig");

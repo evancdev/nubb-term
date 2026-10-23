@@ -52,16 +52,6 @@ pub const Options = struct {
     /// underscores. Fields are emitted verbatim as bool options on the
     /// `terminal_options` module.
     pub const Features = packed struct {
-        /// Terminal state serialization: encode a full terminal (screen
-        /// contents, scrollback, cursor, styles, modes, etc.) to a
-        /// compact binary format and decode it back into a live
-        /// terminal. Used for session persistence, window restoration,
-        /// and moving terminal state between processes.
-        ///
-        /// C API: `ghostty_snapshot_*` and, together with
-        /// `grid_introspection`, `ghostty_tracked_grid_ref_snapshot`.
-        snapshot: bool = true,
-
         /// Textual export of terminal contents as plain text, VT
         /// (replayable escape sequences), or HTML, with optional extras
         /// such as cursor position, palette, modes, and tabstops. Used
@@ -213,12 +203,12 @@ pub const Options = struct {
 
             // All three token forms, comma separated.
             try testing.expectEqual(
-                Features{ .snapshot = false },
-                try Features.parse("-snapshot"),
+                Features{ .formatter = false },
+                try Features.parse("-formatter"),
             );
             try testing.expectEqual(
-                Features{ .snapshot = false, .formatter = false },
-                try Features.parse("-snapshot,+render_state,-formatter,color"),
+                Features{ .formatter = false, .search = false },
+                try Features.parse("-formatter,+render_state,-search,color"),
             );
 
             // The special "all" name refers to every feature.
@@ -240,12 +230,12 @@ pub const Options = struct {
             // Later tokens win.
             try testing.expectEqual(
                 Features{},
-                try Features.parse("-snapshot,+snapshot"),
+                try Features.parse("-formatter,+formatter"),
             );
 
             // Unknown names and dangling signs are errors.
             try testing.expectError(error.UnknownFeature, Features.parse("bogus"));
-            try testing.expectError(error.UnknownFeature, Features.parse("-snapshot,-"));
+            try testing.expectError(error.UnknownFeature, Features.parse("-formatter,-"));
         }
     };
 
@@ -271,7 +261,7 @@ pub const Options = struct {
         opts.addOption(bool, "simd", self.simd);
         opts.addOption(bool, "slow_runtime_safety", self.slow_runtime_safety);
 
-        // Feature gates, emitted as flat bools (e.g. `options.snapshot`).
+        // Feature gates, emitted as flat bools (e.g. `options.formatter`).
         const target = m.resolved_target.?.result;
         inline for (@typeInfo(Features).@"struct".field_names) |field| {
             var value = @field(self.features, field);
