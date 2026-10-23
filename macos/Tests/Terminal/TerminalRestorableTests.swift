@@ -109,6 +109,60 @@ struct TerminalRestorableTests {
         #expect(v7Generic.surfaceTree.contains(where: { $0.id.uuidString == "953CE952-D91D-4D36-AC72-9D0F1F6BCE73" }))
         #expect(v7Generic.surfaceTree.contains(where: { $0.id.uuidString == "D3223569-2E01-4BC5-9DB2-DBFC3AFF46D1" }))
     }
+
+    // MARK: Archived class names
+
+    /// The pinned names must be what builds with the Swift module named `Ghostty`
+    /// wrote. Derive that from the runtime name so this holds after a rename too.
+    @Test func archivedClassNamesMatchLegacyModuleNames() throws {
+        let module = try #require(String(reflecting: TerminalRestorableState.self).split(separator: ".").first)
+        func legacy(_ cls: AnyClass) -> String {
+            NSStringFromClass(cls).replacingOccurrences(of: "\(module.count)\(module)", with: "7Ghostty")
+        }
+
+        #expect(TerminalRestorableState.archivedClassName == legacy(CodableBridge<TerminalRestorableState>.self))
+        #expect(QuickTerminalRestorableState.archivedClassName == legacy(CodableBridge<QuickTerminalRestorableState>.self))
+    }
+
+    /// AppKit stores `restorationClass` by name, so it must stay the legacy name.
+    /// The runtime reports the pinned mangled name in its demangled form.
+    @Test func windowRestorationClassNameIsStable() {
+        #expect(NSStringFromClass(TerminalWindowRestoration.self) == "Ghostty.TerminalWindowRestoration")
+        #expect(NSClassFromString("_TtC7Ghostty25TerminalWindowRestoration") === TerminalWindowRestoration.self)
+        #expect(NSClassFromString("Ghostty.TerminalWindowRestoration") === TerminalWindowRestoration.self)
+    }
+
+    /// An archive written under a legacy class name decodes through the
+    /// production `init?(coder:)`, and new archives keep using that name.
+    @MainActor
+    @Test func decodesArchiveWithLegacyClassName() throws {
+        let legacyName = try #require(LegacyNamedRestorableState.archivedClassName)
+        let original = try unarchive(v7Data, className: "CodableBridge<Terminal>", as: CodableBridge<DummyTerminalRestorableState>.self)
+            .value.internalState
+
+        // Simulate an archive from an older build: a per-instance class name
+        // only, as if the runtime had produced it.
+        let writer = NSKeyedArchiver(requiringSecureCoding: true)
+        writer.setClassName(legacyName, for: CodableBridge<LegacyNamedRestorableState>.self)
+        writer.encode(TerminalRestorableState.version, forKey: LegacyNamedRestorableState.versionKey)
+        writer.encode(CodableBridge(LegacyNamedRestorableState(original)), forKey: LegacyNamedRestorableState.selfKey)
+        writer.finishEncoding()
+
+        let reader = try NSKeyedUnarchiver(forReadingFrom: writer.encodedData)
+        reader.requiresSecureCoding = true
+        let decoded = try #require(LegacyNamedRestorableState(coder: reader))
+        reader.finishDecoding()
+        #expect(decoded.internalState.focusedSurface == "v7")
+
+        // Encoding through the production path keeps the pinned name.
+        let rewriter = NSKeyedArchiver(requiringSecureCoding: true)
+        decoded.encode(with: rewriter)
+        rewriter.finishEncoding()
+        let plist = try PropertyListSerialization.propertyList(from: rewriter.encodedData, format: nil)
+        let objects = try #require((plist as? [String: Any])?["$objects"] as? [Any])
+        let classNames = objects.compactMap { ($0 as? [String: Any])?["$classname"] as? String }
+        #expect(classNames.contains(legacyName))
+    }
 }
 
 private extension TerminalRestorableTests {
@@ -154,6 +208,33 @@ private final class DummyTerminalRestorableState: TerminalRestorable {
 
     init(_ internalState: TerminalRestorableState.InternalState<MockView>) {
         self.internalState = internalState
+    }
+
+    required init(from decoder: any Decoder) throws {
+        self.internalState = try TerminalRestorableState.InternalState<MockView>(from: decoder)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        try internalState.encode(to: encoder)
+    }
+}
+
+/// Like `DummyTerminalRestorableState`, but with a pinned archive class name
+/// that the runtime would never produce, so the test cannot pass by accident.
+@MainActor
+private final class LegacyNamedRestorableState: TerminalRestorable {
+    static var version: Int { TerminalRestorableState.version }
+    static var minimumVersion: Int { TerminalRestorableState.minimumVersion }
+    static var archivedClassName: String? { "_TtGC9LegacyMod13CodableBridgeCS_26LegacyNamedRestorableState_" }
+
+    let internalState: TerminalRestorableState.InternalState<MockView>
+
+    init(_ internalState: TerminalRestorableState.InternalState<MockView>) {
+        self.internalState = internalState
+    }
+
+    required init(copy other: LegacyNamedRestorableState) {
+        internalState = other.internalState
     }
 
     required init(from decoder: any Decoder) throws {

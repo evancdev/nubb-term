@@ -2,6 +2,9 @@ import Cocoa
 
 struct QuickTerminalRestorableState: TerminalRestorable {
     static var version: Int { 1 }
+    /// The name this type was archived under while the Swift module was named
+    /// `Ghostty`. Never change it, or the quick terminal stops restoring.
+    static var archivedClassName: String? { "_TtGC7Ghostty13CodableBridgeVS_28QuickTerminalRestorableState_" }
 
     var focusedSurface: String? {
         internalState.focusedSurface

@@ -8,6 +8,13 @@ protocol TerminalRestorable: Codable {
     static var minimumVersion: Int { get }
     init(copy other: Self)
 
+    /// The class name that `CodableBridge<Self>` is archived under. Swift generic
+    /// classes get a mangled Objective-C name that includes the module name, so
+    /// renaming the module would otherwise make every saved archive undecodable.
+    /// Pinning the name keeps old and new archives readable. `nil` keeps the
+    /// runtime default.
+    static var archivedClassName: String? { get }
+
     /// Returns a base configuration to use when restoring terminal surfaces.
     /// Override this to provide custom environment variables or other configuration.
     var baseConfig: Ghostty.SurfaceConfiguration? { get }
@@ -15,6 +22,15 @@ protocol TerminalRestorable: Codable {
 
 extension TerminalRestorable {
     static var minimumVersion: Int { version }
+    static var archivedClassName: String? { nil }
+
+    /// Maps `archivedClassName` to `CodableBridge<Self>` for both encoding and
+    /// decoding. The mapping is process-wide and idempotent.
+    static func registerArchivedClassName() {
+        guard let name = archivedClassName else { return }
+        NSKeyedUnarchiver.setClass(CodableBridge<Self>.self, forClassName: name)
+        NSKeyedArchiver.setClassName(name, for: CodableBridge<Self>.self)
+    }
 }
 
 extension TerminalRestorable {
@@ -40,6 +56,7 @@ extension TerminalRestorable {
             return nil
         }
 
+        Self.registerArchivedClassName()
         guard let v = aDecoder.decodeObject(of: CodableBridge<Self>.self, forKey: Self.selfKey) else {
             AppDelegate.logger.error("error restoring terminal: decode failed")
             return nil
@@ -49,6 +66,7 @@ extension TerminalRestorable {
     }
 
     func encode(with coder: NSCoder) {
+        Self.registerArchivedClassName()
         coder.encode(Self.version, forKey: Self.versionKey)
         coder.encode(CodableBridge(self), forKey: Self.selfKey)
 
@@ -60,6 +78,9 @@ extension TerminalRestorable {
 final class TerminalRestorableState: TerminalRestorable {
     static var version: Int { 7 }
     static var minimumVersion: Int { 5 }
+    /// The name this type was archived under while the Swift module was named
+    /// `Ghostty`. Never change it, or saved windows stop restoring.
+    static var archivedClassName: String? { "_TtGC7Ghostty13CodableBridgeCS_23TerminalRestorableState_" }
 
     var focusedSurface: String? {
         internalState.focusedSurface
@@ -116,6 +137,11 @@ enum TerminalRestoreError: Error {
 
 /// The NSWindowRestoration implementation that is called when a terminal window needs to be restored.
 /// The encoding of a terminal window is handled elsewhere (usually NSWindowDelegate).
+///
+/// AppKit saves `restorationClass` by its Objective-C name. The explicit name is
+/// the one this class had while the Swift module was named `Ghostty`, so saved
+/// windows keep restoring if the module is renamed. Never change it.
+@objc(_TtC7Ghostty25TerminalWindowRestoration)
 class TerminalWindowRestoration: NSObject, NSWindowRestoration {
     static func restoreWindow(
         withIdentifier identifier: NSUserInterfaceItemIdentifier,
