@@ -1,7 +1,7 @@
 .{
-    .name = .esctest_libghostty,
+    .name = .esctest_libnubb,
     .version = "0.0.0",
-    .fingerprint = 0x5c1ec643a905b43b,
+    .fingerprint = 0x440e6aac1ec7d04e,
     .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .nubb = .{ .path = "../../" },

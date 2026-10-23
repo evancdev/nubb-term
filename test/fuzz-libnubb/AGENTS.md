@@ -1,4 +1,4 @@
-# AFL++ Fuzzer for Libghostty
+# AFL++ Fuzzer for Libnubb
 
 - Build all fuzzer with `zig build`
 - The list of available fuzzers is in `build.zig` (search for `fuzzers`).

@@ -21,7 +21,7 @@ pub fn build(b: *std.Build) void {
     }
 
     const exe = b.addExecutable(.{
-        .name = "esctest-libghostty",
+        .name = "esctest-libnubb",
         .root_module = exe_mod,
     });
     b.installArtifact(exe);

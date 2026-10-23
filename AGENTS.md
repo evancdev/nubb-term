@@ -31,7 +31,7 @@ been removed. Do not add them back.
 
 - Test: `zig build test-lib-vt -Dtest-filter=<filter>`
   - Prefer this when the change is in `src/terminal/`, it builds faster.
-- Only the Zig module remains, used by `test/fuzz-libghostty` and
+- Only the Zig module remains, used by `test/fuzz-libnubb` and
   `test/esctest`.
 - Conformance: `cd test/esctest && zig build run > esctest.log`
   (headless, about a minute). Many tests fail today; compare the

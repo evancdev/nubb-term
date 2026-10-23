@@ -37,7 +37,7 @@ const esctest_args = [_][:0]const u8{
 };
 
 const usage =
-    \\Usage: esctest-libghostty [--verbose] [esctest arguments...]
+    \\Usage: esctest-libnubb [--verbose] [esctest arguments...]
     \\
     \\Arguments are passed to esctest, for example --include=DECSTR.
     \\The log goes to stdout.
@@ -117,7 +117,7 @@ pub fn main(init: std.process.Init) !u8 {
     // esctest writes its log to a file rather than the terminal, so we
     // give it one to copy from afterwards.
     const log_path = try alloc.printSentinel(
-        "/tmp/esctest-libghostty-{d}.log",
+        "/tmp/esctest-libnubb-{d}.log",
         .{std.c.getpid()},
         0,
     );

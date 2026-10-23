@@ -1,5 +1,5 @@
 //! NubbZig generates the `nubb-vt` Zig module: the terminal core
-//! as a plain Zig module. Nubb's test harnesses (test/fuzz-libghostty,
+//! as a plain Zig module. Nubb's test harnesses (test/fuzz-libnubb,
 //! test/esctest) import it, and `zig build test-lib-vt` tests it.
 const NubbZig = @This();
 

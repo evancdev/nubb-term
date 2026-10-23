@@ -6794,7 +6794,7 @@ test "stream: nextSliceUntil differential on the fuzz corpus" {
     const io = testing.io;
 
     // The corpus lives in the repo; tests run from the build root.
-    const path = "test/fuzz-libghostty/corpus/stream-cmin";
+    const path = "test/fuzz-libnubb/corpus/stream-cmin";
     var dir = std.Io.Dir.cwd().openDir(io, path, .{ .iterate = true }) catch |err| switch (err) {
         error.FileNotFound => return error.SkipZigTest,
         else => return err,

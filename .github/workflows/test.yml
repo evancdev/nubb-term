@@ -155,7 +155,7 @@ jobs:
           if-no-files-found: ignore
 
   fuzz:
-    name: Build test/fuzz-libghostty
+    name: Build test/fuzz-libnubb
     runs-on: macos-26
     timeout-minutes: 45
     steps:
@@ -168,7 +168,7 @@ jobs:
       - name: Cache Zig packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: test/fuzz-libghostty/zig-pkg
+          path: test/fuzz-libnubb/zig-pkg
           key: zig-pkg-${{ github.job }}-${{ hashFiles('**/build.zig.zon') }}
           restore-keys: zig-pkg-${{ github.job }}-
 
@@ -182,7 +182,7 @@ jobs:
         run: afl-cc --version
 
       - name: Build fuzzer harness
-        working-directory: test/fuzz-libghostty
+        working-directory: test/fuzz-libnubb
         run: zig build
 
   swiftlint:

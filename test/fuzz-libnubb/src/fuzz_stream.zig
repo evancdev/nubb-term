@@ -25,7 +25,7 @@ pub export fn zig_fuzz_test(
     const alloc = fuzz_alloc.allocator();
     const input = buf[0..len];
 
-    const argv0 = "ghostty-fuzz";
+    const argv0 = "nubb-fuzz";
     const argv0_windows = argv0_windows: {
         var argv0_windows_buf: [std.unicode.calcUtf16LeLen(argv0) catch unreachable]u16 = undefined;
         _ = std.unicode.utf8ToUtf16Le(&argv0_windows_buf, argv0) catch unreachable;

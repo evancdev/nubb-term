@@ -1,4 +1,4 @@
-# AFL++ Fuzzer for Libghostty
+# AFL++ Fuzzer for Libnubb
 
 This directory contains [AFL++](https://aflplus.plus/) fuzzing harnesses for
 libnubb-vt (Zig module).
@@ -31,7 +31,7 @@ Install AFL++ so that `afl-cc` and `afl-fuzz` are on your `PATH`.
 
 ## Building
 
-From this directory (`test/fuzz-libghostty`):
+From this directory (`test/fuzz-libnubb`):
 
 ```sh
 zig build
