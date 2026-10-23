@@ -497,7 +497,7 @@ fn installRemoteTerminfo(
     // ControlPath as the bind address for a Unix domain socket; macOS
     // limits sockaddr_un.sun_path to ~104 bytes, so keeping the path
     // short leaves margin.
-    const control_path = try internal_os.randomTmpPath(alloc, "ghostty-ssh-");
+    const control_path = try internal_os.randomTmpPath(alloc, "nubb-ssh-");
     const control_path_opt = try alloc.print(
         "ControlPath={s}",
         .{control_path},

@@ -134,10 +134,7 @@ pub const Options = struct {
 /// If `--working-directory` is _not_ found on the command line, the working
 /// directory that `nubb +new-window` is run from will be passed to Nubb.
 ///
-/// GTK uses an application ID to identify instances of applications. If Nubb
-/// is compiled with release optimizations, the default application ID will be
-/// `com.mitchellh.ghostty`. If Nubb is compiled with debug optimizations,
-/// the default application ID will be `com.mitchellh.ghostty-debug`.  The
+/// GTK uses an application ID to identify instances of applications. The
 /// `class` configuration entry can be used to set up a custom application
 /// ID. The class name must follow the requirements defined [in the GTK
 /// documentation](https://docs.gtk.org/gio/type_func.Application.id_is_valid.html)
@@ -147,8 +144,7 @@ pub const Options = struct {
 /// to be running for this to open a new window, making it suitable for binding
 /// to keys in your window manager (if other methods for configuring global
 /// shortcuts are unavailable). D-Bus will handle launching a new instance
-/// of Nubb if it is not already running. See the Ghostty website for
-/// information on properly configuring D-Bus activation.
+/// of Nubb if it is not already running.
 ///
 /// Only supported on GTK.
 ///

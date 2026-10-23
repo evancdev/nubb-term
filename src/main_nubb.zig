@@ -12,7 +12,6 @@ const renderer = @import("renderer.zig");
 const apprt = @import("apprt.zig");
 
 const App = @import("App.zig");
-const Ghostty = @import("main_c.zig").Ghostty;
 const global = @import("global.zig");
 
 /// The return type for main() depends on the build artifact. The lib build
@@ -60,7 +59,7 @@ pub fn main(minimal: std.process.Init.Minimal) !MainReturn {
 
     if (comptime builtin.mode == .debug) {
         std.log.warn("This is a debug build. Performance will be very poor.", .{});
-        std.log.warn("You should only use a debug build for developing Ghostty.", .{});
+        std.log.warn("You should only use a debug build for developing Nubb.", .{});
         std.log.warn("Otherwise, please rebuild in a release mode.", .{});
     }
 
@@ -76,18 +75,18 @@ pub fn main(minimal: std.process.Init.Minimal) !MainReturn {
 
     if (comptime build_config.app_runtime == .none) {
         const stdout = std.io.getStdOut().writer();
-        try stdout.print("Usage: ghostty +<action> [flags]\n\n", .{});
+        try stdout.print("Usage: nubb +<action> [flags]\n\n", .{});
         try stdout.print(
-            \\This is the Ghostty helper CLI that accompanies the graphical Ghostty app.
+            \\This is the Nubb helper CLI that accompanies the graphical Nubb app.
             \\To launch the terminal directly, please launch the graphical app
-            \\(i.e. Ghostty.app on macOS). This CLI can be used to perform various
+            \\(i.e. Nubb.app on macOS). This CLI can be used to perform various
             \\actions such as inspecting the version, listing fonts, etc.
             \\
-            \\On macOS, the terminal can also be launched using `open -na Ghostty.app`,
-            \\or `open -na Ghostty.app --args --foo=bar --baz=qux` to pass arguments.
+            \\On macOS, the terminal can also be launched using `open -na Nubb.app`,
+            \\or `open -na Nubb.app --args --foo=bar --baz=qux` to pass arguments.
             \\
             \\We don't have proper help output yet, sorry! Please refer to the
-            \\source code or Discord community for help for now. We'll fix this in time.
+            \\source code for help for now.
             \\
         ,
             .{},

@@ -7,7 +7,7 @@ const translate_c = @import("translate_c");
 /// App version from build.zig.zon.
 const app_zon_version = @import("build.zig.zon").version;
 
-/// Libghostty version. We use a separate version from the app.
+/// nubb-vt version. We use a separate version from the app.
 const lib_version = "0.1.0-dev";
 
 /// Minimum required zig version.

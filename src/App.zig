@@ -1,4 +1,4 @@
-//! App is the primary GUI application for ghostty. This builds the window,
+//! App is the primary GUI application for nubb. This builds the window,
 //! sets up the renderer, etc. The primary run loop is started by calling
 //! the "run" function.
 const App = @This();

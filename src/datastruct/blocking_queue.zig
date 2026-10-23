@@ -7,7 +7,7 @@ const compat_thread = @import("../lib/compat/thread.zig");
 
 /// Returns a blocking queue implementation for type T.
 ///
-/// This is tailor made for ghostty usage so it isn't meant to be maximally
+/// This is tailor made for nubb usage so it isn't meant to be maximally
 /// generic, but I'm happy to make it more generic over time. Traits of this
 /// queue that are specific to our usage:
 ///

@@ -9,12 +9,10 @@ zig-cache/
 zig-pkg/
 zig-out/
 build.zig.zon.bak
-test/ghostty
 test/cases/**/*.actual.png
 
 /Box_test.ppm
 /Box_test_diff.ppm
-/ghostty.qcow2
 
 vgcore.*
 

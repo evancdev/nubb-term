@@ -4,7 +4,7 @@
 // support).
 //
 // This currently isn't supported as a general purpose embedding API.
-// This is currently used only to embed ghostty within a macOS app. However,
+// This is currently used only to embed nubb within a macOS app. However,
 // it could be expanded to be general purpose in the future.
 
 const std = @import("std");
@@ -105,7 +105,7 @@ pub const String = extern struct {
     }
 };
 
-/// Initialize ghostty global state.
+/// Initialize nubb global state.
 pub export fn nubb_init(argc: usize, argv: [*][*:0]u8) c_int {
     assert(builtin.link_libc);
 
@@ -126,7 +126,7 @@ pub export fn nubb_init(argc: usize, argv: [*][*:0]u8) c_int {
                 .{ .block = .{ .use_global = true } },
         },
     }) catch |err| {
-        std.log.err("failed to initialize ghostty error={}", .{err});
+        std.log.err("failed to initialize nubb error={}", .{err});
         return 1;
     };
 

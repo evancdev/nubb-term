@@ -179,7 +179,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     else version: {
         const app_version = try std.SemanticVersion.parse(appVersion);
 
-        // Is ghostty a dependency? If so, skip git detection.
+        // Is nubb a dependency? If so, skip git detection.
         if (is_dep) break :version .{
             .major = app_version.major,
             .minor = app_version.minor,

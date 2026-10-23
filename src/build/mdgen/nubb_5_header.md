@@ -78,7 +78,7 @@ them and move on. Configuration errors will be logged.
 ## Debugging Configuration
 
 You can verify that configuration is being properly loaded by looking at the
-debug output of Ghostty.
+debug output of Nubb.
 
 In the debug output, you should see in the first 20 lines or so messages about
 loading (or not loading) a configuration file, as well as any errors it may have
@@ -86,7 +86,7 @@ encountered. Configuration errors are also shown in a dedicated window on both
 macOS and Linux (GTK). Nubb does not treat configuration errors as fatal and
 will fall back to default values for erroneous keys.
 
-You can also view the full configuration Nubb is loading using `ghostty
+You can also view the full configuration Nubb is loading using `nubb
 +show-config` from the command-line. Use the `--help` flag to additional options
 for that command.
 
@@ -96,9 +96,6 @@ Nubb can write logs to a number of destinations. On all platforms, logging to
 `stderr` is available. Depending on the platform and how Nubb was launched,
 logs sent to `stderr` may be stored by the system and made available for later
 retrieval.
-
-On Linux if Nubb is launched by the default `systemd` user service, you can use
-`journald` to see Nubb's logs: `journalctl --user --unit app-com.mitchellh.ghostty.service`.
 
 On macOS logging to the macOS unified log is available and enabled by default.
 --Use the system `log` CLI to view Nubb's logs: `sudo log stream --level debug

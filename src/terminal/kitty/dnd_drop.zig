@@ -228,7 +228,7 @@ fn dataRequest(
     return null;
 }
 
-/// Refuse a drag-out command with an error, since ghostty does not
+/// Refuse a drag-out command with an error, since nubb does not
 /// implement the terminal side of client-initiated drags yet.
 fn refuseDragOut(
     writer: *std.Io.Writer,

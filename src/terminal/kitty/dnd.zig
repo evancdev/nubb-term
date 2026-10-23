@@ -35,7 +35,7 @@
 //! These are on purpose forever:
 //!
 //!   * Responses echo the requesting command's terminator (ST or BEL)
-//!     per ghostty convention; kitty always uses ST. Terminal-
+//!     per nubb convention; kitty always uses ST. Terminal-
 //!     initiated events always use ST.
 
 const dnd_command = @import("dnd_command.zig");

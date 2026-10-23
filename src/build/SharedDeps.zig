@@ -21,7 +21,7 @@ framedata: NubbFrameData,
 uucode_tables: std.Build.LazyPath,
 
 /// Singleton uucode module, instantiated once in `init` and reused
-/// everywhere so that ghostty and vaxis share the same compiled tables in
+/// everywhere so that nubb and vaxis share the same compiled tables in
 /// each final binary instead of each linking its own copy.
 ///
 /// Sharing one instance is also a hard requirement (not just an
@@ -69,7 +69,7 @@ pub fn init(b: *std.Build, cfg: *const Config) !SharedDeps {
         break :blk uucode.namedLazyPath("tables.zig");
     };
 
-    // Instantiate the singleton uucode module that both ghostty and vaxis
+    // Instantiate the singleton uucode module that both nubb and vaxis
     // import. See the doc comment on `uucode_mod`.
     const uucode_mod = b.dependency("uucode", .{
         .tables_path = uucode_tables,

@@ -42,7 +42,7 @@ pub fn run(
     // If we're on macOS, we setup signposts so its easier to find
     // the results in Instruments. There's a lot of nasty comptime stuff
     // here but its just to ensure this does nothing on other platforms.
-    const signpost_name = "ghostty";
+    const signpost_name = "nubb";
     const signpost: if (builtin.target.os.tag.isDarwin()) struct {
         log: *macos.os.Log,
         id: macos.os.signpost.Id,

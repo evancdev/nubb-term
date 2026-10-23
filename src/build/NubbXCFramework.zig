@@ -31,7 +31,7 @@ pub fn init(
     _ = wf.addCopyFile(b.path("include/module.modulemap"), "module.modulemap");
     const headers = wf.getDirectory();
 
-    // The xcframework wraps our ghostty library so that we can link
+    // The xcframework wraps our nubb library so that we can link
     // it to the final app built with Swift.
     const xcframework = XCFrameworkStep.create(b, .{
         .name = "NubbKit",

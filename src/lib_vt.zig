@@ -1,4 +1,4 @@
-//! This is the public API of the ghostty-vt Zig module.
+//! This is the public API of the nubb-vt Zig module.
 //!
 //! WARNING: The API is not guaranteed to be stable.
 //!

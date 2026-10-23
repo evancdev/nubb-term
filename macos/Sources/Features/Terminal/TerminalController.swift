@@ -573,7 +573,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             return
         }
         /// Surface-level config will be updated in
-        /// ``Ghostty/Nubb/SurfaceView/derivedConfig`` then
+        /// ``Nubb/SurfaceView/derivedConfig`` then
         /// ``TerminalController/focusedSurfaceDidChange(to:)``
     }
 

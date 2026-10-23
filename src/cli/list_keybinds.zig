@@ -229,7 +229,7 @@ fn prettyPrint(alloc: Allocator, keybinds: Config.Keybinds) !u8 {
     const writer = tty.writer();
     defer vx.deinit(alloc, writer);
 
-    // We know we are ghostty, so let's enable mode 2027. Vaxis normally does this but you need an
+    // We know we are nubb, so let's enable mode 2027. Vaxis normally does this but you need an
     // event loop to auto-enable it.
     vx.caps.unicode = .unicode;
     try writer.writeAll(vaxis.ctlseqs.unicode_set);

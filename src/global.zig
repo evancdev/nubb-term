@@ -36,7 +36,7 @@ pub const InitOpts = union(enum) {
 
     /// Same as `main` but for auxiliary tool binaries (e.g. nubb-bench
     /// and nubb-gen) that have their own CLI action namespace. This
-    /// skips detection of ghostty app CLI actions, since tool actions
+    /// skips detection of nubb app CLI actions, since tool actions
     /// (e.g. `+terminal-stream`) are not valid app actions and would
     /// otherwise cause init to fail with InvalidAction.
     tool: std.process.Init.Minimal,
@@ -152,8 +152,8 @@ pub fn init(opts: InitOpts) !void {
     };
 
     // Output some debug information right away
-    std.log.info("ghostty version={s}", .{build_config.version_string});
-    std.log.info("ghostty build optimize={s}", .{build_config.mode_string});
+    std.log.info("nubb version={s}", .{build_config.version_string});
+    std.log.info("nubb build optimize={s}", .{build_config.mode_string});
     std.log.info("runtime={}", .{build_config.app_runtime});
     std.log.info("font_backend={}", .{build_config.font_backend});
     std.log.info("renderer={}", .{renderer.Renderer});
