@@ -1,6 +1,6 @@
 import AppKit
 import Testing
-@testable import Ghostty
+@testable import Nubb
 
 @MainActor
 struct KeyboardLayoutTests {

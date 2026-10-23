@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import Testing
-@testable import Ghostty
+@testable import Nubb
 import NubbKit
 
 /// The menu-shortcut path must translate the key equivalent with only the

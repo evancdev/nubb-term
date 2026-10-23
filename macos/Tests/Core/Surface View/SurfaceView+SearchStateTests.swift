@@ -1,7 +1,7 @@
 import AppKit
 import NubbKit
 import Testing
-@testable import Ghostty
+@testable import Nubb
 
 @MainActor struct SurfaceView_SearchStateTests {
     typealias SearchState = Nubb.OSSurfaceView.SearchState

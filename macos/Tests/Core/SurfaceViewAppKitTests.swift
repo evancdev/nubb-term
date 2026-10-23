@@ -1,4 +1,4 @@
-@testable import Ghostty
+@testable import Nubb
 import Testing
 
 struct SurfaceViewAppKitTests {

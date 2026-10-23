@@ -8,7 +8,7 @@
 
 import Testing
 import AppKit
-@testable import Ghostty
+@testable import Nubb
 
 struct NSPasteboardTypeExtensionTests {
     /// Test text/plain MIME type converts to .string

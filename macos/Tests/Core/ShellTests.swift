@@ -1,5 +1,5 @@
 import Testing
-@testable import Ghostty
+@testable import Nubb
 
 struct ShellTests {
     @Test(arguments: [

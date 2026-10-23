@@ -457,7 +457,7 @@
 				MARKETING_VERSION = 0.1;
 				"OTHER_LDFLAGS[arch=*]" = "-lstdc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.evancdev.nubb;
-				PRODUCT_MODULE_NAME = Ghostty;
+				PRODUCT_MODULE_NAME = Nubb;
 				PRODUCT_NAME = Nubb;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/nubb-bridging-header.h";
@@ -768,7 +768,7 @@
 				MARKETING_VERSION = 0.1;
 				"OTHER_LDFLAGS[arch=*]" = "-lstdc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.evancdev.nubb.debug;
-				PRODUCT_MODULE_NAME = Ghostty;
+				PRODUCT_MODULE_NAME = Nubb;
 				PRODUCT_NAME = Nubb;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/nubb-bridging-header.h";
@@ -824,7 +824,7 @@
 				MARKETING_VERSION = 0.1;
 				"OTHER_LDFLAGS[arch=*]" = "-lstdc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.evancdev.nubb;
-				PRODUCT_MODULE_NAME = Ghostty;
+				PRODUCT_MODULE_NAME = Nubb;
 				PRODUCT_NAME = Nubb;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/nubb-bridging-header.h";

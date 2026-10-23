@@ -1,5 +1,5 @@
 import Foundation
-@testable import Ghostty
+@testable import Nubb
 @testable import NubbKit
 
 /// Create a temporary config file and delete it when this is deallocated

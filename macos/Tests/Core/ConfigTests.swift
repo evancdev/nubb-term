@@ -1,5 +1,5 @@
 import Testing
-@testable import Ghostty
+@testable import Nubb
 import SwiftUI
 
 @Suite

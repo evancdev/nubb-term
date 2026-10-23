@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 import Testing
-@testable import Ghostty
+@testable import Nubb
 
 struct MenuShortcutManagerTests {
     @Test(.bug("https://github.com/ghostty-org/ghostty/issues/779", id: 779))

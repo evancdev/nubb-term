@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import Ghostty
+@testable import Nubb
 
 struct URLTests {
     @Test func pathWithoutTrailingSlash() {

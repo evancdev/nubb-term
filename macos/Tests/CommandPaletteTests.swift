@@ -7,7 +7,7 @@
 
 import Testing
 import SwiftUI
-@testable import Ghostty
+@testable import Nubb
 
 struct CommandPaletteFilterTests {
     private func option(

@@ -1,6 +1,6 @@
 import Testing
 import AppKit
-@testable import Ghostty
+@testable import Nubb
 
 struct QuickTerminalScreenStateCacheTests {
     private typealias DisplayEntry = QuickTerminalScreenStateCache.DisplayEntry
