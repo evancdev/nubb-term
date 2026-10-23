@@ -16,7 +16,7 @@
     ],
     "environmentVariableEntries" : [
       {
-        "key" : "GHOSTTY_CONFIG_PATH",
+        "key" : "NUBB_CONFIG_PATH",
         "value" : "\/tmp\/Ghostty\/testing_config.ghostty"
       }
     ],

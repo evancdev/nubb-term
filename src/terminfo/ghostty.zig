@@ -2,6 +2,10 @@ const std = @import("std");
 const Source = @import("Source.zig");
 
 /// Nubb's terminfo entry.
+///
+/// The entry names intentionally stay `xterm-ghostty`/`ghostty`: TERM,
+/// remote hosts that already have this entry, and other software match
+/// these exact names. Do not rename them.
 pub const ghostty: Source = .{
     .names = &.{
         // We support the "xterm-" prefix because some poorly behaved programs

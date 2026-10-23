@@ -92,7 +92,7 @@ const ThemeListElement = struct {
 /// directory). If you're running Nubb from the source, this is the
 /// `zig-out/share/ghostty/themes` directory.
 ///
-/// You can also set the `GHOSTTY_RESOURCES_DIR` environment variable to point
+/// You can also set the `NUBB_RESOURCES_DIR` environment variable to point
 /// to the resources directory.
 ///
 /// Flags:

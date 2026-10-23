@@ -109,7 +109,7 @@ optimization level Nubb is compiled with. If Nubb is compiled with `Debug`
 optimizations debug logs will be output to `stderr`. If Nubb is compiled with
 any other optimization the debug logs will not be output to `stderr`.
 
-Nubb also checks the `GHOSTTY_LOG` environment variable. It can be used
+Nubb also checks the `NUBB_LOG` environment variable. It can be used
 to control which destinations receive logs. Nubb currently defines two
 destinations:
 
@@ -118,5 +118,5 @@ destinations:
 
 Combine values with a comma to enable multiple destinations. Prefix a
 destination with `no-` to disable it. Enabling and disabling destinations
-can be done at the same time. Setting `GHOSTTY_LOG` to `true` will enable all
-destinations. Setting `GHOSTTY_LOG` to `false` will disable all destinations.
+can be done at the same time. Setting `NUBB_LOG` to `true` will enable all
+destinations. Setting `NUBB_LOG` to `false` will disable all destinations.

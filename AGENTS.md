@@ -50,7 +50,7 @@ been removed. Do not add them back.
   `sudo xcode-select --switch /Applications/Xcode.app`.
 - Logs go to the unified log under the bundle ID:
   `log stream --level debug --predicate 'subsystem=="com.evancdev.nubb"'`.
-  `GHOSTTY_LOG` picks destinations (`stderr`, `macos`, `no-` prefix to
+  `NUBB_LOG` picks destinations (`stderr`, `macos`, `no-` prefix to
   disable, `true`/`false` for all). Debug builds also log to stderr.
 
 ## Safety

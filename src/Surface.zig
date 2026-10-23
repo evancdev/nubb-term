@@ -62,7 +62,7 @@ const max_active_key_tables = 8;
 
 /// Unique ID used to identify this surface for IPC purposes. It is
 /// exposed to the commands running in surfaces as the environment variable
-/// GHOSTTY_SURFACE_ID. It must not be zero as zero is used to incicate a null
+/// NUBB_SURFACE_ID. It must not be zero as zero is used to incicate a null
 /// value when communicating an ID over DBus as DBus does not allow null/maybe
 /// values.
 id: u64,
@@ -671,12 +671,12 @@ pub fn init(
             };
             errdefer env.deinit();
 
-            // don't leak GHOSTTY_LOG to any subprocesses
-            _ = env.orderedRemove("GHOSTTY_LOG");
+            // don't leak NUBB_LOG to any subprocesses
+            _ = env.orderedRemove("NUBB_LOG");
 
             var buf: [18]u8 = undefined;
             try env.put(
-                "GHOSTTY_SURFACE_ID",
+                "NUBB_SURFACE_ID",
                 std.mem.print(&buf, "0x{x:0>16}", .{self.id}) catch unreachable,
             );
 

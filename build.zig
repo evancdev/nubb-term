@@ -181,7 +181,7 @@ pub fn build(b: *std.Build) !void {
             // build.
             // FIXME: This is not possible after Zig 0.17.
             // run_cmd.setEnvironmentVariable(
-            //     "GHOSTTY_RESOURCES_DIR",
+            //     "NUBB_RESOURCES_DIR",
             //     b.getInstallPath(.prefix, "share/ghostty"),
             // );
 

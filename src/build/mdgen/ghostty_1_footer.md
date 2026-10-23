@@ -20,7 +20,7 @@ for configuration files.
 
 : Defaults to `xterm-ghostty`. Can be configured with the `term` configuration option.
 
-**GHOSTTY_RESOURCES_DIR**
+**NUBB_RESOURCES_DIR**
 
 : Where the Nubb resources can be found.
 
@@ -37,9 +37,9 @@ precedence over the XDG environment locations.
 
 : **WINDOWS ONLY:** alternate location to search for configuration files.
 
-**GHOSTTY_LOG**
+**NUBB_LOG**
 
-: The `GHOSTTY_LOG` environment variable can be used to control which
+: The `NUBB_LOG` environment variable can be used to control which
 destinations receive logs. Nubb currently defines two destinations:
 
 : - `stderr` - logging to `stderr`.
@@ -47,8 +47,8 @@ destinations receive logs. Nubb currently defines two destinations:
 
 : Combine values with a comma to enable multiple destinations. Prefix a
 destination with `no-` to disable it. Enabling and disabling destinations
-can be done at the same time. Setting `GHOSTTY_LOG` to `true` will enable all
-destinations. Setting `GHOSTTY_LOG` to `false` will disable all destinations.
+can be done at the same time. Setting `NUBB_LOG` to `true` will enable all
+destinations. Setting `NUBB_LOG` to `false` will disable all destinations.
 
 # BUGS
 

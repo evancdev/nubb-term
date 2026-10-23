@@ -246,7 +246,7 @@ fn runArgs(
     const surface_id = opts.@"surface-id" orelse surface: {
         var env = global.environMap() catch break :surface 0;
         defer env.deinit();
-        const e = env.get("GHOSTTY_SURFACE_ID") orelse break :surface 0;
+        const e = env.get("NUBB_SURFACE_ID") orelse break :surface 0;
         break :surface std.fmt.parseUnsigned(u64, e, 0) catch break :surface 0;
     };
 

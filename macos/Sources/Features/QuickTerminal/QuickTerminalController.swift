@@ -317,7 +317,7 @@ class QuickTerminalController: BaseTerminalController {
         baseConfig config: Ghostty.SurfaceConfiguration? = nil
     ) -> Ghostty.SurfaceView? {
         var config = config ?? Ghostty.SurfaceConfiguration()
-        config.environmentVariables["GHOSTTY_QUICK_TERMINAL"] = "1"
+        config.environmentVariables["NUBB_QUICK_TERMINAL"] = "1"
         return super.newSplit(at: oldView, direction: direction, baseConfig: config)
     }
 
@@ -376,7 +376,7 @@ class QuickTerminalController: BaseTerminalController {
                 }
             } else {
                 var config = Ghostty.SurfaceConfiguration()
-                config.environmentVariables["GHOSTTY_QUICK_TERMINAL"] = "1"
+                config.environmentVariables["NUBB_QUICK_TERMINAL"] = "1"
 
                 let view = Ghostty.SurfaceView(ghostty_app, baseConfig: config)
                 surfaceTree = SplitTree(view: view)

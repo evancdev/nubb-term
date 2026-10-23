@@ -80,7 +80,7 @@ When making tradeoffs, in order:
 - Tests: `zig build test -Dtest-filter=lz4`. The differential suite is
   `lz4_differential.zig`; run the exhaustive version for any codec
   change:
-  `GHOSTTY_LZ4_SLOW=1 zig build test -Dtest-filter="lz4 differential"`
+  `NUBB_LZ4_SLOW=1 zig build test -Dtest-filter="lz4 differential"`
 - The compressor must keep the standard format restrictions (final five
   bytes literal, matches start at least twelve bytes before the end) so
   blocks stay consumable by optimized external decoders. The differential

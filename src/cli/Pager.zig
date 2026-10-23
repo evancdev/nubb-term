@@ -1,7 +1,7 @@
 //! A pager wraps output to an external pager program (like `less`) when
 //! stdout is a TTY. The pager command is resolved as:
 //!
-//!   `$GHOSTTY_PAGER` > `$PAGER` > `less`
+//!   `$NUBB_PAGER` > `$PAGER` > `less`
 //!
 //! Setting either env var to an empty string disables paging.
 //! If stdout is not a TTY, writes go directly to stdout.
@@ -58,12 +58,12 @@ fn initPager() ?std.process.Child {
     var env = global.environMap() catch return null;
     defer env.deinit();
 
-    // Resolve the pager command: $GHOSTTY_PAGER > $PAGER > `less`.
+    // Resolve the pager command: $NUBB_PAGER > $PAGER > `less`.
     // An empty value for either env var disables paging.
-    const ghostty_var = env.get("GHOSTTY_PAGER");
+    const nubb_var = env.get("NUBB_PAGER");
     const pager_var = env.get("PAGER");
     const cmd: ?[]const u8 = cmd: {
-        if (ghostty_var) |v| break :cmd if (v.len > 0) v else null;
+        if (nubb_var) |v| break :cmd if (v.len > 0) v else null;
         if (pager_var) |v| break :cmd if (v.len > 0) v else null;
         break :cmd "less";
     };

@@ -39,7 +39,7 @@ pub const ResourcesDir = struct {
 /// This is highly Nubb-specific and can likely be generalized at
 /// some point but we can cross that bridge if we ever need to.
 pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
-    // Use the GHOSTTY_RESOURCES_DIR environment variable in release builds.
+    // Use the NUBB_RESOURCES_DIR environment variable in release builds.
     //
     // In debug builds we try using terminfo detection first instead, since
     // if debug Nubb is launched by an older version of Nubb, it
@@ -49,7 +49,7 @@ pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
     // Note: we ALWAYS want to allocate here because the result is always
     // freed, do not try to use internal_os.getenv or posix getenv.
     if (comptime builtin.mode != .debug) env: {
-        const dir = global.environ().getAlloc(alloc, "GHOSTTY_RESOURCES_DIR") catch |err| switch (err) {
+        const dir = global.environ().getAlloc(alloc, "NUBB_RESOURCES_DIR") catch |err| switch (err) {
             error.EnvironmentVariableMissing => break :env,
             else => return err,
         };
@@ -110,7 +110,7 @@ pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
     // If terminfo detection failed in debug builds (somehow),
     // fallback and use the provided resources dir.
     if (comptime builtin.mode == .debug) {
-        if (global.environ().getAlloc(alloc, "GHOSTTY_RESOURCES_DIR")) |dir| {
+        if (global.environ().getAlloc(alloc, "NUBB_RESOURCES_DIR")) |dir| {
             if (dir.len > 0) return .{ .app_path = dir };
         } else |err| switch (err) {
             error.InvalidWtf8, error.EnvironmentVariableMissing => {},

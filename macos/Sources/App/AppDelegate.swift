@@ -154,7 +154,7 @@ class AppDelegate: NSObject,
 
     override init() {
 #if DEBUG
-        ghostty = Ghostty.App(configPath: ProcessInfo.processInfo.environment["GHOSTTY_CONFIG_PATH"])
+        ghostty = Ghostty.App(configPath: ProcessInfo.processInfo.environment["NUBB_CONFIG_PATH"])
 #else
         ghostty = Ghostty.App()
 #endif
@@ -169,7 +169,7 @@ class AppDelegate: NSObject,
         #if DEBUG
         if
             let suite = UserDefaults.ghosttySuite,
-            let clear = ProcessInfo.processInfo.environment["GHOSTTY_CLEAR_USER_DEFAULTS"],
+            let clear = ProcessInfo.processInfo.environment["NUBB_CLEAR_USER_DEFAULTS"],
             (clear as NSString).boolValue {
             UserDefaults.ghostty.removePersistentDomain(forName: suite)
         }

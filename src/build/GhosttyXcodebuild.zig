@@ -149,10 +149,10 @@ pub fn init(
 
         // This overrides our default behavior and forces logs to show
         // up on stderr (in addition to the centralized macOS log).
-        open.setEnvironmentVariable("GHOSTTY_LOG", "stderr,macos");
+        open.setEnvironmentVariable("NUBB_LOG", "stderr,macos");
 
         // Configure how we're launching
-        open.setEnvironmentVariable("GHOSTTY_MAC_LAUNCH_SOURCE", "zig_run");
+        open.setEnvironmentVariable("NUBB_MAC_LAUNCH_SOURCE", "zig_run");
         open.addPassthruArgs();
 
         break :open open;

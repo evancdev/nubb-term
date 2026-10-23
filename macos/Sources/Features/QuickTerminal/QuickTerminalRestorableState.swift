@@ -31,7 +31,7 @@ struct QuickTerminalRestorableState: TerminalRestorable {
 
     var baseConfig: Ghostty.SurfaceConfiguration? {
         var config = Ghostty.SurfaceConfiguration()
-        config.environmentVariables["GHOSTTY_QUICK_TERMINAL"] = "1"
+        config.environmentVariables["NUBB_QUICK_TERMINAL"] = "1"
         return config
     }
 }

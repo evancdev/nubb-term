@@ -867,6 +867,9 @@ pub const StreamHandler = struct {
     pub fn reportXtversion(
         self: *StreamHandler,
     ) !void {
+        // The XTVERSION name intentionally stays "ghostty": applications
+        // detect Ghostty features by matching this reply, and Nubb supports
+        // the same features. Do not rename it.
         log.debug("reporting XTVERSION: ghostty {s}", .{build_config.version_string});
         var buf: [288]u8 = undefined;
         const resp = try std.mem.print(

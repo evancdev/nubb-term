@@ -1,8 +1,8 @@
-#if defined(GHOSTTY_SIMD_INDEX_OF_H_) == defined(HWY_TARGET_TOGGLE)
-#ifdef GHOSTTY_SIMD_INDEX_OF_H_
-#undef GHOSTTY_SIMD_INDEX_OF_H_
+#if defined(NUBB_SIMD_INDEX_OF_H_) == defined(HWY_TARGET_TOGGLE)
+#ifdef NUBB_SIMD_INDEX_OF_H_
+#undef NUBB_SIMD_INDEX_OF_H_
 #else
-#define GHOSTTY_SIMD_INDEX_OF_H_
+#define NUBB_SIMD_INDEX_OF_H_
 #endif
 
 #include <hwy/highway.h>
@@ -99,4 +99,4 @@ size_t IndexOf(const uint8_t needle,
 }  // namespace ghostty
 HWY_AFTER_NAMESPACE();
 
-#endif  // GHOSTTY_SIMD_INDEX_OF_H_
+#endif  // NUBB_SIMD_INDEX_OF_H_

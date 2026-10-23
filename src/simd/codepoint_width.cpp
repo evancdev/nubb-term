@@ -4,13 +4,13 @@
 #include <hwy/foreach_target.h>  // must come before highway.h
 #include <hwy/highway.h>
 
-#ifndef GHOSTTY_SIMD_CPW_HELPERS_
-#define GHOSTTY_SIMD_CPW_HELPERS_
+#ifndef NUBB_SIMD_CPW_HELPERS_
+#define NUBB_SIMD_CPW_HELPERS_
 
 #ifdef NDEBUG
-#define GHOSTTY_SIMD_ASSERT(cond) ((void)0)
+#define NUBB_SIMD_ASSERT(cond) ((void)0)
 #else
-#define GHOSTTY_SIMD_ASSERT(cond) \
+#define NUBB_SIMD_ASSERT(cond) \
   do {                            \
     if (!(cond)) __builtin_trap();\
   } while (0)
@@ -37,7 +37,7 @@ constexpr T array_max(const T (&a)[N]) {
   return m;
 }
 
-#endif  // GHOSTTY_SIMD_CPW_HELPERS_
+#endif  // NUBB_SIMD_CPW_HELPERS_
 
 HWY_BEFORE_NAMESPACE();
 namespace ghostty {
@@ -255,8 +255,8 @@ static_assert(array_size(nsm_gte16) == array_size(nsm_lte16));
 /// Handles 16-bit codepoints.
 template <class D, typename T = uint16_t>
 int8_t CodepointWidth16(D d, uint16_t input) {
-  GHOSTTY_SIMD_ASSERT(input > 0xFF);
-  GHOSTTY_SIMD_ASSERT(input <= 0xFFFF);
+  NUBB_SIMD_ASSERT(input > 0xFF);
+  NUBB_SIMD_ASSERT(input <= 0xFFFF);
 
   const size_t N = hn::Lanes(d);
   const hn::Vec<D> input_vec = Set(d, input);
@@ -293,7 +293,7 @@ int8_t CodepointWidth16(D d, uint16_t input) {
         return 2;
       }
     }
-    GHOSTTY_SIMD_ASSERT(i >= 7);  // We should have checked all the ranges.
+    NUBB_SIMD_ASSERT(i >= 7);  // We should have checked all the ranges.
   }
 
   {
@@ -359,7 +359,7 @@ int8_t CodepointWidth16(D d, uint16_t input) {
 /// Handles codepoints larger than 16-bit.
 template <class D, typename T = uint32_t>
 int8_t CodepointWidth32(D d, T input) {
-  GHOSTTY_SIMD_ASSERT(input > 0xFFFF);
+  NUBB_SIMD_ASSERT(input > 0xFFFF);
 
   const size_t N = hn::Lanes(d);
   const hn::Vec<D> input_vec = Set(d, input);
@@ -385,7 +385,7 @@ int8_t CodepointWidth32(D d, T input) {
         return 2;
       }
     }
-    GHOSTTY_SIMD_ASSERT(i >= 2);  // We should have checked all the ranges.
+    NUBB_SIMD_ASSERT(i >= 2);  // We should have checked all the ranges.
   }
 
   {

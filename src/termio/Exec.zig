@@ -566,6 +566,12 @@ const Subprocess = struct {
         // If we have a resources dir then set our env var
         if (cfg.resources_dir) |dir| {
             log.info("found Nubb resources dir: {s}", .{dir});
+            try env.put("NUBB_RESOURCES_DIR", dir);
+
+            // Also export the upstream name with the same value. Other
+            // software (for example Claude Code) reads GHOSTTY_RESOURCES_DIR
+            // to find our shell integration and terminfo, so it must keep
+            // working even though Nubb itself only reads NUBB_RESOURCES_DIR.
             try env.put("GHOSTTY_RESOURCES_DIR", dir);
         }
 
@@ -613,7 +619,7 @@ const Subprocess = struct {
             // We always set this so that if the shell overwrites the path
             // scripts still have a way to find the Nubb binary when
             // running in Nubb.
-            try env.put("GHOSTTY_BIN_DIR", exe_dir);
+            try env.put("NUBB_BIN_DIR", exe_dir);
 
             // Append if we have a path. We want to append so that ghostty is
             // the last priority in the path. If we don't have a path set
@@ -675,6 +681,10 @@ const Subprocess = struct {
 
         // Set environment variables used by some programs (such as neovim) to detect
         // which terminal emulator and version they're running under.
+        //
+        // TERM_PROGRAM intentionally stays "ghostty": Nubb implements the
+        // Ghostty protocol surface, and other software (editors, Claude Code)
+        // matches this exact value to enable features. Do not rename it.
         try env.put("TERM_PROGRAM", "ghostty");
         try env.put("TERM_PROGRAM_VERSION", build_config.version_string);
 
@@ -688,7 +698,7 @@ const Subprocess = struct {
             const default_shell_command: configpkg.Command =
                 cfg.command orelse .{ .shell = "sh" };
 
-            // Always set up shell features (GHOSTTY_SHELL_FEATURES). These are
+            // Always set up shell features (NUBB_SHELL_FEATURES). These are
             // used by both automatic and manual shell integrations.
             try shell_integration.setupFeatures(
                 &env,

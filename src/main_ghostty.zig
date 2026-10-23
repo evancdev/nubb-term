@@ -202,7 +202,7 @@ pub const std_options: std.Options = .{
     // Our log level is always at least info in every build mode.
     //
     // Note, we don't lower this to debug even with conditional logging
-    // via GHOSTTY_LOG because our debug logs are very expensive to
+    // via NUBB_LOG because our debug logs are very expensive to
     // calculate and we want to make sure they're optimized out in
     // builds.
     .log_level = switch (builtin.mode) {

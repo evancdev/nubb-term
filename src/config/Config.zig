@@ -1224,7 +1224,7 @@ command: ?Command = null,
 /// will result in `foo=baz` being passed to the launched commands.
 ///
 /// These environment variables will override any existing environment
-/// variables set by Nubb. For example, if you set `GHOSTTY_RESOURCES_DIR`
+/// variables set by Nubb. For example, if you set `NUBB_RESOURCES_DIR`
 /// then the value you set here will override the value Nubb typically
 /// automatically injects.
 ///
@@ -3330,6 +3330,10 @@ keybind: Keybinds = .{},
 /// features. An option exists in vim to modify this: `:set
 /// keyprotocol=ghostty:kitty`, however a bug in the implementation prevents it
 /// from working properly. https://github.com/vim/vim/pull/13211 fixes this.
+///
+/// The default intentionally stays `xterm-ghostty` (not a Nubb name): the
+/// terminfo entry, remote hosts with that entry installed, and other
+/// software (for example Claude Code) match this exact value.
 term: []const u8 = "xterm-ghostty",
 
 /// String to send when we receive `ENQ` (`0x05`) from the command that we are

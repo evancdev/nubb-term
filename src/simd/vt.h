@@ -1,8 +1,8 @@
-#if defined(GHOSTTY_SIMD_VT_H_) == defined(HWY_TARGET_TOGGLE)
-#ifdef GHOSTTY_SIMD_VT_H_
-#undef GHOSTTY_SIMD_VT_H_
+#if defined(NUBB_SIMD_VT_H_) == defined(HWY_TARGET_TOGGLE)
+#ifdef NUBB_SIMD_VT_H_
+#undef NUBB_SIMD_VT_H_
 #else
-#define GHOSTTY_SIMD_VT_H_
+#define NUBB_SIMD_VT_H_
 #endif
 
 #include <hwy/highway.h>
@@ -27,4 +27,4 @@ typedef void (*PrintFunc)(const char32_t* chars, size_t count);
 
 #endif  // HWY_ONCE
 
-#endif  // GHOSTTY_SIMD_VT_H_
+#endif  // NUBB_SIMD_VT_H_

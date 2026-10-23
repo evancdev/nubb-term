@@ -20,16 +20,16 @@ if [[ "$-" != *i* ]]; then builtin return; fi
 
 # When automatic shell integration is active, we were started in POSIX
 # mode and need to manually recreate the bash startup sequence.
-if [ -n "$GHOSTTY_BASH_INJECT" ]; then
+if [ -n "$NUBB_BASH_INJECT" ]; then
   # Store a temporary copy of our startup flags and unset these global
   # environment variables so we can safely handle reentrancy.
-  builtin declare __ghostty_bash_flags="$GHOSTTY_BASH_INJECT"
-  builtin unset ENV GHOSTTY_BASH_INJECT
+  builtin declare __nubb_bash_flags="$NUBB_BASH_INJECT"
+  builtin unset ENV NUBB_BASH_INJECT
 
   # Restore an existing ENV that was replaced by the shell integration code.
-  if [[ -n "$GHOSTTY_BASH_ENV" ]]; then
-    builtin export ENV=$GHOSTTY_BASH_ENV
-    builtin unset GHOSTTY_BASH_ENV
+  if [[ -n "$NUBB_BASH_ENV" ]]; then
+    builtin export ENV=$NUBB_BASH_ENV
+    builtin unset NUBB_BASH_ENV
   fi
 
   # Restore bash's default 'posix' behavior. Also reset 'inherit_errexit',
@@ -38,56 +38,56 @@ if [ -n "$GHOSTTY_BASH_INJECT" ]; then
   builtin shopt -u inherit_errexit 2>/dev/null
 
   # Unexport HISTFILE if it was set by the shell integration code.
-  if [[ -n "$GHOSTTY_BASH_UNEXPORT_HISTFILE" ]]; then
+  if [[ -n "$NUBB_BASH_UNEXPORT_HISTFILE" ]]; then
     builtin export -n HISTFILE
-    builtin unset GHOSTTY_BASH_UNEXPORT_HISTFILE
+    builtin unset NUBB_BASH_UNEXPORT_HISTFILE
   fi
 
   # Manually source the startup files. See INVOCATION in bash(1) and
   # run_startup_files() in shell.c in the Bash source code.
   if builtin shopt -q login_shell; then
-    if [[ $__ghostty_bash_flags != *"--noprofile"* ]]; then
+    if [[ $__nubb_bash_flags != *"--noprofile"* ]]; then
       [ -r /etc/profile ] && builtin source "/etc/profile"
-      for __ghostty_rcfile in "$HOME/.bash_profile" "$HOME/.bash_login" "$HOME/.profile"; do
-        [ -r "$__ghostty_rcfile" ] && {
-          builtin source "$__ghostty_rcfile"
+      for __nubb_rcfile in "$HOME/.bash_profile" "$HOME/.bash_login" "$HOME/.profile"; do
+        [ -r "$__nubb_rcfile" ] && {
+          builtin source "$__nubb_rcfile"
           break
         }
       done
     fi
   else
-    if [[ $__ghostty_bash_flags != *"--norc"* ]]; then
+    if [[ $__nubb_bash_flags != *"--norc"* ]]; then
       # The location of the system bashrc is determined at bash build
       # time via -DSYS_BASHRC and can therefore vary across distros:
       #  Arch, Debian, Ubuntu use /etc/bash.bashrc
       #  Fedora uses /etc/bashrc sourced from ~/.bashrc instead of SYS_BASHRC
       #  Void Linux uses /etc/bash/bashrc
       #  Nixos uses /etc/bashrc
-      for __ghostty_rcfile in /etc/bash.bashrc /etc/bash/bashrc /etc/bashrc; do
-        [ -r "$__ghostty_rcfile" ] && {
-          builtin source "$__ghostty_rcfile"
+      for __nubb_rcfile in /etc/bash.bashrc /etc/bash/bashrc /etc/bashrc; do
+        [ -r "$__nubb_rcfile" ] && {
+          builtin source "$__nubb_rcfile"
           break
         }
       done
-      if [[ -z "$GHOSTTY_BASH_RCFILE" ]]; then GHOSTTY_BASH_RCFILE="$HOME/.bashrc"; fi
-      [ -r "$GHOSTTY_BASH_RCFILE" ] && builtin source "$GHOSTTY_BASH_RCFILE"
+      if [[ -z "$NUBB_BASH_RCFILE" ]]; then NUBB_BASH_RCFILE="$HOME/.bashrc"; fi
+      [ -r "$NUBB_BASH_RCFILE" ] && builtin source "$NUBB_BASH_RCFILE"
     fi
   fi
 
-  builtin unset __ghostty_rcfile
-  builtin unset __ghostty_bash_flags
-  builtin unset GHOSTTY_BASH_RCFILE
+  builtin unset __nubb_rcfile
+  builtin unset __nubb_bash_flags
+  builtin unset NUBB_BASH_RCFILE
 fi
 
 # Add Nubb binary to PATH if the path feature is enabled
-if [[ "$GHOSTTY_SHELL_FEATURES" == *"path"* && -n "$GHOSTTY_BIN_DIR" ]]; then
-  if [[ ":$PATH:" != *":$GHOSTTY_BIN_DIR:"* ]]; then
-    export PATH="$PATH:$GHOSTTY_BIN_DIR"
+if [[ "$NUBB_SHELL_FEATURES" == *"path"* && -n "$NUBB_BIN_DIR" ]]; then
+  if [[ ":$PATH:" != *":$NUBB_BIN_DIR:"* ]]; then
+    export PATH="$PATH:$NUBB_BIN_DIR"
   fi
 fi
 
 # Sudo
-if [[ "$GHOSTTY_SHELL_FEATURES" == *"sudo"* && -n "$TERMINFO" ]]; then
+if [[ "$NUBB_SHELL_FEATURES" == *"sudo"* && -n "$TERMINFO" ]]; then
   # Wrap `sudo` command to ensure Nubb terminfo is preserved.
   #
   # This approach supports wrapping a `sudo` alias, but the alias definition
@@ -118,26 +118,26 @@ fi
 #
 # Wrap `ssh` with `ghostty +ssh` and translate the shell-integration
 # feature flags into command options.
-if [[ "$GHOSTTY_SHELL_FEATURES" == *ssh-* ]]; then
+if [[ "$NUBB_SHELL_FEATURES" == *ssh-* ]]; then
   function ssh() {
     builtin local -a flags
     flags=()
-    [[ "$GHOSTTY_SHELL_FEATURES" != *ssh-env* ]] && flags+=(--forward-env=false)
-    [[ "$GHOSTTY_SHELL_FEATURES" != *ssh-terminfo* ]] && flags+=(--terminfo=false)
-    "$GHOSTTY_BIN_DIR/ghostty" +ssh "${flags[@]}" -- "$@"
+    [[ "$NUBB_SHELL_FEATURES" != *ssh-env* ]] && flags+=(--forward-env=false)
+    [[ "$NUBB_SHELL_FEATURES" != *ssh-terminfo* ]] && flags+=(--terminfo=false)
+    "$NUBB_BIN_DIR/ghostty" +ssh "${flags[@]}" -- "$@"
   }
 fi
 
 # This is set to 1 when we're executing a command so that we don't
 # send prompt marks multiple times.
-_ghostty_executing=""
-_ghostty_last_reported_cwd=""
+_nubb_executing=""
+_nubb_last_reported_cwd=""
 
-function __ghostty_precmd() {
+function __nubb_precmd() {
   local ret="${1:-$?}"
-  if test "$_ghostty_executing" != "0"; then
-    _GHOSTTY_SAVE_PS1="$PS1"
-    _GHOSTTY_SAVE_PS2="$PS2"
+  if test "$_nubb_executing" != "0"; then
+    _NUBB_SAVE_PS1="$PS1"
+    _NUBB_SAVE_PS2="$PS2"
 
     # Use 133;P (not 133;A) inside PS1 to avoid fresh-line behavior on
     # readline redraws (e.g., vi mode switches, Ctrl-L). The initial
@@ -158,21 +158,21 @@ function __ghostty_precmd() {
     fi
 
     # Cursor
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *"cursor"* ]]; then
+    if [[ "$NUBB_SHELL_FEATURES" == *"cursor"* ]]; then
       builtin local cursor=5  # blinking bar
-      [[ "$GHOSTTY_SHELL_FEATURES" == *"cursor:steady"* ]] && cursor=6  # steady bar
+      [[ "$NUBB_SHELL_FEATURES" == *"cursor:steady"* ]] && cursor=6  # steady bar
 
       [[ "$PS1" != *"\[\e[${cursor} q\]"* ]] && PS1=$PS1"\[\e[${cursor} q\]"
       [[ "$PS0" != *'\[\e[0 q\]'* ]] && PS0=$PS0'\[\e[0 q\]' # reset
     fi
 
     # Title (working directory)
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *"title"* ]]; then
+    if [[ "$NUBB_SHELL_FEATURES" == *"title"* ]]; then
       PS1=$PS1'\[\e]2;\w\a\]'
     fi
   fi
 
-  if test "$_ghostty_executing" != ""; then
+  if test "$_nubb_executing" != ""; then
     # End of current command. Report its status.
     builtin printf "\e]133;D;%s;aid=%s\a" "$ret" "$BASHPID"
   fi
@@ -191,58 +191,58 @@ function __ghostty_precmd() {
   # unfortunately bash provides no hooks to detect cwd changes
   # in particular this means cwd reporting will not happen for a
   # command like cd /test && cat. PS0 is evaluated before cd is run.
-  if [[ "$_ghostty_last_reported_cwd" != "$PWD" ]]; then
-    _ghostty_last_reported_cwd="$PWD"
+  if [[ "$_nubb_last_reported_cwd" != "$PWD" ]]; then
+    _nubb_last_reported_cwd="$PWD"
     builtin printf "\e]7;kitty-shell-cwd://%s%s\a" "$HOSTNAME" "$PWD"
   fi
 
-  _ghostty_executing=0
+  _nubb_executing=0
 }
 
-function __ghostty_preexec() {
+function __nubb_preexec() {
   builtin local cmd="$1"
 
-  PS1="$_GHOSTTY_SAVE_PS1"
-  PS2="$_GHOSTTY_SAVE_PS2"
+  PS1="$_NUBB_SAVE_PS1"
+  PS2="$_NUBB_SAVE_PS2"
 
   # Title (current command)
-  if [[ -n $cmd && "$GHOSTTY_SHELL_FEATURES" == *"title"* ]]; then
+  if [[ -n $cmd && "$NUBB_SHELL_FEATURES" == *"title"* ]]; then
     builtin printf "\e]2;%s\a" "${cmd//[[:cntrl:]]/}"
   fi
 
   # End of input, start of output.
   builtin printf "\e]133;C;\a"
-  _ghostty_executing=1
+  _nubb_executing=1
 }
 
 if (( BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 4) )); then
-  __ghostty_preexec_hook() {
+  __nubb_preexec_hook() {
     builtin local cmd
     cmd=$(LC_ALL=C HISTTIMEFORMAT='' builtin history 1)
     cmd="${cmd#*[[:digit:]][* ] }"  # remove leading history number
-    [[ -n "$cmd" ]] && __ghostty_preexec "$cmd"
+    [[ -n "$cmd" ]] && __nubb_preexec "$cmd"
   }
 
   # Bash 5.1+ restores the command status for each PROMPT_COMMAND array entry.
   # Scalar values need to save and restore it before existing commands run.
-  __ghostty_restore_status() {
+  __nubb_restore_status() {
     builtin return "$1"
   }
 
-  __ghostty_hook() {
-    builtin local ret="${__ghostty_status:-$?}"
-    builtin unset __ghostty_status
-    __ghostty_precmd "$ret"
+  __nubb_hook() {
+    builtin local ret="${__nubb_status:-$?}"
+    builtin unset __nubb_status
+    __nubb_precmd "$ret"
 
     # Append preexec hook to PS0 if not already present.
     # Use function substitution in 5.3+, otherwise command substitution.
-    if [[ "$PS0" != *"__ghostty_preexec_hook"* ]]; then
+    if [[ "$PS0" != *"__nubb_preexec_hook"* ]]; then
       if (( BASH_VERSINFO[0] > 5 || (BASH_VERSINFO[0] == 5 && BASH_VERSINFO[1] >= 3) )); then
         # shellcheck disable=SC2016
-        PS0+='${ __ghostty_preexec_hook; }'
+        PS0+='${ __nubb_preexec_hook; }'
       else
         # shellcheck disable=SC2016
-        PS0+='$(__ghostty_preexec_hook >/dev/tty)'
+        PS0+='$(__nubb_preexec_hook >/dev/tty)'
       fi
     fi
   }
@@ -256,23 +256,23 @@ if (( BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 4) )
   # errors from inside our hooks, but those are all terminal escape sequences
   # and non-actionable.
   # shellcheck disable=SC2128,SC2178,SC2179
-  if [[ "${PROMPT_COMMAND[*]:-}" != *"__ghostty_hook 2>/dev/null"* ]]; then
+  if [[ "${PROMPT_COMMAND[*]:-}" != *"__nubb_hook 2>/dev/null"* ]]; then
     if [[ -z "${PROMPT_COMMAND[*]}" ]]; then
       if (( BASH_VERSINFO[0] > 5 || (BASH_VERSINFO[0] == 5 && BASH_VERSINFO[1] >= 1) )); then
-        PROMPT_COMMAND=("__ghostty_hook 2>/dev/null")
+        PROMPT_COMMAND=("__nubb_hook 2>/dev/null")
       else
-        PROMPT_COMMAND="__ghostty_hook 2>/dev/null"
+        PROMPT_COMMAND="__nubb_hook 2>/dev/null"
       fi
     elif [[ $(builtin declare -p PROMPT_COMMAND 2>/dev/null) == "declare -a"* ]]; then
-      PROMPT_COMMAND+=("__ghostty_hook 2>/dev/null")
+      PROMPT_COMMAND+=("__nubb_hook 2>/dev/null")
     else
-      PROMPT_COMMAND='__ghostty_status=$?;if builtin declare -F __ghostty_restore_status >/dev/null;then __ghostty_restore_status "$__ghostty_status";else (exit "$__ghostty_status");fi;'"${PROMPT_COMMAND}"
+      PROMPT_COMMAND='__nubb_status=$?;if builtin declare -F __nubb_restore_status >/dev/null;then __nubb_restore_status "$__nubb_status";else (exit "$__nubb_status");fi;'"${PROMPT_COMMAND}"
       [[ "${PROMPT_COMMAND}" =~ (\;[[:space:]]*|$'\n')$ ]] || PROMPT_COMMAND+=";"
-      PROMPT_COMMAND+="__ghostty_hook 2>/dev/null"
+      PROMPT_COMMAND+="__nubb_hook 2>/dev/null"
     fi
   fi
 else
   builtin source "$(dirname -- "${BASH_SOURCE[0]}")/bash-preexec.sh"
-  preexec_functions+=(__ghostty_preexec)
-  precmd_functions+=(__ghostty_precmd)
+  preexec_functions+=(__nubb_preexec)
+  precmd_functions+=(__nubb_precmd)
 fi

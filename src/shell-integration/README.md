@@ -14,17 +14,17 @@ README or [ghostty.org](https://ghostty.org/docs)
 
 Automatic [Bash](https://www.gnu.org/software/bash/) shell integration works by
 starting Bash in POSIX mode and using the `ENV` environment variable to load
-our integration script (`bash/ghostty.bash`). This prevents Bash from loading
+our integration script (`bash/nubb.bash`). This prevents Bash from loading
 its normal startup files, which becomes our script's responsibility (along with
 disabling POSIX mode).
 
-Bash shell integration can also be sourced manually from `bash/ghostty.bash`.
+Bash shell integration can also be sourced manually from `bash/nubb.bash`.
 This also works for older versions of Bash.
 
 ```bash
 # Nubb shell integration for Bash. This must be at the top of your bashrc!
-if [ -n "${GHOSTTY_RESOURCES_DIR}" ]; then
-    builtin source "${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
+if [ -n "${NUBB_RESOURCES_DIR}" ]; then
+    builtin source "${NUBB_RESOURCES_DIR}/shell-integration/bash/nubb.bash"
 fi
 ```
 
@@ -58,8 +58,8 @@ loaded. In this case, the shell integration needs to be loaded manually.
 To load the Zsh shell integration manually:
 
 ```zsh
-if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
-  source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
+if [[ -n $NUBB_RESOURCES_DIR ]]; then
+  source "$NUBB_RESOURCES_DIR"/shell-integration/zsh/nubb-integration
 fi
 ```
 

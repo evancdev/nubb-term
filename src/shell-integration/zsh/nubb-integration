@@ -18,16 +18,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #
-# Enables integration between zsh and ghostty.
+# Enables integration between zsh and nubb.
 #
 # This is an autoloadable function. It's invoked automatically in shells
 # directly spawned by Nubb but not in any other shells. For example, running
 # `exec zsh`, `sudo -E zsh`, `tmux`, or plain `zsh` will create a shell where
-# ghostty-integration won't automatically run. Zsh users who want integration with
+# nubb-integration won't automatically run. Zsh users who want integration with
 # Nubb in all shells should add the following lines to their .zshrc:
 #
-#   if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
-#     source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
+#   if [[ -n $NUBB_RESOURCES_DIR ]]; then
+#     source "$NUBB_RESOURCES_DIR"/shell-integration/zsh/nubb-integration
 #   fi
 #
 # Implementation note: We can assume that alias expansion is disabled in this
@@ -41,24 +41,24 @@ _entrypoint() {
     builtin emulate -L zsh -o no_warn_create_global -o no_aliases
 
     [[ -o interactive ]]              || builtin return 0  # non-interactive shell
-    (( ! $+_ghostty_state ))          || builtin return 0  # already initialized
+    (( ! $+_nubb_state ))          || builtin return 0  # already initialized
 
     # We require zsh 5.1+ (released Sept 2015) for features like functions_source,
     # introspection arrays, and array pattern substitution.
     if ! { builtin autoload -- is-at-least 2>/dev/null && is-at-least 5.1; }; then
-        builtin echo "Zsh ${ZSH_VERSION} is too old for ghostty shell integration (5.1+ required)" >&2
+        builtin echo "Zsh ${ZSH_VERSION} is too old for nubb shell integration (5.1+ required)" >&2
         builtin return 1
     fi
 
     # 0: no OSC 133 [AC] marks have been written yet.
     # 1: the last written OSC 133 C has not been closed with D yet.
     # 2: none of the above.
-    builtin typeset -gi _ghostty_state
+    builtin typeset -gi _nubb_state
 
     # Attempt to create a writable file descriptor to the TTY so that we can print
     # to the TTY later even when STDOUT is redirected. This code is fairly subtle.
     #
-    # - It's tempting to do `[[ -t 1 ]] && exec {_ghostty_state}>&1` but we cannot do this
+    # - It's tempting to do `[[ -t 1 ]] && exec {_nubb_state}>&1` but we cannot do this
     #   because it'll create a file descriptor >= 10 without O_CLOEXEC. This file
     #   descriptor will leak to child processes.
     # - If we do `exec {3}>&1`, the file descriptor won't leak to the child processes
@@ -67,34 +67,34 @@ _entrypoint() {
     # - Zsh doesn't expose dup3, which would have allowed us to copy STDOUT with
     #   O_CLOEXEC. The only way to create a file descriptor with O_CLOEXEC is via
     #   sysopen.
-    # - `zmodload zsh/system` and `sysopen -o cloexec -wu _ghostty_fd -- /dev/tty` can
+    # - `zmodload zsh/system` and `sysopen -o cloexec -wu _nubb_fd -- /dev/tty` can
     #   fail with an error message to STDERR (the latter can happen even if /dev/tty
     #   is writable), hence the redirection of STDERR. We do it for the whole block
     #   for performance reasons (redirections are slow).
-    # - We must open the file descriptor right here rather than in _ghostty_deferred_init
+    # - We must open the file descriptor right here rather than in _nubb_deferred_init
     #   because there are broken zsh plugins out there that run `exec {fd}< <(cmd)`
     #   and then close the file descriptor more than once while suppressing errors.
     #   This could end up closing our file descriptor if we opened it in
-    #   _ghostty_deferred_init.
-    typeset -gi _ghostty_fd
+    #   _nubb_deferred_init.
+    typeset -gi _nubb_fd
     {
         builtin zmodload zsh/system && (( $+builtins[sysopen] )) && {
-            { [[ -w     $TTY ]] && builtin sysopen -o cloexec -wu _ghostty_fd --     $TTY } ||
-            { [[ -w /dev/tty ]] && builtin sysopen -o cloexec -wu _ghostty_fd -- /dev/tty }
+            { [[ -w     $TTY ]] && builtin sysopen -o cloexec -wu _nubb_fd --     $TTY } ||
+            { [[ -w /dev/tty ]] && builtin sysopen -o cloexec -wu _nubb_fd -- /dev/tty }
         }
-    } 2>/dev/null || (( _ghostty_fd = 1 ))
+    } 2>/dev/null || (( _nubb_fd = 1 ))
 
     # Defer initialization so that other zsh init files can be configure
     # the integration.
     builtin typeset -ag precmd_functions
-    precmd_functions+=(_ghostty_deferred_init)
+    precmd_functions+=(_nubb_deferred_init)
 }
 
-_ghostty_deferred_init() {
+_nubb_deferred_init() {
     builtin emulate -L zsh -o no_warn_create_global -o no_aliases
 
     # Enable semantic markup with OSC 133.
-    _ghostty_precmd() {
+    _nubb_precmd() {
         builtin local -i cmd_status=$?
         builtin emulate -L zsh -o no_warn_create_global -o no_aliases
 
@@ -110,21 +110,21 @@ _ghostty_deferred_init() {
             # with LF and prompst_sp is set (it is by default). In this case
             # we'll incorrectly state that '%' from prompt_sp is a part of the
             # command's output.
-            if (( _ghostty_state == 1 )); then
+            if (( _nubb_state == 1 )); then
                 # The last written OSC 133 C has not been closed with D yet.
                 # Close it and supply status.
-                builtin print -nu $_ghostty_fd '\e]133;D;'$cmd_status'\a'
-                (( _ghostty_state = 2 ))
-            elif (( _ghostty_state == 2 )); then
+                builtin print -nu $_nubb_fd '\e]133;D;'$cmd_status'\a'
+                (( _nubb_state = 2 ))
+            elif (( _nubb_state == 2 )); then
                 # There might be an unclosed OSC 133 C. Close that.
-                builtin print -nu $_ghostty_fd '\e]133;D\a'
+                builtin print -nu $_nubb_fd '\e]133;D\a'
             fi
         fi
 
         builtin local mark1=$'%{\e]133;A;cl=line\a%}'
         if [[ -o prompt_percent ]]; then
             builtin typeset -g precmd_functions
-            if [[ ${precmd_functions[-1]} == _ghostty_precmd ]]; then
+            if [[ ${precmd_functions[-1]} == _nubb_precmd ]]; then
                 # This is the best case for us: we can add our marks to PS1 and
                 # PS2. This way our marks will be printed whenever zsh
                 # redisplays prompt: on reset-prompt, on SIGWINCH, and on
@@ -139,18 +139,18 @@ _ghostty_deferred_init() {
                 # If PS1 was modified (by a theme, async update, etc.), we
                 # keep the modified version, prioritizing the theme's changes.
                 builtin local ps1_changed=0
-                if [[ -n ${_ghostty_saved_ps1+x} ]]; then
-                    if [[ $PS1 == $_ghostty_marked_ps1 ]]; then
-                        PS1=$_ghostty_saved_ps1
-                        PS2=$_ghostty_saved_ps2
-                    elif [[ $PS1 != $_ghostty_saved_ps1 ]]; then
+                if [[ -n ${_nubb_saved_ps1+x} ]]; then
+                    if [[ $PS1 == $_nubb_marked_ps1 ]]; then
+                        PS1=$_nubb_saved_ps1
+                        PS2=$_nubb_saved_ps2
+                    elif [[ $PS1 != $_nubb_saved_ps1 ]]; then
                         ps1_changed=1
                     fi
                 fi
 
                 # Save the clean PS1/PS2 before we add marks.
-                _ghostty_saved_ps1=$PS1
-                _ghostty_saved_ps2=$PS2
+                _nubb_saved_ps1=$PS1
+                _nubb_saved_ps2=$PS2
 
                 # Add our marks. Since we always start from a clean PS1
                 # (either restored above or freshly set by a theme), we can
@@ -180,8 +180,8 @@ _ghostty_deferred_init() {
 
                 # Save the marked PS1 so we can detect modifications
                 # by other hooks in the next cycle.
-                _ghostty_marked_ps1=$PS1
-                (( _ghostty_state = 2 ))
+                _nubb_marked_ps1=$PS1
+                (( _nubb_state = 2 ))
             else
                 # If our precmd hook is not the last, we cannot rely on prompt
                 # changes to stick, so we don't even try. At least we can move
@@ -189,36 +189,36 @@ _ghostty_deferred_init() {
                 # another piece of code that wants to take this privileged
                 # position, this won't work well. We'll break them as much as
                 # they are breaking us.
-                precmd_functions=(${precmd_functions:#_ghostty_precmd} _ghostty_precmd)
+                precmd_functions=(${precmd_functions:#_nubb_precmd} _nubb_precmd)
                 # Plugins that invoke precmd hooks from zle do that before zle
                 # is trashed. This means that the cursor is in the middle of
                 # BUFFER and we cannot print our mark there. Prompt might
                 # already have a mark, so the following reset-prompt will write
                 # it. If it doesn't, there is nothing we can do.
                 if ! builtin zle; then
-                    builtin print -rnu $_ghostty_fd -- $mark1[3,-3]
-                    (( _ghostty_state = 2 ))
+                    builtin print -rnu $_nubb_fd -- $mark1[3,-3]
+                    (( _nubb_state = 2 ))
                 fi
             fi
         elif ! builtin zle; then
             # Without prompt_percent we cannot patch prompt. Just print the
             # mark, except when we are invoked from zle. In the latter case we
             # cannot do anything.
-            builtin print -rnu $_ghostty_fd -- $mark1[3,-3]
-            (( _ghostty_state = 2 ))
+            builtin print -rnu $_nubb_fd -- $mark1[3,-3]
+            (( _nubb_state = 2 ))
         fi
     }
 
-    _ghostty_preexec() {
+    _nubb_preexec() {
         builtin emulate -L zsh -o no_warn_create_global -o no_aliases
 
         # Restore the original PS1/PS2 if nothing else has modified them
         # since our precmd added marks. This ensures other preexec hooks
         # see a clean PS1 without our marks. If PS1 was modified (e.g.,
         # by an async theme update), we leave it alone.
-        if [[ -n ${_ghostty_saved_ps1+x} && $PS1 == $_ghostty_marked_ps1 ]]; then
-            PS1=$_ghostty_saved_ps1
-            PS2=$_ghostty_saved_ps2
+        if [[ -n ${_nubb_saved_ps1+x} && $PS1 == $_nubb_marked_ps1 ]]; then
+            PS1=$_nubb_saved_ps1
+            PS2=$_nubb_saved_ps2
         fi
 
         # This will work incorrectly in the presence of a preexec hook that
@@ -226,44 +226,44 @@ _ghostty_deferred_init() {
         # its preexec hook before us, we'll incorrectly mark its output as
         # belonging to the command (as if the user typed it into zle) rather
         # than command output.
-        builtin print -nu $_ghostty_fd '\e]133;C\a'
-        (( _ghostty_state = 1 ))
+        builtin print -nu $_nubb_fd '\e]133;C\a'
+        (( _nubb_state = 1 ))
     }
 
     # Enable reporting current working dir to terminal. Nubb supports
     # the kitty-shell-cwd format.
-    _ghostty_report_pwd() { builtin print -nu $_ghostty_fd '\e]7;kitty-shell-cwd://'"$HOST""$PWD"'\a'; }
-    chpwd_functions=(${chpwd_functions[@]} "_ghostty_report_pwd")
+    _nubb_report_pwd() { builtin print -nu $_nubb_fd '\e]7;kitty-shell-cwd://'"$HOST""$PWD"'\a'; }
+    chpwd_functions=(${chpwd_functions[@]} "_nubb_report_pwd")
     # An executed program could change cwd and report the changed cwd, so also report cwd at each new prompt
     # as in this case chpwd_functions is insufficient. chpwd_functions is still needed for things like: cd x && something
-    functions[_ghostty_precmd]+="
-        _ghostty_report_pwd"
-    _ghostty_report_pwd
+    functions[_nubb_precmd]+="
+        _nubb_report_pwd"
+    _nubb_report_pwd
 
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *"title"* ]]; then
+    if [[ "$NUBB_SHELL_FEATURES" == *"title"* ]]; then
       # Enable terminal title changes, formatted for user-friendly display.
-      functions[_ghostty_precmd]+="
-          builtin print -rnu $_ghostty_fd \$'\\e]2;'\"\${(%):-%(4~|…/%3~|%~)}\"\$'\\a'"
-      functions[_ghostty_preexec]+="
-          builtin print -rnu $_ghostty_fd \$'\\e]2;'\"\${1//[[:cntrl:]]}\"\$'\\a'"
+      functions[_nubb_precmd]+="
+          builtin print -rnu $_nubb_fd \$'\\e]2;'\"\${(%):-%(4~|…/%3~|%~)}\"\$'\\a'"
+      functions[_nubb_preexec]+="
+          builtin print -rnu $_nubb_fd \$'\\e]2;'\"\${1//[[:cntrl:]]}\"\$'\\a'"
     fi
 
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *"cursor"* ]]; then
+    if [[ "$NUBB_SHELL_FEATURES" == *"cursor"* ]]; then
       # Enable cursor shape changes depending on the current keymap.
       # This implementation leaks blinking block cursor into external commands
       # executed from zle. For example, users of fzf-based widgets may find
       # themselves with a blinking block cursor within fzf.
-      _ghostty_zle_line_init _ghostty_zle_line_finish _ghostty_zle_keymap_select() {
+      _nubb_zle_line_init _nubb_zle_line_finish _nubb_zle_keymap_select() {
         builtin local steady=0
-        [[ "$GHOSTTY_SHELL_FEATURES" == *"cursor:steady"* ]] && steady=1
+        [[ "$NUBB_SHELL_FEATURES" == *"cursor:steady"* ]] && steady=1
         case ${KEYMAP-} in
-            vicmd|visual) builtin print -nu "$_ghostty_fd" "\e[$(( 1 + steady )) q" ;; # block
-            *)            builtin print -nu "$_ghostty_fd" "\e[$(( 5 + steady )) q" ;; # bar
+            vicmd|visual) builtin print -nu "$_nubb_fd" "\e[$(( 1 + steady )) q" ;; # block
+            *)            builtin print -nu "$_nubb_fd" "\e[$(( 5 + steady )) q" ;; # bar
         esac
       }
       # Restore the default shape before executing an external command
-      functions[_ghostty_preexec]+="
-	  builtin print -rnu $_ghostty_fd \$'\\e[0 q'"
+      functions[_nubb_preexec]+="
+	  builtin print -rnu $_nubb_fd \$'\\e[0 q'"
     fi
 
     # Emit semantic prompt markers at line-init if PS1 doesn't contain our
@@ -272,22 +272,22 @@ _ghostty_deferred_init() {
     # We use 133;P instead of 133;A to avoid fresh-line behavior which would
     # disrupt the display since the prompt has already been drawn. We also
     # emit 133;B to mark the input area, which is needed for click-to-move.
-    (( $+functions[_ghostty_zle_line_init] )) || _ghostty_zle_line_init() { builtin true; }
-    functions[_ghostty_zle_line_init]="
+    (( $+functions[_nubb_zle_line_init] )) || _nubb_zle_line_init() { builtin true; }
+    functions[_nubb_zle_line_init]="
         if [[ \$PS1 != *$'%{\\e]133;A'* ]]; then
-            builtin print -nu \$_ghostty_fd '\\e]133;P;k=i\\a\\e]133;B\\a'
+            builtin print -nu \$_nubb_fd '\\e]133;P;k=i\\a\\e]133;B\\a'
         fi
-    "${functions[_ghostty_zle_line_init]}
+    "${functions[_nubb_zle_line_init]}
 
     # Add Nubb binary to PATH if the path feature is enabled
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *"path"* ]] && [[ -n "$GHOSTTY_BIN_DIR" ]]; then
-      if [[ ":$PATH:" != *":$GHOSTTY_BIN_DIR:"* ]]; then
-        builtin export PATH="$PATH:$GHOSTTY_BIN_DIR"
+    if [[ "$NUBB_SHELL_FEATURES" == *"path"* ]] && [[ -n "$NUBB_BIN_DIR" ]]; then
+      if [[ ":$PATH:" != *":$NUBB_BIN_DIR:"* ]]; then
+        builtin export PATH="$PATH:$NUBB_BIN_DIR"
       fi
     fi
 
     # Sudo
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *"sudo"* ]] && [[ -n "$TERMINFO" ]]; then
+    if [[ "$NUBB_SHELL_FEATURES" == *"sudo"* ]] && [[ -n "$TERMINFO" ]]; then
       # Wrap `sudo` command to ensure Nubb terminfo is preserved
       function sudo() {
         builtin local sudo_has_sudoedit_flags="no"
@@ -314,12 +314,12 @@ _ghostty_deferred_init() {
     #
     # Wrap `ssh` with `ghostty +ssh` and translate the shell-integration
     # feature flags into command options.
-    if [[ "$GHOSTTY_SHELL_FEATURES" == *ssh-* ]]; then
+    if [[ "$NUBB_SHELL_FEATURES" == *ssh-* ]]; then
       function ssh() {
         local flags=()
-        [[ "$GHOSTTY_SHELL_FEATURES" != *ssh-env* ]] && flags+=(--forward-env=false)
-        [[ "$GHOSTTY_SHELL_FEATURES" != *ssh-terminfo* ]] && flags+=(--terminfo=false)
-        "$GHOSTTY_BIN_DIR/ghostty" +ssh $flags -- "$@"
+        [[ "$NUBB_SHELL_FEATURES" != *ssh-env* ]] && flags+=(--forward-env=false)
+        [[ "$NUBB_SHELL_FEATURES" != *ssh-terminfo* ]] && flags+=(--terminfo=false)
+        "$NUBB_BIN_DIR/ghostty" +ssh $flags -- "$@"
       }
     fi
 
@@ -340,7 +340,7 @@ _ghostty_deferred_init() {
     # horrible thing instead.
     builtin local hook func widget orig_widget flag
     for hook in line-init line-finish keymap-select; do
-        func=_ghostty_zle_${hook/-/_}
+        func=_nubb_zle_${hook/-/_}
         (( $+functions[$func] )) || builtin continue
         widget=zle-$hook
         if [[ $widgets[$widget] == user:azhw:* &&
@@ -358,7 +358,7 @@ _ghostty_deferred_init() {
                 #
                 # Note: The leading dot is to work around bugs in
                 # zsh-syntax-highlighting.
-                orig_widget=._ghostty_orig_$widget
+                orig_widget=._nubb_orig_$widget
                 builtin zle -A $widget $orig_widget
                 if [[ $widgets[$widget] == user:* ]]; then
                     # No -w here to preserve $WIDGET within the original widget.
@@ -373,23 +373,23 @@ _ghostty_deferred_init() {
         fi
     done
 
-    if (( $+functions[_ghostty_preexec] )); then
+    if (( $+functions[_nubb_preexec] )); then
         builtin typeset -ag preexec_functions
-        preexec_functions+=(_ghostty_preexec)
+        preexec_functions+=(_nubb_preexec)
     fi
 
     builtin typeset -ag precmd_functions
-    if (( $+functions[_ghostty_precmd] )); then
-        precmd_functions=(${precmd_functions:#_ghostty_deferred_init} _ghostty_precmd)
-        _ghostty_precmd
+    if (( $+functions[_nubb_precmd] )); then
+        precmd_functions=(${precmd_functions:#_nubb_deferred_init} _nubb_precmd)
+        _nubb_precmd
     else
-        precmd_functions=(${precmd_functions:#_ghostty_deferred_init})
+        precmd_functions=(${precmd_functions:#_nubb_deferred_init})
     fi
 
-    # Unfunction _ghostty_deferred_init to save memory. Don't unfunction
-    # ghostty-integration though because decent public functions aren't supposed to
+    # Unfunction _nubb_deferred_init to save memory. Don't unfunction
+    # nubb-integration though because decent public functions aren't supposed to
     # to unfunction themselves when invoked. Unfunctioning is done by calling code.
-    builtin unfunction _ghostty_deferred_init
+    builtin unfunction _nubb_deferred_init
 }
 
 _entrypoint

@@ -23,7 +23,7 @@ pub fn launchedFromDesktop() bool {
             // app bundle (i.e. via open) then we still treat it as if it
             // was launched from the desktop.
             if (build_config.artifact == .lib) lib: {
-                const env = "GHOSTTY_MAC_LAUNCH_SOURCE";
+                const env = "NUBB_MAC_LAUNCH_SOURCE";
                 const source = global.environ().getPosix(env) orelse break :lib;
 
                 // Source can be "app", "cli", or "zig_run". We assume
