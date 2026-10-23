@@ -1,5 +1,5 @@
 //
-//  GhosttyThemeTests.swift
+//  NubbThemeTests.swift
 //  Nubb
 //
 //  Created by luca on 27.10.2025.
@@ -8,12 +8,12 @@
 import AppKit
 import XCTest
 
-final class GhosttyThemeTests: GhosttyCustomConfigCase {
+final class NubbThemeTests: NubbCustomConfigCase {
     override static var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
 
-    let windowTitle = "GhosttyThemeTests"
+    let windowTitle = "NubbThemeTests"
     private func assertTitlebarAppearance(
         _ appearance: XCUIDevice.Appearance,
         for app: XCUIApplication,

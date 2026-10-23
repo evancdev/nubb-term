@@ -182,7 +182,7 @@ pub fn build(b: *std.Build) !void {
             // FIXME: This is not possible after Zig 0.17.
             // run_cmd.setEnvironmentVariable(
             //     "NUBB_RESOURCES_DIR",
-            //     b.getInstallPath(.prefix, "share/ghostty"),
+            //     b.getInstallPath(.prefix, "share/nubb"),
             // );
 
             run_step.dependOn(&run_cmd.step);

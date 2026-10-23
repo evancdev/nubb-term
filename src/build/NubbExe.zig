@@ -1,4 +1,4 @@
-const Ghostty = @This();
+const Exe = @This();
 
 const std = @import("std");
 const Config = @import("Config.zig");
@@ -10,7 +10,7 @@ exe: *std.Build.Step.Compile,
 /// The install step for the executable.
 install_step: *std.Build.Step.InstallArtifact,
 
-pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Ghostty {
+pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Exe {
     const exe: *std.Build.Step.Compile = b.addExecutable(.{
         .name = "nubb",
         .root_module = b.createModule(.{
@@ -43,7 +43,7 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Ghostty
 }
 
 /// Add the nubb exe to the install target.
-pub fn install(self: *const Ghostty) void {
+pub fn install(self: *const Exe) void {
     const b = self.install_step.step.owner;
     b.getInstallStep().dependOn(&self.install_step.step);
 }

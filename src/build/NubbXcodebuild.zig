@@ -1,4 +1,4 @@
-const Ghostty = @This();
+const Xcodebuild = @This();
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -23,7 +23,7 @@ pub fn init(
     b: *std.Build,
     config: *const Config,
     deps: Deps,
-) !Ghostty {
+) !Xcodebuild {
     const xc_config = switch (config.optimize) {
         .debug => "Debug",
         .safe,
@@ -64,7 +64,7 @@ pub fn init(
         step.addArgs(&.{
             "xcodebuild",
             "-target",
-            "Ghostty",
+            "Nubb",
             "-configuration",
             xc_config,
         });
@@ -100,9 +100,9 @@ pub fn init(
             "xcodebuild",
             "test",
             "-scheme",
-            "Ghostty",
+            "Nubb",
             "-skip-testing",
-            "GhosttyUITests",
+            "NubbUITests",
         });
         if (xc_arch) |arch| step.addArgs(&.{ "-arch", arch });
 
@@ -135,7 +135,7 @@ pub fn init(
         disable_save_state.expectExitCode(0);
         disable_save_state.step.dependOn(&build.step);
 
-        const open = RunStep.create(b, "run Ghostty app");
+        const open = RunStep.create(b, "run Nubb app");
         open.has_side_effects = true;
         open.cwd = b.path("");
         open.addArgs(&.{b.fmt(
@@ -178,18 +178,18 @@ pub fn init(
     };
 }
 
-pub fn install(self: *const Ghostty) void {
+pub fn install(self: *const Xcodebuild) void {
     const b = self.copy.step.owner;
     b.getInstallStep().dependOn(&self.copy.step);
 }
 
-pub fn installXcframework(self: *const Ghostty) void {
+pub fn installXcframework(self: *const Xcodebuild) void {
     const b = self.build.step.owner;
     b.getInstallStep().dependOn(&self.build.step);
 }
 
 pub fn addTestStepDependencies(
-    self: *const Ghostty,
+    self: *const Xcodebuild,
     other_step: *std.Build.Step,
 ) void {
     other_step.dependOn(&self.xctest.step);

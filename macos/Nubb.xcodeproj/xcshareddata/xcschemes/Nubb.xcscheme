@@ -16,8 +16,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A5B30530299BEAAA0047F10C"
                BuildableName = "Nubb.app"
-               BlueprintName = "Ghostty"
-               ReferencedContainer = "container:Ghostty.xcodeproj">
+               BlueprintName = "Nubb"
+               ReferencedContainer = "container:Nubb.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,7 +29,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Ghostty.xctestplan"
+            reference = "container:Nubb.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
@@ -40,9 +40,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A54F45F22E1F047A0046BD5C"
-               BuildableName = "GhosttyTests.xctest"
-               BlueprintName = "GhosttyTests"
-               ReferencedContainer = "container:Ghostty.xcodeproj">
+               BuildableName = "NubbTests.xctest"
+               BlueprintName = "NubbTests"
+               ReferencedContainer = "container:Nubb.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -51,9 +51,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "810ACC9E2E9D3301004F8F92"
-               BuildableName = "GhosttyUITests.xctest"
-               BlueprintName = "GhosttyUITests"
-               ReferencedContainer = "container:Ghostty.xcodeproj">
+               BuildableName = "NubbUITests.xctest"
+               BlueprintName = "NubbUITests"
+               ReferencedContainer = "container:Nubb.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -74,8 +74,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A5B30530299BEAAA0047F10C"
             BuildableName = "Nubb.app"
-            BlueprintName = "Ghostty"
-            ReferencedContainer = "container:Ghostty.xcodeproj">
+            BlueprintName = "Nubb"
+            ReferencedContainer = "container:Nubb.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -104,8 +104,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A5B30530299BEAAA0047F10C"
             BuildableName = "Nubb.app"
-            BlueprintName = "Ghostty"
-            ReferencedContainer = "container:Ghostty.xcodeproj">
+            BlueprintName = "Nubb"
+            ReferencedContainer = "container:Nubb.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

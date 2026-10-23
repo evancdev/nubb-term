@@ -54,7 +54,7 @@ pub fn init(
 
         try steps.append(b.allocator, &b.addInstallFile(
             markdown_output,
-            "share/ghostty/doc/" ++ manpage.name ++ "." ++ manpage.section ++ ".md",
+            "share/nubb/doc/" ++ manpage.name ++ "." ++ manpage.section ++ ".md",
         ).step);
 
         const generate_html = b.addSystemCommand(&.{"pandoc"});
@@ -69,7 +69,7 @@ pub fn init(
 
         try steps.append(b.allocator, &b.addInstallFile(
             generate_html.captureStdOut(.{}),
-            "share/ghostty/doc/" ++ manpage.name ++ "." ++ manpage.section ++ ".html",
+            "share/nubb/doc/" ++ manpage.name ++ "." ++ manpage.section ++ ".html",
         ).step);
 
         const generate_manpage = b.addSystemCommand(&.{"pandoc"});

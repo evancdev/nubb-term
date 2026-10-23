@@ -1,6 +1,6 @@
 //
 //  NSPasteboardTests.swift
-//  GhosttyTests
+//  NubbTests
 //
 //  Tests for NSPasteboard.PasteboardType MIME type conversion and
 //  NSPasteboard.getOpinionatedStringContents.

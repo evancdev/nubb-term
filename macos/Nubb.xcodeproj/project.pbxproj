@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55154BE02B33911F001622DC /* ghostty in Resources */ = {isa = PBXBuildFile; fileRef = 55154BDF2B33911F001622DC /* ghostty */; };
-		A553F4142E06EB1600257779 /* Ghostty.icon in Resources */ = {isa = PBXBuildFile; fileRef = A553F4122E06EB1600257779 /* Ghostty.icon */; };
+		55154BE02B33911F001622DC /* nubb in Resources */ = {isa = PBXBuildFile; fileRef = 55154BDF2B33911F001622DC /* nubb */; };
+		A553F4142E06EB1600257779 /* Nubb.icon in Resources */ = {isa = PBXBuildFile; fileRef = A553F4122E06EB1600257779 /* Nubb.icon */; };
 		A56B880B2A840447007A0E29 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A56B880A2A840447007A0E29 /* Carbon.framework */; };
 		A571AB1D2A206FCF00248498 /* NubbKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5D495A1299BEC7E00DD1313 /* NubbKit.xcframework */; };
 		A586167C2B7703CC009BDB1D /* fish in Resources */ = {isa = PBXBuildFile; fileRef = A586167B2B7703CC009BDB1D /* fish */; };
@@ -25,14 +25,14 @@
 			containerPortal = A5B30529299BEAAA0047F10C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = A5B30530299BEAAA0047F10C;
-			remoteInfo = Ghostty;
+			remoteInfo = Nubb;
 		};
 		A54F45F72E1F047A0046BD5C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A5B30529299BEAAA0047F10C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = A5B30530299BEAAA0047F10C;
-			remoteInfo = Ghostty;
+			remoteInfo = Nubb;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -40,20 +40,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3B39CAA42B33949B00DABEB8 /* GhosttyReleaseLocal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GhosttyReleaseLocal.entitlements; sourceTree = "<group>"; };
-		55154BDF2B33911F001622DC /* ghostty */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ghostty; path = "../zig-out/share/ghostty"; sourceTree = "<group>"; };
-		810ACC9F2E9D3301004F8F92 /* GhosttyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GhosttyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A51BFC282B30F26D00E92F16 /* GhosttyDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GhosttyDebug.entitlements; sourceTree = "<group>"; };
-		A54F45F32E1F047A0046BD5C /* GhosttyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GhosttyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A553F4122E06EB1600257779 /* Ghostty.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = Ghostty.icon; path = ../images/Ghostty.icon; sourceTree = SOURCE_ROOT; };
+		3B39CAA42B33949B00DABEB8 /* NubbReleaseLocal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NubbReleaseLocal.entitlements; sourceTree = "<group>"; };
+		55154BDF2B33911F001622DC /* nubb */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nubb; path = "../zig-out/share/nubb"; sourceTree = "<group>"; };
+		810ACC9F2E9D3301004F8F92 /* NubbUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NubbUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A51BFC282B30F26D00E92F16 /* NubbDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NubbDebug.entitlements; sourceTree = "<group>"; };
+		A54F45F32E1F047A0046BD5C /* NubbTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NubbTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A553F4122E06EB1600257779 /* Nubb.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = Nubb.icon; path = ../images/Nubb.icon; sourceTree = SOURCE_ROOT; };
 		A56B880A2A840447007A0E29 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
-		A571AB1C2A206FC600248498 /* Ghostty-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Ghostty-Info.plist"; sourceTree = "<group>"; };
+		A571AB1C2A206FC600248498 /* Nubb-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Nubb-Info.plist"; sourceTree = "<group>"; };
 		A586167B2B7703CC009BDB1D /* fish */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fish; path = "../zig-out/share/fish"; sourceTree = "<group>"; };
 		A5985CE52C33060F00C57AD3 /* man */ = {isa = PBXFileReference; lastKnownFileType = folder; name = man; path = "../zig-out/share/man"; sourceTree = "<group>"; };
 		A5A1F8842A489D6800D1E8BC /* terminfo */ = {isa = PBXFileReference; lastKnownFileType = folder; name = terminfo; path = "../zig-out/share/terminfo"; sourceTree = "<group>"; };
 		A5B30531299BEAAA0047F10C /* Nubb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nubb.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5B30538299BEAAB0047F10C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A5B3053D299BEAAB0047F10C /* Ghostty.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ghostty.entitlements; sourceTree = "<group>"; };
+		A5B3053D299BEAAB0047F10C /* Nubb.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nubb.entitlements; sourceTree = "<group>"; };
 		A5D495A1299BEC7E00DD1313 /* NubbKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = NubbKit.xcframework; sourceTree = "<group>"; };
 		FC5218F92D10FFC7004C93E0 /* zsh */ = {isa = PBXFileReference; lastKnownFileType = folder; name = zsh; path = "../zig-out/share/zsh"; sourceTree = "<group>"; };
 		FC9ABA9B2D0F538D0020D4C8 /* bash-completion */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "bash-completion"; path = "../zig-out/share/bash-completion"; sourceTree = "<group>"; };
@@ -63,7 +63,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		810ACCA02E9D3302004F8F92 /* GhosttyUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = GhosttyUITests; sourceTree = "<group>"; };
+		810ACCA02E9D3302004F8F92 /* NubbUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NubbUITests; sourceTree = "<group>"; };
 		81F82BC72E82815D001EDFA7 /* Sources */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources; sourceTree = "<group>"; };
 		A54F45F42E1F047A0046BD5C /* Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -100,7 +100,7 @@
 			children = (
 				FC9ABA9B2D0F538D0020D4C8 /* bash-completion */,
 				A586167B2B7703CC009BDB1D /* fish */,
-				55154BDF2B33911F001622DC /* ghostty */,
+				55154BDF2B33911F001622DC /* nubb */,
 				A5985CE52C33060F00C57AD3 /* man */,
 				A5A1F8842A489D6800D1E8BC /* terminfo */,
 				FC5218F92D10FFC7004C93E0 /* zsh */,
@@ -111,15 +111,15 @@
 		A5B30528299BEAAA0047F10C = {
 			isa = PBXGroup;
 			children = (
-				A571AB1C2A206FC600248498 /* Ghostty-Info.plist */,
+				A571AB1C2A206FC600248498 /* Nubb-Info.plist */,
 				A5B30538299BEAAB0047F10C /* Assets.xcassets */,
-				A553F4122E06EB1600257779 /* Ghostty.icon */,
-				A5B3053D299BEAAB0047F10C /* Ghostty.entitlements */,
-				A51BFC282B30F26D00E92F16 /* GhosttyDebug.entitlements */,
-				3B39CAA42B33949B00DABEB8 /* GhosttyReleaseLocal.entitlements */,
+				A553F4122E06EB1600257779 /* Nubb.icon */,
+				A5B3053D299BEAAB0047F10C /* Nubb.entitlements */,
+				A51BFC282B30F26D00E92F16 /* NubbDebug.entitlements */,
+				3B39CAA42B33949B00DABEB8 /* NubbReleaseLocal.entitlements */,
 				81F82BC72E82815D001EDFA7 /* Sources */,
 				A54F45F42E1F047A0046BD5C /* Tests */,
-				810ACCA02E9D3302004F8F92 /* GhosttyUITests */,
+				810ACCA02E9D3302004F8F92 /* NubbUITests */,
 				A5D495A3299BECBA00DD1313 /* Frameworks */,
 				A5A1F8862A489D7400D1E8BC /* Resources */,
 				A5B30532299BEAAA0047F10C /* Products */,
@@ -130,8 +130,8 @@
 			isa = PBXGroup;
 			children = (
 				A5B30531299BEAAA0047F10C /* Nubb.app */,
-				A54F45F32E1F047A0046BD5C /* GhosttyTests.xctest */,
-				810ACC9F2E9D3301004F8F92 /* GhosttyUITests.xctest */,
+				A54F45F32E1F047A0046BD5C /* NubbTests.xctest */,
+				810ACC9F2E9D3301004F8F92 /* NubbUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -148,9 +148,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		810ACC9E2E9D3301004F8F92 /* GhosttyUITests */ = {
+		810ACC9E2E9D3301004F8F92 /* NubbUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 810ACCA72E9D3302004F8F92 /* Build configuration list for PBXNativeTarget "GhosttyUITests" */;
+			buildConfigurationList = 810ACCA72E9D3302004F8F92 /* Build configuration list for PBXNativeTarget "NubbUITests" */;
 			buildPhases = (
 				810ACC9B2E9D3301004F8F92 /* Sources */,
 				810ACC9C2E9D3301004F8F92 /* Frameworks */,
@@ -162,18 +162,18 @@
 				810ACCA62E9D3302004F8F92 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				810ACCA02E9D3302004F8F92 /* GhosttyUITests */,
+				810ACCA02E9D3302004F8F92 /* NubbUITests */,
 			);
-			name = GhosttyUITests;
+			name = NubbUITests;
 			packageProductDependencies = (
 			);
-			productName = GhosttyUITests;
-			productReference = 810ACC9F2E9D3301004F8F92 /* GhosttyUITests.xctest */;
+			productName = NubbUITests;
+			productReference = 810ACC9F2E9D3301004F8F92 /* NubbUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		A54F45F22E1F047A0046BD5C /* GhosttyTests */ = {
+		A54F45F22E1F047A0046BD5C /* NubbTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A54F45FC2E1F047A0046BD5C /* Build configuration list for PBXNativeTarget "GhosttyTests" */;
+			buildConfigurationList = A54F45FC2E1F047A0046BD5C /* Build configuration list for PBXNativeTarget "NubbTests" */;
 			buildPhases = (
 				A54F45EF2E1F047A0046BD5C /* Sources */,
 				A54F45F02E1F047A0046BD5C /* Frameworks */,
@@ -187,16 +187,16 @@
 			fileSystemSynchronizedGroups = (
 				A54F45F42E1F047A0046BD5C /* Tests */,
 			);
-			name = GhosttyTests;
+			name = NubbTests;
 			packageProductDependencies = (
 			);
-			productName = GhosttyTests;
-			productReference = A54F45F32E1F047A0046BD5C /* GhosttyTests.xctest */;
+			productName = NubbTests;
+			productReference = A54F45F32E1F047A0046BD5C /* NubbTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		A5B30530299BEAAA0047F10C /* Ghostty */ = {
+		A5B30530299BEAAA0047F10C /* Nubb */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A5B30540299BEAAB0047F10C /* Build configuration list for PBXNativeTarget "Ghostty" */;
+			buildConfigurationList = A5B30540299BEAAB0047F10C /* Build configuration list for PBXNativeTarget "Nubb" */;
 			buildPhases = (
 				FC501E0B2F46B410007AE49D /* Run SwiftLint */,
 				A5B3052D299BEAAA0047F10C /* Sources */,
@@ -210,10 +210,10 @@
 			fileSystemSynchronizedGroups = (
 				81F82BC72E82815D001EDFA7 /* Sources */,
 			);
-			name = Ghostty;
+			name = Nubb;
 			packageProductDependencies = (
 			);
-			productName = Ghostty;
+			productName = Nubb;
 			productReference = A5B30531299BEAAA0047F10C /* Nubb.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -241,7 +241,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A5B3052C299BEAAA0047F10C /* Build configuration list for PBXProject "Ghostty" */;
+			buildConfigurationList = A5B3052C299BEAAA0047F10C /* Build configuration list for PBXProject "Nubb" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -254,9 +254,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A5B30530299BEAAA0047F10C /* Ghostty */,
-				A54F45F22E1F047A0046BD5C /* GhosttyTests */,
-				810ACC9E2E9D3301004F8F92 /* GhosttyUITests */,
+				A5B30530299BEAAA0047F10C /* Nubb */,
+				A54F45F22E1F047A0046BD5C /* NubbTests */,
+				810ACC9E2E9D3301004F8F92 /* NubbUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -281,9 +281,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC9ABA9C2D0F53F80020D4C8 /* bash-completion in Resources */,
-				A553F4142E06EB1600257779 /* Ghostty.icon in Resources */,
+				A553F4142E06EB1600257779 /* Nubb.icon in Resources */,
 				A586167C2B7703CC009BDB1D /* fish in Resources */,
-				55154BE02B33911F001622DC /* ghostty in Resources */,
+				55154BE02B33911F001622DC /* nubb in Resources */,
 				A5985CE62C33060F00C57AD3 /* man in Resources */,
 				A5A1F8852A489D6800D1E8BC /* terminfo in Resources */,
 				FC5218FA2D10FFCE004C93E0 /* zsh in Resources */,
@@ -343,12 +343,12 @@
 /* Begin PBXTargetDependency section */
 		810ACCA62E9D3302004F8F92 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A5B30530299BEAAA0047F10C /* Ghostty */;
+			target = A5B30530299BEAAA0047F10C /* Nubb */;
 			targetProxy = 810ACCA52E9D3302004F8F92 /* PBXContainerItemProxy */;
 		};
 		A54F45F82E1F047A0046BD5C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A5B30530299BEAAA0047F10C /* Ghostty */;
+			target = A5B30530299BEAAA0047F10C /* Nubb */;
 			targetProxy = A54F45F72E1F047A0046BD5C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -412,11 +412,11 @@
 		3B39CAA32B33946300DABEB8 /* ReleaseLocal */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Ghostty;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Nubb;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = GhosttyReleaseLocal.entitlements;
+				CODE_SIGN_ENTITLEMENTS = NubbReleaseLocal.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -428,7 +428,7 @@
 				EXECUTABLE_NAME = nubb;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Ghostty-Info.plist";
+				INFOPLIST_FILE = "Nubb-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Nubb;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "A program running within Nubb would like to use AppleScript.";
@@ -484,7 +484,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Ghostty;
+				TEST_TARGET_NAME = Nubb;
 			};
 			name = Debug;
 		};
@@ -507,7 +507,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Ghostty;
+				TEST_TARGET_NAME = Nubb;
 			};
 			name = Release;
 		};
@@ -530,7 +530,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Ghostty;
+				TEST_TARGET_NAME = Nubb;
 			};
 			name = ReleaseLocal;
 		};
@@ -724,11 +724,11 @@
 		A5B30541299BEAAB0047F10C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Ghostty;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Nubb;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = GhosttyDebug.entitlements;
+				CODE_SIGN_ENTITLEMENTS = NubbDebug.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -740,7 +740,7 @@
 				ENABLE_PREVIEWS = YES;
 				EXECUTABLE_NAME = nubb;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Ghostty-Info.plist";
+				INFOPLIST_FILE = "Nubb-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Nubb[DEBUG]";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "A program running within Nubb would like to use AppleScript.";
@@ -780,11 +780,11 @@
 		A5B30542299BEAAB0047F10C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Ghostty;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Nubb;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Ghostty.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Nubb.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -796,7 +796,7 @@
 				EXECUTABLE_NAME = nubb;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Ghostty-Info.plist";
+				INFOPLIST_FILE = "Nubb-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Nubb;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "A program running within Nubb would like to use AppleScript.";
@@ -835,7 +835,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		810ACCA72E9D3302004F8F92 /* Build configuration list for PBXNativeTarget "GhosttyUITests" */ = {
+		810ACCA72E9D3302004F8F92 /* Build configuration list for PBXNativeTarget "NubbUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				810ACCA82E9D3302004F8F92 /* Debug */,
@@ -845,7 +845,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = ReleaseLocal;
 		};
-		A54F45FC2E1F047A0046BD5C /* Build configuration list for PBXNativeTarget "GhosttyTests" */ = {
+		A54F45FC2E1F047A0046BD5C /* Build configuration list for PBXNativeTarget "NubbTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A54F45F92E1F047A0046BD5C /* Debug */,
@@ -855,7 +855,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = ReleaseLocal;
 		};
-		A5B3052C299BEAAA0047F10C /* Build configuration list for PBXProject "Ghostty" */ = {
+		A5B3052C299BEAAA0047F10C /* Build configuration list for PBXProject "Nubb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A5B3053E299BEAAB0047F10C /* Debug */,
@@ -865,7 +865,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = ReleaseLocal;
 		};
-		A5B30540299BEAAB0047F10C /* Build configuration list for PBXNativeTarget "Ghostty" */ = {
+		A5B30540299BEAAB0047F10C /* Build configuration list for PBXNativeTarget "Nubb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A5B30541299BEAAB0047F10C /* Debug */,

@@ -1,6 +1,6 @@
 //
 //  WindowPositionTests.swift
-//  GhosttyTests
+//  NubbTests
 //
 //  Tests for window positioning coordinate conversion functionality.
 //

@@ -97,8 +97,8 @@
           "fill" : "automatic",
           "glass" : false,
           "hidden" : false,
-          "image-name" : "Ghostty.png",
-          "name" : "Ghostty",
+          "image-name" : "Nubb.png",
+          "name" : "Nubb",
           "position" : {
             "scale" : 1,
             "translation-in-points" : [
@@ -114,8 +114,8 @@
           },
           "glass" : true,
           "hidden" : false,
-          "image-name" : "Ghostty.png",
-          "name" : "GhosttyBlur",
+          "image-name" : "Nubb.png",
+          "name" : "NubbBlur",
           "position" : {
             "scale" : 1,
             "translation-in-points" : [

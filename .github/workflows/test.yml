@@ -54,7 +54,7 @@ jobs:
       - name: Swift test summary
         run: |
           result=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 4 \
-            -path '*/Ghostty-*/Logs/Test/Test-Ghostty-*.xcresult' \
+            -path '*/Nubb-*/Logs/Test/Test-Nubb-*.xcresult' \
             | awk -F/ '{print $NF "\t" $0}' | sort | tail -1 | cut -f2)
           xcrun xcresulttool get test-results summary --path "$result" > summary.json
           python3 - <<'EOF'

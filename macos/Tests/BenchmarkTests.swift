@@ -1,6 +1,6 @@
 //
-//  GhosttyTests.swift
-//  GhosttyTests
+//  NubbTests.swift
+//  NubbTests
 //
 //  Created by Mitchell Hashimoto on 7/9/25.
 //

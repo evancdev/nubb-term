@@ -1,5 +1,5 @@
 //
-//  GhosttyCommandPaletteTests.swift
+//  NubbCommandPaletteTests.swift
 //  Nubb
 //
 //  Created by Lukas on 19.03.2026.
@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class GhosttyCommandPaletteTests: GhosttyCustomConfigCase {
+final class NubbCommandPaletteTests: NubbCustomConfigCase {
     @MainActor func testDismissingCommandPalette() async throws {
         let app = try nubbApplication()
         app.activate()

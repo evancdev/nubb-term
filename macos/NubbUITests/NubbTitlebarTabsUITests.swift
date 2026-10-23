@@ -1,5 +1,5 @@
 //
-//  GhosttyTitlebarTabsUITests.swift
+//  NubbTitlebarTabsUITests.swift
 //  Nubb
 //
 //  Created by luca on 16.10.2025.
@@ -7,14 +7,14 @@
 
 import XCTest
 
-final class GhosttyTitlebarTabsUITests: GhosttyCustomConfigCase {
+final class NubbTitlebarTabsUITests: NubbCustomConfigCase {
     override func setUp() async throws {
         try await super.setUp()
 
         try updateConfig(
             """
             macos-titlebar-style = tabs
-            title = "GhosttyTitlebarTabsUITests"
+            title = "NubbTitlebarTabsUITests"
             """
         )
     }

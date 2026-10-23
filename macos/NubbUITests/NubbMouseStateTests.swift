@@ -1,5 +1,5 @@
 //
-//  GhosttyMouseStateTests.swift
+//  NubbMouseStateTests.swift
 //  Nubb
 //
 //  Created by Lukas on 19.03.2026.
@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class GhosttyMouseStateTests: GhosttyCustomConfigCase {
+final class NubbMouseStateTests: NubbCustomConfigCase {
     // https://github.com/ghostty-org/ghostty/pull/11276
     @MainActor func testSelectionFocusChange() async throws {
         let app = XCUIApplication()

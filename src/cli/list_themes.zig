@@ -87,10 +87,10 @@ const ThemeListElement = struct {
 /// The second directory is the `themes` subdirectory of the Nubb resources
 /// directory. Nubb ships with a multitude of themes that will be installed
 /// into this directory. On macOS, this directory is the
-/// `Nubb.app/Contents/Resources/ghostty/themes`. On Linux, this directory
-/// is the `share/ghostty/themes` (wherever you installed the Nubb "share"
+/// `Nubb.app/Contents/Resources/nubb/themes`. On Linux, this directory
+/// is the `share/nubb/themes` (wherever you installed the Nubb "share"
 /// directory). If you're running Nubb from the source, this is the
-/// `zig-out/share/ghostty/themes` directory.
+/// `zig-out/share/nubb/themes` directory.
 ///
 /// You can also set the `NUBB_RESOURCES_DIR` environment variable to point
 /// to the resources directory.

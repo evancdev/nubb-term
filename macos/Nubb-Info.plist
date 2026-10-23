@@ -44,9 +44,9 @@
 			</array>
 		</dict>
 	</array>
-	<key>GhosttyBuild</key>
+	<key>NubbBuild</key>
 	<string></string>
-	<key>GhosttyCommit</key>
+	<key>NubbCommit</key>
 	<string></string>
 	<key>LSEnvironment</key>
 	<dict>

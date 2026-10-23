@@ -1,6 +1,6 @@
 //
 //  CommandPaletteTests.swift
-//  GhosttyTests
+//  NubbTests
 //
 //  Tests for command palette query filtering and match ranking.
 //

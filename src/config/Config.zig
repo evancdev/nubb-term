@@ -503,8 +503,8 @@ pub const compatibility = std.StaticStringMap(
 /// The second directory is the `themes` subdirectory of the Nubb resources
 /// directory. Nubb ships with a multitude of themes that will be installed
 /// into this directory. On macOS, this list is in the
-/// `Nubb.app/Contents/Resources/ghostty/themes` directory. On Linux, this
-/// list is in the `share/ghostty/themes` directory (wherever you installed the
+/// `Nubb.app/Contents/Resources/nubb/themes` directory. On Linux, this
+/// list is in the `share/nubb/themes` directory (wherever you installed the
 /// Nubb "share" directory.
 ///
 /// To see a list of available themes, run `nubb +list-themes`.

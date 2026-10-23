@@ -1,5 +1,5 @@
 //
-//  GhosttyCustomConfigCase.swift
+//  NubbCustomConfigCase.swift
 //  Nubb
 //
 //  Created by luca on 16.10.2025.
@@ -7,7 +7,7 @@
 
 import XCTest
 
-class GhosttyCustomConfigCase: XCTestCase {
+class NubbCustomConfigCase: XCTestCase {
     /// We only want run these UI tests
     /// when testing manually with Xcode IDE
     ///
@@ -40,7 +40,7 @@ class GhosttyCustomConfigCase: XCTestCase {
         try newConfig.write(to: configFile, atomically: true, encoding: .utf8)
     }
 
-    func nubbApplication(defaultsSuite: String = GhosttyCustomConfigCase.defaultsSuiteName) throws -> XCUIApplication {
+    func nubbApplication(defaultsSuite: String = NubbCustomConfigCase.defaultsSuiteName) throws -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments.append(contentsOf: ["-ApplePersistenceIgnoreState", "YES"])
         app.launchEnvironment["NUBB_CONFIG_PATH"] = configFile.path
