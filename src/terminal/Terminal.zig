@@ -20,7 +20,6 @@ const charsets = @import("charsets.zig");
 const xt_checksum = @import("xt_checksum.zig");
 const csi = @import("csi.zig");
 const hyperlink = @import("hyperlink.zig");
-const glyph = @import("apc/glyph.zig");
 const kitty = @import("kitty.zig");
 const osc = @import("osc.zig");
 const point = @import("point.zig");
@@ -92,9 +91,6 @@ default_xt_checksum: xt_checksum.Flags = .{},
 
 /// The most recently set mouse shape for the terminal.
 mouse_shape: mouse.Shape = .text,
-
-/// Per-session Glyph Protocol registrations.
-glyph_glossary: glyph.Glossary = .empty,
 
 /// Kitty drag and drop protocol (OSC 72) state. Allocated when a client
 /// registers to accept drops (t=a) and freed when it unregisters (t=A),
@@ -243,11 +239,6 @@ pub const Dirty = packed struct {
 
     /// Set when the pre-edit is modified.
     preedit: bool = false,
-
-    /// Set when Glyph Protocol registrations may have changed. Registered
-    /// glyphs can affect already-visible PUA cells, so this requires a full
-    /// render-state rebuild.
-    glyph_glossary: bool = false,
 };
 
 /// Scrolling region is the area of the screen designated where scrolling
@@ -379,7 +370,6 @@ pub fn deinit(self: *Terminal, alloc: Allocator) void {
     self.colors.palette.deinit(alloc);
     self.pwd.deinit(alloc);
     self.title.deinit(alloc);
-    self.glyph_glossary.deinit(alloc);
     if (self.kitty_dnd) |dnd| dnd.destroy(alloc);
     self.* = undefined;
 }
@@ -3896,22 +3886,6 @@ pub fn kittyGraphics(
     return kitty.graphics.execute(io_impl, alloc, self, cmd);
 }
 
-/// Execute a Glyph Protocol APC command against this terminal's per-session
-/// glossary. The returned response, if any, should be sent back to the pty as
-/// a complete APC sequence via `Response.formatWire`.
-pub fn glyphProtocol(
-    self: *Terminal,
-    alloc: Allocator,
-    req: *const glyph.Request,
-) ?glyph.Response {
-    const resp = glyph.execute(alloc, &self.glyph_glossary, req);
-    switch (req.*) {
-        .register, .clear => self.flags.dirty.glyph_glossary = true,
-        .support, .query => {},
-    }
-    return resp;
-}
-
 /// Set the storage size limit for Kitty graphics across all screens.
 pub fn setKittyGraphicsSizeLimit(
     self: *Terminal,
@@ -5098,7 +5072,6 @@ pub fn fullReset(self: *Terminal) void {
     self.previous_char = null;
     self.pwd.clearRetainingCapacity();
     self.title.clearRetainingCapacity();
-    self.glyph_glossary.clearAndFree(self.gpa());
     // A reset only interrupts an in-progress chunked OSC 72 command;
     // drag and drop registration survives, matching kitty.
     if (self.kitty_dnd) |dnd| dnd.chunking = .{};
@@ -17298,41 +17271,6 @@ test "Terminal: deleteLines wide char at right margin with full clear" {
     // and the orphaned spacer_tail at col 39 triggers a page integrity
     // violation in clearCells.
     try t.scrollUp(t.rows);
-}
-
-test "Terminal: glyph APC stores session glossary entries" {
-    if (comptime !build_options.glyph_protocol) return error.SkipZigTest;
-
-    const alloc = testing.allocator;
-    const io_impl = testing.io;
-    var t = try init(io_impl, alloc, .{ .cols = 80, .rows = 24 });
-    defer t.deinit(alloc);
-
-    var register_parser = glyph.CommandParser.init(alloc, 1024 * 1024);
-    defer register_parser.deinit();
-    for ("r;cp=e0a0;AAAAAAAAAAAAAA==") |byte| try register_parser.feed(byte);
-    var register_req = try register_parser.complete(alloc);
-    defer register_req.deinit(alloc);
-
-    try testing.expectEqual(glyph.Response{
-        .register = .{ .cp = 0xE0A0 },
-    }, t.glyphProtocol(alloc, &register_req).?);
-    try testing.expect(t.glyph_glossary.contains(0xE0A0));
-    try testing.expect(t.flags.dirty.glyph_glossary);
-
-    var query_parser = glyph.CommandParser.init(alloc, 1024 * 1024);
-    defer query_parser.deinit();
-    for ("q;cp=e0a0") |byte| try query_parser.feed(byte);
-    var query_req = try query_parser.complete(alloc);
-    defer query_req.deinit(alloc);
-
-    try testing.expectEqual(glyph.Response{ .query = .{
-        .cp = 0xE0A0,
-        .status = .{ .glossary = true },
-    } }, t.glyphProtocol(alloc, &query_req).?);
-
-    t.fullReset();
-    try testing.expect(!t.glyph_glossary.contains(0xE0A0));
 }
 
 test "Terminal: scroll region linefeed recycled row has default metadata" {

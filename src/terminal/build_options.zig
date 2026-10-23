@@ -136,16 +136,6 @@ pub const Options = struct {
         /// `ghostty_terminal_point_from_grid_ref`.
         grid_introspection: bool = true,
 
-        /// The APC glyph protocol: a Ghostty extension that lets
-        /// terminal applications register custom font glyphs (glyf
-        /// outlines) for private-use-area codepoints. Embedders that
-        /// don't render registered glyphs can disable this; the
-        /// sequences are still consumed and safely ignored.
-        ///
-        /// No C API surface of its own; this gates the stream handling
-        /// and glossary storage.
-        glyph_protocol: bool = true,
-
         /// The Kitty graphics protocol: APC command parsing, image
         /// transmission and storage (PNG decoding via the sys
         /// interface), and placement tracking, plus the read APIs a

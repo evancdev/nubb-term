@@ -1,8 +1,8 @@
 //! Parsing of decimal fractions in the unit interval [0, 1].
 //!
 //! Escape sequences that carry fractional parameters (XTerm `rgbi:`
-//! color specifications, glyph protocol padding) only ever need plain
-//! decimal values such as "0.5". Using `std.fmt.parseFloat` for these
+//! color specifications) only ever need plain decimal values such as
+//! "0.5". Using `std.fmt.parseFloat` for these
 //! pulls the full correctly-rounded float parser and its lookup tables
 //! into the binary (~26KB). This implements only the restricted subset
 //! we need.
