@@ -834,7 +834,7 @@ extension Nubb {
 
             switch action.kind {
             case .text:
-                // Open with the default editor for `*.ghostty` file or just system text editor
+                // Open with the default editor for `*.nubb` file or just system text editor
                 let editor = NSWorkspace.shared.defaultApplicationURL(forExtension: url.pathExtension) ?? NSWorkspace.shared.defaultTextEditor
                 if let textEditor = editor {
                     NSWorkspace.shared.open([url], withApplicationAt: textEditor, configuration: NSWorkspace.OpenConfiguration())

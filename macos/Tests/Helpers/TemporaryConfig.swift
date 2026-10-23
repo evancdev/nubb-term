@@ -13,7 +13,7 @@ class TemporaryConfig: Nubb.Config {
     init(_ configText: String, finalize: Bool = true) throws {
         let temporaryFile = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("ghostty")
+            .appendingPathExtension("nubb")
         try configText.write(to: temporaryFile, atomically: true, encoding: .utf8)
         self.temporaryFile = temporaryFile
         super.init(config: Self.loadConfig(at: temporaryFile.path(), finalize: finalize))

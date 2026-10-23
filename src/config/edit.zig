@@ -121,11 +121,12 @@ fn configPath(alloc_arena: Allocator) !ConfigPathResult {
 /// Returns a const list of possible paths the main config file could be
 /// in for the current OS.
 fn configPathCandidates(alloc_arena: Allocator) ![]const []const u8 {
-    var paths: std.ArrayList([]const u8) = try .initCapacity(alloc_arena, 4);
+    var paths: std.ArrayList([]const u8) = try .initCapacity(alloc_arena, 5);
     errdefer paths.deinit(alloc_arena);
 
     if (comptime builtin.target.os.tag == .macos) {
         paths.appendAssumeCapacity(try file_load.defaultAppSupportPath(alloc_arena));
+        paths.appendAssumeCapacity(try file_load.ghosttyAppSupportPath(alloc_arena));
         paths.appendAssumeCapacity(try file_load.legacyDefaultAppSupportPath(alloc_arena));
     }
 

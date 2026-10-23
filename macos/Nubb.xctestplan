@@ -17,7 +17,7 @@
     "environmentVariableEntries" : [
       {
         "key" : "NUBB_CONFIG_PATH",
-        "value" : "\/tmp\/Nubb\/testing_config.ghostty"
+        "value" : "\/tmp\/Nubb\/testing_config.nubb"
       }
     ],
     "performanceAntipatternCheckerEnabled" : true,

@@ -26,7 +26,7 @@ class NubbCustomConfigCase: XCTestCase {
     static let defaultsSuiteName: String = "NUBB_UI_TESTS"
 
     private let configFile: URL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        .appendingPathExtension("ghostty")
+        .appendingPathExtension("nubb")
 
     override func setUpWithError() throws {
         continueAfterFailure = false

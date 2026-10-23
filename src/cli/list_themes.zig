@@ -81,8 +81,8 @@ const ThemeListElement = struct {
 /// Two different directories will be searched for themes.
 ///
 /// The first directory is the `themes` subdirectory of your Nubb
-/// configuration directory. This is `$XDG_CONFIG_HOME/ghostty/themes` or
-/// `~/.config/ghostty/themes`.
+/// configuration directory. This is `$XDG_CONFIG_HOME/nubb/themes` or
+/// `~/.config/nubb/themes`.
 ///
 /// The second directory is the `themes` subdirectory of the Nubb resources
 /// directory. Nubb ships with a multitude of themes that will be installed
@@ -206,7 +206,7 @@ fn resolveAutoThemePath(alloc: std.mem.Allocator) ![]u8 {
     defer alloc.free(main_cfg_path);
 
     const base_dir = std.fs.path.dirname(main_cfg_path) orelse return error.BadPathName;
-    return try std.fs.path.join(alloc, &.{ base_dir, "auto", "theme.ghostty" });
+    return try std.fs.path.join(alloc, &.{ base_dir, "auto", "theme.nubb" });
 }
 
 fn writeAutoThemeFile(alloc: std.mem.Allocator, theme_name: []const u8) !void {
@@ -874,7 +874,7 @@ const Preview = struct {
                     "Or press 'w' to write an auto theme file to your system's preferred default config path.",
                     "Then add the following line to your Nubb configuration and reload:",
                     "",
-                    "config-file = ?auto/theme.ghostty",
+                    "config-file = ?auto/theme.nubb",
                     "",
                     "For more details on configuration and themes, visit the Ghostty documentation:",
                     "",

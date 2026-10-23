@@ -497,8 +497,8 @@ pub const compatibility = std.StaticStringMap(
 /// include path separators unless it is an absolute pathname.
 ///
 /// The first directory is the `themes` subdirectory of your Nubb
-/// configuration directory. This is `$XDG_CONFIG_HOME/ghostty/themes` or
-/// `~/.config/ghostty/themes`.
+/// configuration directory. This is `$XDG_CONFIG_HOME/nubb/themes` or
+/// `~/.config/nubb/themes`.
 ///
 /// The second directory is the `themes` subdirectory of the Nubb resources
 /// directory. Nubb ships with a multitude of themes that will be installed
@@ -2461,7 +2461,7 @@ keybind: Keybinds = .{},
 
 /// When this is true, the default configuration file paths will be loaded.
 /// The default configuration file paths are currently only the XDG
-/// config path ($XDG_CONFIG_HOME/ghostty/config.ghostty).
+/// config path ($XDG_CONFIG_HOME/nubb/config.nubb).
 ///
 /// If this is false, the default configuration paths will not be loaded.
 /// This is targeted directly at using Nubb from the CLI in a way
@@ -3486,7 +3486,7 @@ test "handle bom in config files" {
         try cfg.loadReader(
             alloc,
             &reader,
-            "/home/ghostty/.config/ghostty/config.ghostty",
+            "/home/nubb/.config/nubb/config.nubb",
         );
         try cfg.finalize();
 
@@ -3505,7 +3505,7 @@ test "handle bom in config files" {
         try cfg.loadReader(
             alloc,
             &reader,
-            "/home/ghostty/.config/ghostty/config.ghostty",
+            "/home/nubb/.config/nubb/config.nubb",
         );
         try cfg.finalize();
 
@@ -3560,13 +3560,14 @@ fn writeConfigTemplate(path: []const u8) !void {
 }
 
 /// Load configurations from the default configuration files. The default
-/// configuration file is at `$XDG_CONFIG_HOME/ghostty/config.ghostty`.
+/// configuration file is at `$XDG_CONFIG_HOME/nubb/config.nubb`.
 ///
 /// On macOS, `$HOME/Library/Application Support/$CFBundleIdentifier/`
-/// is also loaded.
+/// is also loaded. There, a pre-rename `config.ghostty` is read while
+/// `config.nubb` does not exist. `$XDG_CONFIG_HOME/ghostty` is never read.
 ///
 /// The legacy `config` file (without extension) is first loaded,
-/// then `config.ghostty`.
+/// then `config.nubb`.
 pub fn loadDefaultFiles(self: *Config, alloc: Allocator) !void {
     // Load XDG first
     const legacy_xdg_path = try file_load.legacyDefaultXdgPath(alloc);
