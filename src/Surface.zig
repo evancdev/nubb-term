@@ -147,7 +147,7 @@ config: DerivedConfig,
 
 /// The conditional state of the configuration. This can affect
 /// how certain configurations take effect such as light/dark mode.
-/// This is managed completely by Ghostty core but an apprt action
+/// This is managed completely by Nubb core but an apprt action
 /// is sent whenever this changes.
 config_conditional_state: configpkg.ConditionalState,
 
@@ -189,14 +189,14 @@ last_bell_time: ?std.Io.Timestamp = null,
 /// The effect of an input event. This can be used by callers to take
 /// the appropriate action after an input event. For example, key
 /// input can be forwarded to the OS for further processing if it
-/// wasn't handled in any way by Ghostty.
+/// wasn't handled in any way by Nubb.
 pub const InputEffect = enum {
-    /// The input was not handled in any way by Ghostty and should be
+    /// The input was not handled in any way by Nubb and should be
     /// forwarded to other subsystems (i.e. the OS) for further
     /// processing.
     ignored,
 
-    /// The input was handled and consumed by Ghostty.
+    /// The input was handled and consumed by Nubb.
     consumed,
 
     /// The input resulted in a close event for this surface so
@@ -1414,7 +1414,7 @@ fn childExitedAbnormally(
     // Output our error message
     try t.setAttribute(.{ .@"8_fg" = .bright_red });
     try t.setAttribute(.{ .bold = {} });
-    try t.printString("Ghostty failed to launch the requested command:");
+    try t.printString("Nubb failed to launch the requested command:");
     try t.setAttribute(.{ .unset = {} });
 
     t.carriageReturn();
@@ -1860,7 +1860,7 @@ pub fn updateConfig(
         // If we haven't, then we update to the configured font size.
         // This allows config changes to update the font size. We used to
         // never do this but it was a common source of confusion and people
-        // assumed that Ghostty was broken! This logic makes more sense.
+        // assumed that Nubb was broken! This logic makes more sense.
         var size = self.font_size;
         size.points = std.math.clamp(config.@"font-size", 1.0, 255.0);
         break :font_size size;
@@ -2615,7 +2615,7 @@ fn resize(self: *Surface, size: rendererpkg.ScreenSize) !void {
     self.size.screen = size;
     self.balancePaddingIfNeeded();
 
-    // Recalculate our grid size. Because Ghostty supports fluid resizing,
+    // Recalculate our grid size. Because Nubb supports fluid resizing,
     // its possible the grid doesn't change at all even if the screen size changes.
     // We have to update the IO thread no matter what because we send
     // pixel-level sizing to the subprocess.
@@ -4817,7 +4817,7 @@ pub fn cursorPosCallback(
     }
 }
 
-/// Call to notify Ghostty that the color scheme for the terminal has
+/// Call to notify Nubb that the color scheme for the terminal has
 /// changed.
 pub fn colorSchemeCallback(self: *Surface, scheme: apprt.ColorScheme) !void {
     const new_scheme: configpkg.ConditionalState.Theme = switch (scheme) {

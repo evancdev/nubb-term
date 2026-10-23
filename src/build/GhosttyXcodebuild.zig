@@ -49,7 +49,7 @@ pub fn init(
     const env = b.graph.environ_map;
     const app_path = b.fmt("macos/build/{s}/Nubb.app", .{xc_config});
 
-    // Our step to build the Ghostty macOS app.
+    // Our step to build the Nubb macOS app.
     const build = build: {
         // External environment variables can mess up xcodebuild, so
         // we create a new empty environment.
@@ -120,7 +120,7 @@ pub fn init(
         break :xctest step;
     };
 
-    // Our step to open the resulting Ghostty app.
+    // Our step to open the resulting Nubb app.
     const open = open: {
         const disable_save_state = RunStep.create(b, "disable save state");
         disable_save_state.has_side_effects = true;

@@ -27,7 +27,7 @@ font_backend: FontBackend = .coretext,
 /// Feature flags
 simd: bool = true,
 
-/// Ghostty exe properties
+/// Nubb exe properties
 exe_entrypoint: ExeEntrypoint = .ghostty,
 version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
 lib_version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
@@ -53,10 +53,10 @@ emit_webdata: bool = false,
 emit_unicode_table_gen: bool = false,
 
 /// Feature gates for libghostty-vt artifacts (-Dvt-features). The full
-/// Ghostty application ignores this and always enables everything.
+/// Nubb application ignores this and always enables everything.
 vt_features: TerminalBuildOptions.Features = .{},
 
-/// True when Ghostty is being built as a dependency of another project
+/// True when Nubb is being built as a dependency of another project
 /// rather than as the root project.
 is_dep: bool = false,
 
@@ -69,7 +69,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     const optimize = b.standardOptimizeOption(.{});
 
     // Default dependency builds to libghostty-vt-only mode. Consumers can
-    // still explicitly disable this to request the full Ghostty build.
+    // still explicitly disable this to request the full Nubb build.
     const is_dep = b.dep_prefix.len > 0;
     const emit_lib_vt = b.option(
         bool,
@@ -87,11 +87,11 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
             result = genericMacOSTarget(b, result.query.cpu_arch);
         }
 
-        // The full Ghostty build no longer supports iOS; Fail early
+        // The full Nubb build no longer supports iOS; Fail early
         // with a clear message rather than partway through the build.
         if (result.result.os.tag == .ios and !emit_lib_vt) {
             std.log.err(
-                "iOS is not a supported target for the full Ghostty build; " ++
+                "iOS is not a supported target for the full Nubb build; " ++
                     "only libghostty-vt supports iOS (-Demit-lib-vt)",
                 .{},
             );
@@ -164,7 +164,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     ) orelse true;
 
     //---------------------------------------------------------------
-    // Ghostty Exe Properties
+    // Nubb Exe Properties
 
     const version_string = b.option(
         []const u8,
@@ -397,7 +397,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     config.emit_terminfo = b.option(
         bool,
         "emit-terminfo",
-        "Install Ghostty terminfo source file",
+        "Install Nubb terminfo source file",
     ) orelse switch (optimize) {
         .debug => true,
         .safe, .fast, .small => false,
@@ -406,7 +406,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     config.emit_termcap = b.option(
         bool,
         "emit-termcap",
-        "Install Ghostty termcap file",
+        "Install Nubb termcap file",
     ) orelse switch (optimize) {
         .debug => true,
         .safe, .fast, .small => false,
@@ -415,7 +415,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     config.emit_themes = b.option(
         bool,
         "emit-themes",
-        "Install bundled iTerm2-Color-Schemes Ghostty themes",
+        "Install bundled iTerm2-Color-Schemes Nubb themes",
     ) orelse true;
 
     config.emit_webdata = b.option(
@@ -575,7 +575,7 @@ pub fn addOptions(self: *const Config, step: *std.Build.Step.Options) !void {
 }
 
 /// Returns the build options for the terminal module. This assumes a
-/// Ghostty executable being built. Callers should modify this as needed.
+/// Nubb executable being built. Callers should modify this as needed.
 pub fn terminalOptions(
     self: *const Config,
     artifact: TerminalBuildOptions.Artifact,

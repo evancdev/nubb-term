@@ -1,6 +1,6 @@
 //
 //  GhosttyMouseStateTests.swift
-//  Ghostty
+//  Nubb
 //
 //  Created by Lukas on 19.03.2026.
 //

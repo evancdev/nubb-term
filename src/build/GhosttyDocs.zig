@@ -1,4 +1,4 @@
-//! GhosttyDocs generates all the on-disk documentation that Ghostty is
+//! GhosttyDocs generates all the on-disk documentation that Nubb is
 //! installed with (man pages, html, markdown, etc.)
 const GhosttyDocs = @This();
 

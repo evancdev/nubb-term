@@ -3,8 +3,8 @@ import SwiftUI
 import Combine
 import GhosttyKit
 
-/// A base class for windows that can contain Ghostty windows. This base class implements
-/// the bare minimum functionality that every terminal window in Ghostty should implement.
+/// A base class for windows that can contain Nubb windows. This base class implements
+/// the bare minimum functionality that every terminal window in Nubb should implement.
 ///
 /// Usage: Specify this as the base class of your window controller for the window that contains
 /// a terminal. The window controller must also be the window delegate OR the window delegate
@@ -82,7 +82,7 @@ class BaseTerminalController: NSWindowController,
     /// Cache previously applied appearance to avoid unnecessary updates
     private var appliedColorScheme: ghostty_color_scheme_e?
 
-    /// The configuration derived from the Ghostty config so we don't need to rely on references.
+    /// The configuration derived from the Nubb config so we don't need to rely on references.
     private var derivedConfig: DerivedConfig
 
     /// Track whether background is forced opaque (true) or using config transparency (false)

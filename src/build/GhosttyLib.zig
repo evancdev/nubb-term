@@ -202,8 +202,8 @@ fn pkgConfigFiles(
     const pkg_config: GhosttyPkgConfig = try .init(b, .{
         .name = "ghostty-internal",
         .name_static = "ghostty-internal-static",
-        .description = "Ghostty internal library (not for external use)",
-        .description_static = "Ghostty internal library, static (not for external use)",
+        .description = "Nubb internal library (not for external use)",
+        .description_static = "Nubb internal library, static (not for external use)",
         .version = deps.config.version,
         .libs = &.{"${libdir}/ghostty-internal.so"},
         .libs_static = &.{"${libdir}/ghostty-internal.a"},

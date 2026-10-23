@@ -21,10 +21,10 @@
 # Enables integration between zsh and ghostty.
 #
 # This is an autoloadable function. It's invoked automatically in shells
-# directly spawned by Ghostty but not in any other shells. For example, running
+# directly spawned by Nubb but not in any other shells. For example, running
 # `exec zsh`, `sudo -E zsh`, `tmux`, or plain `zsh` will create a shell where
 # ghostty-integration won't automatically run. Zsh users who want integration with
-# Ghostty in all shells should add the following lines to their .zshrc:
+# Nubb in all shells should add the following lines to their .zshrc:
 #
 #   if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
 #     source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
@@ -230,7 +230,7 @@ _ghostty_deferred_init() {
         (( _ghostty_state = 1 ))
     }
 
-    # Enable reporting current working dir to terminal. Ghostty supports
+    # Enable reporting current working dir to terminal. Nubb supports
     # the kitty-shell-cwd format.
     _ghostty_report_pwd() { builtin print -nu $_ghostty_fd '\e]7;kitty-shell-cwd://'"$HOST""$PWD"'\a'; }
     chpwd_functions=(${chpwd_functions[@]} "_ghostty_report_pwd")
@@ -279,7 +279,7 @@ _ghostty_deferred_init() {
         fi
     "${functions[_ghostty_zle_line_init]}
 
-    # Add Ghostty binary to PATH if the path feature is enabled
+    # Add Nubb binary to PATH if the path feature is enabled
     if [[ "$GHOSTTY_SHELL_FEATURES" == *"path"* ]] && [[ -n "$GHOSTTY_BIN_DIR" ]]; then
       if [[ ":$PATH:" != *":$GHOSTTY_BIN_DIR:"* ]]; then
         builtin export PATH="$PATH:$GHOSTTY_BIN_DIR"
@@ -288,7 +288,7 @@ _ghostty_deferred_init() {
 
     # Sudo
     if [[ "$GHOSTTY_SHELL_FEATURES" == *"sudo"* ]] && [[ -n "$TERMINFO" ]]; then
-      # Wrap `sudo` command to ensure Ghostty terminfo is preserved
+      # Wrap `sudo` command to ensure Nubb terminfo is preserved
       function sudo() {
         builtin local sudo_has_sudoedit_flags="no"
         for arg in "$@"; do

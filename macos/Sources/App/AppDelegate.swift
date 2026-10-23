@@ -16,7 +16,7 @@ class AppDelegate: NSObject,
         category: String(describing: AppDelegate.self)
     )
 
-    /// Various menu items so that we can programmatically sync the keyboard shortcut with the Ghostty config
+    /// Various menu items so that we can programmatically sync the keyboard shortcut with the Nubb config
     @IBOutlet private var menuAbout: NSMenuItem?
     @IBOutlet private var menuServices: NSMenu?
     @IBOutlet private var menuOpenConfig: NSMenuItem?
@@ -94,7 +94,7 @@ class AppDelegate: NSObject,
         fileExists: { FileManager.default.fileExists(atPath: $0) }
     )
 
-    /// This is the current configuration from the Ghostty configuration that we need.
+    /// This is the current configuration from the Nubb configuration that we need.
     private var derivedConfig: DerivedConfig = DerivedConfig()
 
     /// The ghostty global state. Only one per process.
@@ -206,7 +206,7 @@ class AppDelegate: NSObject,
         // Initial config loading
         ghosttyConfigDidChange(config: ghostty.config)
 
-        // This registers the Ghostty => Services menu to exist.
+        // This registers the Nubb => Services menu to exist.
         NSApp.servicesMenu = menuServices
 
         // Setup a local event monitor for app-level keyboard shortcuts. See
@@ -369,7 +369,7 @@ class AppDelegate: NSObject,
 
         // If the user is shutting down, restarting, or logging out, we don't confirm quit.
         why: if let event = NSAppleEventManager.shared().currentAppleEvent {
-            // If all Ghostty windows are in the background (i.e. you Cmd-Q from the Cmd-Tab
+            // If all Nubb windows are in the background (i.e. you Cmd-Q from the Cmd-Tab
             // view), then this is null. I don't know why (pun intended) but we have to
             // guard against it.
             guard let keyword = AEKeyword("why?") else { break why }
@@ -430,7 +430,7 @@ class AppDelegate: NSObject,
             return true
         }
 
-        // Ghostty will validate as well but we can avoid creating an entirely new
+        // Nubb will validate as well but we can avoid creating an entirely new
         // surface by doing our own validation here. We can also show a useful error
         // this way.
 
@@ -472,7 +472,7 @@ class AppDelegate: NSObject,
                 Self.logger.warning("refusing to execute file with control characters path=\(filename.debugDescription, privacy: .public)")
                 let alert = NSAlert()
                 alert.messageText = "Cannot Execute File"
-                alert.informativeText = "This file's path contains hidden control characters, which could make Ghostty run a different command than the one shown."
+                alert.informativeText = "This file's path contains hidden control characters, which could make Nubb run a different command than the one shown."
                 alert.addButton(withTitle: "OK")
                 alert.alertStyle = .warning
                 alert.runModal()
@@ -501,7 +501,7 @@ class AppDelegate: NSObject,
             // may want to show this as a sheet on the focused window (especially if we're
             // opening a tab). I'm not sure.
             let alert = NSAlert()
-            alert.messageText = "Allow Ghostty to execute \"\(filename)\"?"
+            alert.messageText = "Allow Nubb to execute \"\(filename)\"?"
             alert.addButton(withTitle: "Allow")
             alert.addButton(withTitle: "Cancel")
             alert.alertStyle = .warning
@@ -598,7 +598,7 @@ class AppDelegate: NSObject,
                 return ghostty_app_key(app, ghosttyEvent)
             }
 
-            // If the key was handled by Ghostty we stop the event chain. If
+            // If the key was handled by Nubb we stop the event chain. If
             // the key wasn't handled then we let it fall through and continue
             // processing. This is important because some bindings may have no
             // affect at this scope.
@@ -614,9 +614,9 @@ class AppDelegate: NSObject,
         }
 
         // If we reach this point then we try to process the key event
-        // through the Ghostty key mechanism.
+        // through the Nubb key mechanism.
 
-        // Ghostty must be loaded
+        // Nubb must be loaded
         guard let ghostty = self.ghostty.app else { return event }
 
         // Build our event input and call ghostty
@@ -934,12 +934,12 @@ class AppDelegate: NSObject,
         quickController.toggle()
     }
 
-    /// Toggles visibility of all Ghosty Terminal windows. When hidden, activates Ghostty as the frontmost application
+    /// Toggles visibility of all Ghosty Terminal windows. When hidden, activates Nubb as the frontmost application
     @IBAction func toggleVisibility(_ sender: Any) {
         // If we have focus, then we hide all windows.
         if NSApp.isActive {
             // Toggle visibility doesn't do anything if the focused window is native
-            // fullscreen. This is only relevant if Ghostty is active.
+            // fullscreen. This is only relevant if Nubb is active.
             guard let keyWindow = NSApp.keyWindow,
                   !keyWindow.styleMask.contains(.fullScreen) else { return }
 
@@ -1089,7 +1089,7 @@ extension AppDelegate {
         self.menuFindParent?.setImageIfDesired(systemSymbolName: "text.page.badge.magnifyingglass")
     }
 
-    /// Sync all of our menu item keyboard shortcuts with the Ghostty configuration.
+    /// Sync all of our menu item keyboard shortcuts with the Nubb configuration.
     @MainActor private func syncMenuShortcuts(_ config: Ghostty.Config) {
         guard ghostty.readiness == .ready else { return }
 
@@ -1151,7 +1151,7 @@ extension AppDelegate {
         syncMenuShortcut(config, action: "toggle_secure_input", menuItem: self.menuSecureInput)
 
         // This menu item is NOT synced with the configuration because it disables macOS
-        // global fullscreen keyboard shortcut. The shortcut in the Ghostty config will continue
+        // global fullscreen keyboard shortcut. The shortcut in the Nubb config will continue
         // to work but it won't be reflected in the menu item.
         //
         // syncMenuShortcut(config, action: "toggle_fullscreen", menuItem: self.menuToggleFullScreen)

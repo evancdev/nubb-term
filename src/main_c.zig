@@ -1,4 +1,4 @@
-// This is the main file for the C API. The C API is used to embed Ghostty
+// This is the main file for the C API. The C API is used to embed Nubb
 // within other applications. Depending on the build settings some APIs
 // may not be available (i.e. embedding into macOS exposes various Metal
 // support).
@@ -146,7 +146,7 @@ pub export fn ghostty_cli_try_action() void {
     posix.system.exit(0);
 }
 
-/// Return metadata about Ghostty, such as version, build mode, etc.
+/// Return metadata about Nubb, such as version, build mode, etc.
 pub export fn ghostty_info() Info {
     return .{
         .mode = switch (builtin.mode) {
@@ -160,7 +160,7 @@ pub export fn ghostty_info() Info {
     };
 }
 
-/// Free a string allocated by Ghostty.
+/// Free a string allocated by Nubb.
 pub export fn ghostty_string_free(str: String) void {
     str.deinit();
 }

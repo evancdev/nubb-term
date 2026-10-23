@@ -4,7 +4,7 @@
 //! https://sw.kovidgoyal.net/kitty/graphics-protocol
 //!
 //! Performance:
-//! The performance of this particular subsystem of Ghostty is not great.
+//! The performance of this particular subsystem of Nubb is not great.
 //! We can avoid a lot more allocations, we can replace some C code (which
 //! implicitly allocates) with native Zig, we can improve the data structures
 //! to avoid repeated lookups, etc. I tried to avoid pessimization but my

@@ -81,7 +81,7 @@ pub const ImageStorage = struct {
     /// The counter is never reset. Instead, each consumer keeps the last
     /// value it saw and compares it to the current value. Because nothing
     /// clears the counter, any number of consumers can watch the same
-    /// storage independently. Within Ghostty, only `RenderState` reads
+    /// storage independently. Within Nubb, only `RenderState` reads
     /// it, to know when to position its placements again. A renderer
     /// should watch `RenderState.imagePlacementsGeneration` instead. For
     /// example, a consumer of the storage would do:

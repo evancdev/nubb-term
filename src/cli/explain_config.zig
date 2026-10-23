@@ -32,7 +32,7 @@ pub const Options = struct {
 };
 
 /// The `explain-config` command prints the documentation for a single
-/// Ghostty configuration option or keybind action.
+/// Nubb configuration option or keybind action.
 ///
 /// Examples:
 ///

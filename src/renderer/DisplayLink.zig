@@ -20,7 +20,7 @@
 //!
 //! So a start or stop issued from the render thread can collide with
 //! CoreVideo's own, and whichever side loses is stuck in
-//! `CVDisplayLinkStop` forever. In Ghostty that first wedged the render
+//! `CVDisplayLinkStop` forever. In Nubb that first wedged the render
 //! thread, then the main thread as soon as it waited on the renderer, and
 //! the whole app froze. See
 //! https://github.com/ghostty-org/ghostty/discussions/14150.

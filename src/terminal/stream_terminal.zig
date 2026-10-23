@@ -869,9 +869,9 @@ pub const Handler = struct {
     }
 
     // Hex-encoded "TN", the XTGETTCAP key naming the terminfo entry.
-    // The static map also carries this key with Ghostty's own name, so
+    // The static map also carries this key with Nubb's own name, so
     // it is intercepted before the lookup: an embedder that never
-    // configured a name must not be reported as Ghostty's entry.
+    // configured a name must not be reported as Nubb's entry.
     const encoded_tn_key = &std.fmt.bytesToHex("TN", .upper);
 
     /// Answer an XTGETTCAP "TN" query from the configured terminfo name.
@@ -1745,7 +1745,7 @@ pub const Handler = struct {
                 self.writePty(resp);
             },
 
-            // DECXCPR: extended cursor position adds a page number. Ghostty has
+            // DECXCPR: extended cursor position adds a page number. Nubb has
             // no page memory, so the page is always 1.
             .cursor_position_extended => {
                 const pos = self.cursorReportPos();
@@ -5494,7 +5494,7 @@ test "request mode DECRQM with write_pty callback" {
         s.nextSlice("\x1B[?9999$p");
         try testing.expectEqualStrings("\x1B[?9999;0$y", S.last_response.?);
 
-        // Query DECECM, which Ghostty recognizes but does not allow changing
+        // Query DECECM, which Nubb recognizes but does not allow changing
         s.nextSlice("\x1B[?117$p");
         try testing.expectEqualStrings("\x1B[?117;4$y", S.last_response.?);
     }
@@ -6340,7 +6340,7 @@ test "device status: extended cursor position" {
     defer s.deinit();
 
     // DECXCPR (CSI ? 6 n) reports CSI ? row ; col ; page R.
-    // Ghostty has no page memory, so page is always 1.
+    // Nubb has no page memory, so page is always 1.
     s.nextSlice("\x1B[5;3H");
     s.nextSlice("\x1B[?6n");
     try testing.expectEqualStrings("\x1B[?5;3;1R", S.written.?);

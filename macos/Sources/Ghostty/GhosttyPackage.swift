@@ -132,7 +132,7 @@ extension Ghostty {
     enum SplitFocusDirection {
         case previous, next, up, down, left, right
 
-        /// Initialize from a Ghostty API enum.
+        /// Initialize from a Nubb API enum.
         static func from(direction: ghostty_action_goto_split_e) -> Self? {
             switch direction {
             case GHOSTTY_GOTO_SPLIT_PREVIOUS:

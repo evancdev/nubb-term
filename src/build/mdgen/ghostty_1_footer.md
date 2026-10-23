@@ -22,7 +22,7 @@ for configuration files.
 
 **GHOSTTY_RESOURCES_DIR**
 
-: Where the Ghostty resources can be found.
+: Where the Nubb resources can be found.
 
 **XDG_CONFIG_HOME**
 
@@ -40,7 +40,7 @@ precedence over the XDG environment locations.
 **GHOSTTY_LOG**
 
 : The `GHOSTTY_LOG` environment variable can be used to control which
-destinations receive logs. Ghostty currently defines two destinations:
+destinations receive logs. Nubb currently defines two destinations:
 
 : - `stderr` - logging to `stderr`.
 : - `macos` - logging to macOS's unified log (has no effect on non-macOS platforms).

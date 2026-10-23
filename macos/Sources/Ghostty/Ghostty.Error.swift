@@ -1,5 +1,5 @@
 extension Ghostty {
-    /// Possible errors from internal Ghostty calls.
+    /// Possible errors from internal Nubb calls.
     enum Error: Swift.Error, CustomLocalizedStringResourceConvertible {
         case apiFailed
 

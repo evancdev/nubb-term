@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-/// Wraps a Ghostty surface view in an NSScrollView to provide native macOS scrollbar support.
+/// Wraps a Nubb surface view in an NSScrollView to provide native macOS scrollbar support.
 ///
 /// ## Coordinate System
 /// AppKit uses a +Y-up coordinate system (origin at bottom-left), while terminals conceptually
@@ -11,7 +11,7 @@ import Combine
 /// ## Architecture
 /// - `scrollView`: The outermost NSScrollView that manages scrollbar rendering and behavior
 /// - `documentView`: A blank NSView whose height represents total scrollback (in pixels)
-/// - `surfaceView`: The actual Ghostty renderer, positioned to fill the visible rect
+/// - `surfaceView`: The actual Nubb renderer, positioned to fill the visible rect
 class SurfaceScrollView: NSView {
     private let scrollView: NSScrollView
     private let documentView: NSView
@@ -53,7 +53,7 @@ class SurfaceScrollView: NSView {
 
         // The document view contains our actual surface as a child.
         // We synchronize the scrolling of the document with this surface
-        // so that our primary Ghostty renderer only needs to render the viewport.
+        // so that our primary Nubb renderer only needs to render the viewport.
         documentView.addSubview(surfaceView)
 
         super.init(frame: .zero)
@@ -75,7 +75,7 @@ class SurfaceScrollView: NSView {
             self?.handleScrollChange(notification)
         })
 
-        // Listen for scrollbar updates from Ghostty
+        // Listen for scrollbar updates from Nubb
         observers.append(NotificationCenter.default.addObserver(
             forName: .ghosttyDidUpdateScrollbar,
             object: surfaceView,

@@ -3,11 +3,11 @@ import SwiftUI
 import GhosttyKit
 
 extension Ghostty {
-    /// The manager that's responsible for updating shortcuts of Ghostty's app menu
+    /// The manager that's responsible for updating shortcuts of Nubb's app menu
     @MainActor
     class MenuShortcutManager {
 
-        /// Ghostty menu items indexed by their normalized shortcut. This avoids traversing
+        /// Nubb menu items indexed by their normalized shortcut. This avoids traversing
         /// the entire menu tree on every key equivalent event.
         ///
         /// We store a weak reference so this cache can never be the owner of menu items.
@@ -20,7 +20,7 @@ extension Ghostty {
         }
 
         /// Syncs a single menu shortcut for the given action. The action string is the same
-        /// action string used for the Ghostty configuration.
+        /// action string used for the Nubb configuration.
         func syncMenuShortcut(_ config: Ghostty.Config, action: String?, menuItem: NSMenuItem?) {
             guard let menu = menuItem else { return }
 
@@ -33,7 +33,7 @@ extension Ghostty {
         }
 
         /// Attempts to perform a menu key equivalent only for menu items that represent
-        /// Ghostty keybind actions. This is important because it lets our surface dispatch
+        /// Nubb keybind actions. This is important because it lets our surface dispatch
         /// bindings through the menu so they flash but also lets our surface override macOS built-ins
         /// like Cmd+H.
         func performGhosttyBindingMenuKeyEquivalent(with event: NSEvent) -> Bool {
@@ -85,7 +85,7 @@ extension Ghostty {
 
 private extension Ghostty.MenuShortcutManager {
     /// Syncs a single menu shortcut for the given action. The action string is the same
-    /// action string used for the Ghostty configuration.
+    /// action string used for the Nubb configuration.
     ///
     /// - Returns: Whether the menu item is updated and saved in ``menuItemsByShortcut``
     func updateMenuShortcut(_ config: Ghostty.Config, action: String?, menuItem menu: NSMenuItem) -> Bool {

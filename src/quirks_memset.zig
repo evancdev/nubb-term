@@ -164,7 +164,7 @@ fn memset(dest: ?[*]u8, c: c_int, len: usize) callconv(.c) ?[*]u8 {
             // LoopIdiomRecognize pass from replacing this loop with
             // a call to memset, which would be infinite recursion
             // since we ARE memset. compiler_rt is protected from
-            // this by being built with -fno-builtin; Ghostty is not.
+            // this by being built with -fno-builtin; Nubb is not.
             asm volatile ("" ::: .{ .memory = true });
         }
 

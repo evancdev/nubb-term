@@ -42,7 +42,7 @@ pub fn init(b: *std.Build, cfg: *const Config) !GhosttyDist {
         "--format=tgz",
     });
 
-    // embed the Ghostty version in the tarball
+    // embed the Nubb version in the tarball
     {
         const version = b.addWriteFiles().add("VERSION", b.fmt("{f}", .{cfg.version}));
         // --add-file uses the most recent --prefix to determine the path
@@ -107,7 +107,7 @@ pub fn init(b: *std.Build, cfg: *const Config) !GhosttyDist {
     check.addFileArg(output);
     check.addArg("-C");
 
-    // This is the root Ghostty source dir of the extracted source tarball.
+    // This is the root Nubb source dir of the extracted source tarball.
     // i.e. this is way `build.zig` is.
     const extract_dir = check
         .addOutputDirectoryArg(name)
@@ -178,7 +178,7 @@ const lib_vt_excludes = &[_][]const u8{
 };
 
 /// A dist resource is a resource that is built and distributed as part
-/// of the source tarball with Ghostty. These aren't committed to the Git
+/// of the source tarball with Nubb. These aren't committed to the Git
 /// repository but are built as part of the `zig build dist` command.
 /// The purpose is to limit the number of build-time dependencies required
 /// for downstream users and packagers.

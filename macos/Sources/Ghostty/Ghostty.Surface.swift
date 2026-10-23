@@ -1,10 +1,10 @@
 import GhosttyKit
 
 extension Ghostty {
-    /// Represents a single surface within Ghostty.
+    /// Represents a single surface within Nubb.
     ///
     /// NOTE(mitchellh): This is a work-in-progress class as part of a general refactor
-    /// of our Ghostty data model. At the time of writing there's still a ton of surface
+    /// of our Nubb data model. At the time of writing there's still a ton of surface
     /// functionality that is not encapsulated in this class. It is planned to migrate that
     /// all over.
     ///

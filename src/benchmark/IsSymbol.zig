@@ -36,7 +36,7 @@ pub const Mode = enum {
     /// uucode implementation
     uucode,
 
-    /// Ghostty's table-based approach.
+    /// Nubb's table-based approach.
     table,
 };
 

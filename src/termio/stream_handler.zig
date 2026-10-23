@@ -773,7 +773,7 @@ pub const StreamHandler = struct {
                 self.messageWriter(msg);
             },
 
-            // DECXCPR: extended cursor position adds a page number. Ghostty has
+            // DECXCPR: extended cursor position adds a page number. Nubb has
             // no page memory, so the page is always 1.
             .cursor_position_extended => {
                 const pos = self.cursorReportPos();

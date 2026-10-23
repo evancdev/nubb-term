@@ -40,7 +40,7 @@ pub fn launchedFromDesktop() bool {
         // we match the PID and assume that if we do, we were launched from
         // the desktop file. Pid comparing catches the scenario where
         // another terminal was launched from a desktop file and then launches
-        // Ghostty and Ghostty inherits the env.
+        // Nubb and Nubb inherits the env.
         .linux, .freebsd => ul: {
             const gio_pid_str = global.environ().getPosix("GIO_LAUNCHED_DESKTOP_FILE_PID") orelse
                 break :ul false;

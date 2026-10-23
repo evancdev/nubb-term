@@ -2179,7 +2179,7 @@ pub fn semanticPrompt(
             // nested more deeply). If no aid is specified, treat as an
             // aid whose value is the empty string.
 
-            // Ghostty:
+            // Nubb:
             // We don't currently do explicit command tracking in any way
             // so there is no need to terminate prior commands. We just
             // perform the `A` action.

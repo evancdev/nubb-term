@@ -237,7 +237,7 @@ pub const LoadingImage = struct {
 
         // We unlink whatever name the client sent, as the Kitty protocol
         // requires. So a client can remove any shared memory object that
-        // Ghostty can open, including another app group's on macOS if it
+        // Nubb can open, including another app group's on macOS if it
         // can guess the name. This applies to any name, not just ones
         // without a leading slash.
         defer file.close(io);

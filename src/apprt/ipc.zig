@@ -1,4 +1,4 @@
-//! Inter-process Communication to a running Ghostty instance from a separate
+//! Inter-process Communication to a running Nubb instance from a separate
 //! process.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
@@ -13,7 +13,7 @@ pub const Errors = error{
 };
 
 pub const Target = union(Key) {
-    /// Open up a new window in a custom instance of Ghostty.
+    /// Open up a new window in a custom instance of Nubb.
     class: [:0]const u8,
 
     /// Detect which instance to open a new window in.

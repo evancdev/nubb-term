@@ -1,7 +1,7 @@
-//! Application runtime for the embedded version of Ghostty. The embedded
-//! version is when Ghostty is embedded within a parent host application,
+//! Application runtime for the embedded version of Nubb. The embedded
+//! version is when Nubb is embedded within a parent host application,
 //! rather than owning the application lifecycle itself. This is used for
-//! example for the macOS build of Ghostty so that we can use a native
+//! example for the macOS build of Nubb so that we can use a native
 //! Swift+XCode-based application.
 
 const std = @import("std");
@@ -195,7 +195,7 @@ pub const App = struct {
         const input_event: input.KeyEvent = event.core() orelse
             return false;
 
-        // Invoke the core Ghostty logic to handle this input.
+        // Invoke the core Nubb logic to handle this input.
         const effect: CoreSurface.InputEffect = switch (target) {
             .app => if (self.core_app.keyEvent(
                 self,
@@ -345,11 +345,11 @@ pub const App = struct {
         }
     }
 
-    /// Send the given IPC to a running Ghostty. Returns `true` if the action was
+    /// Send the given IPC to a running Nubb. Returns `true` if the action was
     /// able to be performed, `false` otherwise.
     ///
     /// Note that this is a static function. Since this is called from a CLI app (or
-    /// some other process that is not Ghostty) there is no full-featured apprt App
+    /// some other process that is not Nubb) there is no full-featured apprt App
     /// to use.
     pub fn performIpc(
         _: Allocator,
@@ -469,7 +469,7 @@ pub const Surface = struct {
         /// since this is used for scripting.
         ///
         /// This command always run in a shell (e.g. via `/bin/sh -c`),
-        /// despite Ghostty allowing directly executed commands via config.
+        /// despite Nubb allowing directly executed commands via config.
         /// This is a legacy thing and we should probably change it in the
         /// future once we have a concrete use case.
         command: ?[*:0]const u8 = null,
@@ -1216,7 +1216,7 @@ pub const Surface = struct {
                 _ = env.orderedRemove("XPC_SERVICE_NAME");
             }
 
-            // Remove this so that running `ghostty` within Ghostty works.
+            // Remove this so that running `ghostty` within Nubb works.
             _ = env.orderedRemove("GHOSTTY_MAC_LAUNCH_SOURCE");
         }
 

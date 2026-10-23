@@ -267,7 +267,7 @@ extension Ghostty {
 
         // MARK: Notifications
 
-        // Called when the selected keyboard changes. We have to notify Ghostty so that
+        // Called when the selected keyboard changes. We have to notify Nubb so that
         // it can reload the keyboard mapping for input.
         @objc private func keyboardSelectionDidChange(notification: NSNotification) {
             guard let app = self.app else { return }
@@ -286,7 +286,7 @@ extension Ghostty {
             ghostty_app_set_focus(app, false)
         }
 
-        // MARK: Ghostty Callbacks (macOS)
+        // MARK: Nubb Callbacks (macOS)
 
         static func closeSurface(_ userdata: UnsafeMutableRawPointer?, processAlive: Bool) {
             let surface = self.surfaceUserdata(from: userdata)
@@ -546,7 +546,7 @@ extension Ghostty {
             DispatchQueue.main.async { state.appTick() }
         }
 
-        /// Determine if a given notification should be presented to the user when Ghostty is running in the foreground.
+        /// Determine if a given notification should be presented to the user when Nubb is running in the foreground.
         func shouldPresentNotification(notification: UNNotification) -> Bool {
             let userInfo = notification.request.content.userInfo
 

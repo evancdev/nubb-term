@@ -33,7 +33,7 @@ pub const Options = struct {
     }
 };
 
-/// The `show-config` command shows the current configuration in a valid Ghostty
+/// The `show-config` command shows the current configuration in a valid Nubb
 /// configuration file format.
 ///
 /// When executed without any arguments this will output the current

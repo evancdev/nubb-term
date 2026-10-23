@@ -8,7 +8,7 @@ extension String {
     /// The string as the text of a terminal key event, or nil when it is empty
     /// or begins with an ASCII control character.
     ///
-    /// - Note: Control characters are encoded by Ghostty itself so that the
+    /// - Note: Control characters are encoded by Nubb itself so that the
     /// physical key and its modifiers remain available to protocols
     /// such as the Kitty keyboard protocol.
     var keyEventText: String? {

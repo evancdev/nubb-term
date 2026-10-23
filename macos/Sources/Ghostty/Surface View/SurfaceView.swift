@@ -538,7 +538,7 @@ extension Ghostty {
         }
     }
 
-    /// A surface is terminology in Ghostty for a terminal surface, or a place where a terminal is actually drawn
+    /// A surface is terminology in Nubb for a terminal surface, or a place where a terminal is actually drawn
     /// and interacted with. The word "surface" is used because a surface may represent a window, a tab,
     /// a split, a small preview pane, etc. It is ANYTHING that has a terminal drawn to it.
     struct SurfaceRepresentable: NSViewRepresentable {
@@ -571,7 +571,7 @@ extension Ghostty {
     }
 
     /// The configuration for a surface. For any configuration not set, defaults will be chosen from
-    /// libghostty, usually from the Ghostty configuration.
+    /// libghostty, usually from the Nubb configuration.
     struct SurfaceConfiguration {
         /// Explicit font size to use in points
         var fontSize: Float32?

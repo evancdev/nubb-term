@@ -3,7 +3,7 @@
 //! WARNING: The API is not guaranteed to be stable.
 //!
 //! The functionality is extremely stable, since it is extracted
-//! directly from Ghostty which has been used in real world scenarios
+//! directly from Nubb which has been used in real world scenarios
 //! by thousands of users for years. However, the API itself (functions,
 //! types, etc.) may change without warning. We're working on stabilizing
 //! this in the future.
@@ -17,7 +17,7 @@ const stderr = @import("os/stderr.zig");
 // is separate because (1) we need our root file to be in `src/`
 // so we can access other directories and (2) we may want to withhold
 // parts of `terminal` that are not ready for public consumption
-// or are too Ghostty-internal.
+// or are too Nubb-internal.
 const terminal = @import("terminal/main.zig");
 
 /// System interface for the terminal package.

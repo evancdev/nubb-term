@@ -503,7 +503,7 @@ pub const DeepPress = struct {
 /// Record a deep press event for the active left-click gesture.
 ///
 /// A deep press is a force/pressure activation while the primary pointer is
-/// already down. Ghostty treats it like the platform text-selection affordance:
+/// already down. Nubb treats it like the platform text-selection affordance:
 /// select the word under the original press, then consume the gesture so
 /// further cursor movement while the button remains pressed does not drag or
 /// autoscroll the selection.

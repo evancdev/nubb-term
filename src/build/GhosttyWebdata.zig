@@ -1,4 +1,4 @@
-//! GhosttyWebdata generates all the Ghostty website data that is
+//! GhosttyWebdata generates all the Nubb website data that is
 //! merged with the website for things like config references.
 const GhosttyWebdata = @This();
 

@@ -62,7 +62,7 @@ pub const tables = [_]config.Table{
         //     tables.zig: error: unable to evaluate comptime expression
         //     thread panic: TODO implement writeToPackedMemory for more types
         //
-        // Ghostty does not hit this, because its own uses of these fields go
+        // Nubb does not hit this, because its own uses of these fields go
         // through the tables generated at build time rather than through
         // `uucode.get`. A downstream pairing this config with libvaxis does:
         // vaxis measures grapheme widths with `grapheme.Iterator`, so any
@@ -105,7 +105,7 @@ const WidthComponent = struct {
         const is_emoji_modifier = inputs.items(.is_emoji_modifier);
         const grapheme_break_no_control = inputs.items(.grapheme_break_no_control);
 
-        // This condition is needed as Ghostty currently has a singular concept for
+        // This condition is needed as Nubb currently has a singular concept for
         // the `width` of a code point, while `uucode` splits the concept into
         // `wcwidth_standalone` and `wcwidth_zero_in_grapheme`. The two cases where
         // we want to use the `wcwidth_standalone` despite the code point occupying
@@ -113,7 +113,7 @@ const WidthComponent = struct {
         // modifiers and prepend code points. For emoji modifiers we want to
         // support displaying them in isolation as color patches, and if prepend
         // characters were to be width 0 they would disappear from the output with
-        // Ghostty's current width 0 handling. Future work will take advantage of
+        // Nubb's current width 0 handling. Future work will take advantage of
         // the new uucode `wcwidth_standalone` vs `wcwidth_zero_in_grapheme` split.
         for (0..config.num_code_points) |i| {
             if (zero_in_grapheme[i] and !is_emoji_modifier[i] and grapheme_break_no_control[i] != .prepend) {

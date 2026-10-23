@@ -36,14 +36,14 @@ pub const ResourcesDir = struct {
 /// exists (not all platforms or packages have it). The output is
 /// owned by the caller.
 ///
-/// This is highly Ghostty-specific and can likely be generalized at
+/// This is highly Nubb-specific and can likely be generalized at
 /// some point but we can cross that bridge if we ever need to.
 pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
     // Use the GHOSTTY_RESOURCES_DIR environment variable in release builds.
     //
     // In debug builds we try using terminfo detection first instead, since
-    // if debug Ghostty is launched by an older version of Ghostty, it
-    // would inherit the old, stale resources of older Ghostty instead of the
+    // if debug Nubb is launched by an older version of Nubb, it
+    // would inherit the old, stale resources of older Nubb instead of the
     // freshly built ones under zig-out/share/ghostty.
     //
     // Note: we ALWAYS want to allocate here because the result is always
@@ -94,7 +94,7 @@ pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
 
         // On all platforms (except BSD), we look for a /usr/share style path. This
         // is valid even on Mac since there is nothing that requires
-        // Ghostty to be in an app bundle.
+        // Nubb to be in an app bundle.
         inline for (sentinels) |sentinel| {
             if (try maybeDir(
                 &dir_buf,

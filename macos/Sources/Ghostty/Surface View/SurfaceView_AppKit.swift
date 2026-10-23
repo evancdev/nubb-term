@@ -99,7 +99,7 @@ extension Ghostty {
         /// after this surface is dragged to another window
         var isWindowVisible = false
 
-        /// The configuration derived from the Ghostty config so we don't need to rely on references.
+        /// The configuration derived from the Nubb config so we don't need to rely on references.
         @Published private(set) var derivedConfig: DerivedConfig
 
         /// The background color within the color palette of the surface. This is only set if it is
@@ -129,7 +129,7 @@ extension Ghostty {
         }
 
         // Set whether the surface is currently on a password input or not. This is
-        // detected with the set_password_input_cb on the Ghostty state.
+        // detected with the set_password_input_cb on the Nubb state.
         var passwordInput: Bool = false {
             didSet {
                 // We need to update our state within the SecureInput manager.
@@ -480,7 +480,7 @@ extension Ghostty {
         }
 
         override func sizeDidChange(_ size: CGSize) {
-            // Ghostty wants to know the actual framebuffer size... It is very important
+            // Nubb wants to know the actual framebuffer size... It is very important
             // here that we use "size" and NOT the view frame. If we're in the middle of
             // an animation (i.e. a fullscreen animation), the frame will not yet be updated.
             // The size represents our final size we're going for.
@@ -1081,7 +1081,7 @@ extension Ghostty {
         override func pressureChange(with event: NSEvent) {
             guard let surface = self.surface else { return }
 
-            // Notify Ghostty first. We do this because this will let Ghostty handle
+            // Notify Nubb first. We do this because this will let Nubb handle
             // state setup that we'll need for later pressure handling (such as
             // QuickLook)
             ghostty_surface_mouse_pressure(surface, UInt32(event.stage), Double(event.pressure))
@@ -1552,7 +1552,7 @@ extension Ghostty {
                 font.release()
             }
 
-            // Ghostty coordinate system is top-left, convert to bottom-left for AppKit
+            // Nubb coordinate system is top-left, convert to bottom-left for AppKit
             let pt = NSPoint(x: text.tl_px_x, y: frame.size.height - text.tl_px_y)
             let str = NSAttributedString.init(string: String(cString: text.text), attributes: attributes)
             self.showDefinition(for: str, at: pt)
@@ -1878,7 +1878,7 @@ extension Ghostty {
         }
 
         required convenience init(from decoder: Decoder) throws {
-            // Decoding uses the global Ghostty app
+            // Decoding uses the global Nubb app
             guard let del = NSApplication.shared.delegate,
                   let appDel = del as? AppDelegate,
                   let app = appDel.ghostty.app else {
@@ -1941,7 +1941,7 @@ extension Ghostty.SurfaceView: NSTextInputClient {
     func selectedRange() -> NSRange {
         guard let surface = self.surface else { return NSRange() }
 
-        // Get our range from the Ghostty API. There is a race condition between getting the
+        // Get our range from the Nubb API. There is a race condition between getting the
         // range and actually using it since our selection may change but there isn't a good
         // way I can think of to solve this for AppKit.
         var text = ghostty_text_s()
@@ -2025,7 +2025,7 @@ extension Ghostty.SurfaceView: NSTextInputClient {
             return NSRect(x: frame.origin.x, y: frame.origin.y, width: 0, height: 0)
         }
 
-        // Ghostty will tell us where it thinks an IME keyboard should render.
+        // Nubb will tell us where it thinks an IME keyboard should render.
         var x: Double = 0
         var y: Double = 0
         var width: Double = cellSize.width
@@ -2059,7 +2059,7 @@ extension Ghostty.SurfaceView: NSTextInputClient {
             width = 0
             x += cellSize.width * Double(range.location + range.length)
         }
-        // Ghostty coordinates are in top-left (0, 0) so we have to convert to
+        // Nubb coordinates are in top-left (0, 0) so we have to convert to
         // bottom-left since that is what AppKit expects
         // when there's is no characters selected,
         // width should be 0 so that dictation indicator
@@ -2402,7 +2402,7 @@ extension Ghostty.SurfaceView {
     /// Returns an attributed string for the given range.
     ///
     /// Note: right now this only applies font information. One day it'd be nice to extend
-    /// this to copy styling information as well but we need to augment Ghostty core to
+    /// this to copy styling information as well but we need to augment Nubb core to
     /// expose that.
     ///
     /// This provides styling information to assistive technologies.

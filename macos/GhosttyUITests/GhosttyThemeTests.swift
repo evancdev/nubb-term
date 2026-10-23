@@ -1,6 +1,6 @@
 //
 //  GhosttyThemeTests.swift
-//  Ghostty
+//  Nubb
 //
 //  Created by luca on 27.10.2025.
 //

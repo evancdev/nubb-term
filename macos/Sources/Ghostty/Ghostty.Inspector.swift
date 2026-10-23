@@ -2,7 +2,7 @@ import GhosttyKit
 import Metal
 
 extension Ghostty {
-    /// Represents the inspector for a surface within Ghostty.
+    /// Represents the inspector for a surface within Nubb.
     ///
     /// Wraps a `ghostty_inspector_t`
     final class Inspector: Sendable {

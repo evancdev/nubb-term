@@ -51,13 +51,13 @@ pub const default: Palette = default: {
 /// Palette is the 256 color palette.
 pub const Palette = [256]RGB;
 
-/// A parsed palette entry from Ghostty's config "N=COLOR" syntax.
+/// A parsed palette entry from Nubb's config "N=COLOR" syntax.
 pub const PaletteEntry = struct {
     index: u8,
     color: RGB,
 };
 
-/// Parse a palette entry in Ghostty config syntax: "N=COLOR" where N is
+/// Parse a palette entry in Nubb config syntax: "N=COLOR" where N is
 /// a palette index 0-255 (decimal, or 0x/0o/0b-prefixed per Zig's
 /// parseInt base-0 rules) and COLOR is anything RGB.parse accepts.
 /// Whitespace (spaces/tabs) around N and COLOR is ignored.
@@ -755,7 +755,7 @@ pub const RGB = packed struct(u24) {
     ///    where `r`, `g`, and `b` are hexadecimal digits. The forms with
     ///    a leading # specify a color with 4, 8, 12, and 16 bits of
     ///    precision per color channel. The forms without a leading # are
-    ///    accepted for compatibility with Ghostty config/theme color values.
+    ///    accepted for compatibility with Nubb config/theme color values.
     ///
     /// 4. X11 color names
     pub fn parse(value: []const u8) error{InvalidFormat}!RGB {

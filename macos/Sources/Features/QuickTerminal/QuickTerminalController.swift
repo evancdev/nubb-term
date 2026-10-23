@@ -13,7 +13,7 @@ class QuickTerminalController: BaseTerminalController {
     /// The current state of the quick terminal
     private(set) var visible: Bool = false
 
-    /// The previously running application when the terminal is shown. This is NEVER Ghostty.
+    /// The previously running application when the terminal is shown. This is NEVER Nubb.
     /// If this is set then when the quick terminal is animated out then we will restore this
     /// application to the front.
     private var previousApp: NSRunningApplication?
@@ -27,7 +27,7 @@ class QuickTerminalController: BaseTerminalController {
     /// Non-nil if we have hidden dock state.
     private var hiddenDock: HiddenDock?
 
-    /// The configuration derived from the Ghostty config so we don't need to rely on references.
+    /// The configuration derived from the Nubb config so we don't need to rely on references.
     private var derivedConfig: DerivedConfig
 
     /// Tracks if we're currently handling a manual resize to prevent recursion
@@ -499,7 +499,7 @@ class QuickTerminalController: BaseTerminalController {
                     NSApp.activate(ignoringOtherApps: true)
 
                     // This works around a really funky bug where if the terminal is
-                    // shown on a screen that has no other Ghostty windows, it takes
+                    // shown on a screen that has no other Nubb windows, it takes
                     // a few (variable) event loop ticks until we can actually focus it.
                     // https://github.com/ghostty-org/ghostty/issues/2409
                     //

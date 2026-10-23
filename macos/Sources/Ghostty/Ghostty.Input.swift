@@ -10,10 +10,10 @@ extension Ghostty {
     /// Return the key equivalent for the given trigger.
     ///
     /// Returns nil if the trigger doesn't have an equivalent KeyboardShortcut. This is possible
-    /// because Ghostty input triggers are a superset of what can be represented by a macOS
+    /// because Nubb input triggers are a superset of what can be represented by a macOS
     /// KeyboardShortcut. For example, macOS doesn't have any way to represent function keys
     /// (F1, F2, ...) with a KeyboardShortcut. This doesn't represent a practical issue because input
-    /// handling for Ghostty is handled at a lower level (usually). This function should generally only
+    /// handling for Nubb is handled at a lower level (usually). This function should generally only
     /// be used for things like NSMenu that only support keyboard shortcuts anyways.
     @MainActor static func keyboardShortcut(for trigger: ghostty_input_trigger_s) -> KeyboardShortcut? {
         let modifierFlags = Self.eventModifierFlags(mods: trigger.mods)
@@ -61,7 +61,7 @@ extension Ghostty {
 
     // MARK: Mods
 
-    /// Returns the event modifier flags set for the Ghostty mods enum.
+    /// Returns the event modifier flags set for the Nubb mods enum.
     static func eventModifierFlags(mods: ghostty_input_mods_e) -> NSEvent.ModifierFlags {
         var flags = NSEvent.ModifierFlags(rawValue: 0)
         if mods.rawValue & GHOSTTY_MODS_SHIFT.rawValue != 0 { flags.insert(.shift) }
@@ -82,7 +82,7 @@ extension Ghostty {
         if flags.contains(.capsLock) { mods |= GHOSTTY_MODS_CAPS.rawValue }
 
         // Handle sided input. We can't tell that both are pressed in the
-        // Ghostty structure but that's okay -- we don't use that information.
+        // Nubb structure but that's okay -- we don't use that information.
         let rawFlags = flags.rawValue
         if rawFlags & UInt(NX_DEVICERSHIFTKEYMASK) != 0 { mods |= GHOSTTY_MODS_SHIFT_RIGHT.rawValue }
         if rawFlags & UInt(NX_DEVICERCTLKEYMASK) != 0 { mods |= GHOSTTY_MODS_CTRL_RIGHT.rawValue }
@@ -92,7 +92,7 @@ extension Ghostty {
         return ghostty_input_mods_e(mods)
     }
 
-    /// A map from the Ghostty key enum to the keyEquivalent string for shortcuts. Note that
+    /// A map from the Nubb key enum to the keyEquivalent string for shortcuts. Note that
     /// not all ghostty key enum values are represented here because not all of them can be
     /// mapped to a KeyEquivalent.
     static let keyToEquivalent: [ghostty_input_key_e: KeyEquivalent] = [

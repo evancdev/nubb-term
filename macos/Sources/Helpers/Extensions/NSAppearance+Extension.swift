@@ -6,7 +6,7 @@ extension NSAppearance {
         return name.rawValue.lowercased().contains("dark")
     }
 
-    /// Initialize a desired NSAppearance for the Ghostty configuration.
+    /// Initialize a desired NSAppearance for the Nubb configuration.
     convenience init?(ghosttyConfig config: Ghostty.Config) {
         guard let theme = config.windowTheme else { return nil }
         switch theme {

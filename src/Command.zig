@@ -205,7 +205,7 @@ fn startPosix(self: *Command, arena: Allocator) !void {
     // ignore it. We don't log because that'll show up in the output.
     if (self.cwd) |cwd| _ = posix.system.chdir(cwd);
 
-    // Restore any rlimits that were set by Ghostty. This might fail but
+    // Restore any rlimits that were set by Nubb. This might fail but
     // any failures are ignored (its best effort).
     global.rlimits().restore();
 

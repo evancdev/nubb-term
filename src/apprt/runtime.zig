@@ -1,6 +1,6 @@
 const std = @import("std");
 
-/// Runtime is the runtime to use for Ghostty. All runtimes do not provide
+/// Runtime is the runtime to use for Nubb. All runtimes do not provide
 /// equivalent feature sets.
 pub const Runtime = enum {
     /// Will not produce an executable at all when `zig build` is called.

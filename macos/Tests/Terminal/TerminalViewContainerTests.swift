@@ -1,6 +1,6 @@
 //
 //  TerminalViewContainerTests.swift
-//  Ghostty
+//  Nubb
 //
 //  Created by Lukas on 26.02.2026.
 //

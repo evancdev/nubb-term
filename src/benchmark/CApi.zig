@@ -4,7 +4,7 @@ const global = @import("../global.zig");
 
 const log = std.log.scoped(.benchmark);
 
-/// Run the Ghostty benchmark CLI with the given action and arguments.
+/// Run the Nubb benchmark CLI with the given action and arguments.
 export fn ghostty_benchmark_cli(
     action_name_: [*:0]const u8,
     args: [*:0]const u8,

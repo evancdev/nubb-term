@@ -89,7 +89,7 @@ function __ghostty_setup --on-event fish_prompt -d "Setup ghostty integration"
         end
     end
 
-    # Add Ghostty binary to PATH if the path feature is enabled
+    # Add Nubb binary to PATH if the path feature is enabled
     if contains path $features; and test -n "$GHOSTTY_BIN_DIR"
         fish_add_path --global --path --append "$GHOSTTY_BIN_DIR"
     end
@@ -97,7 +97,7 @@ function __ghostty_setup --on-event fish_prompt -d "Setup ghostty integration"
     # When using sudo shell integration feature, ensure $TERMINFO is set
     # and `sudo` is not already a function or alias
     if contains sudo $features; and test -n "$TERMINFO"; and test file = (type -t sudo 2> /dev/null; or echo "x")
-        # Wrap `sudo` command to ensure Ghostty terminfo is preserved
+        # Wrap `sudo` command to ensure Nubb terminfo is preserved
         function sudo -d "Wrap sudo to preserve terminfo"
             set --function sudo_has_sudoedit_flags no
             for arg in $argv
@@ -125,7 +125,7 @@ function __ghostty_setup --on-event fish_prompt -d "Setup ghostty integration"
     # feature flags into command options.
     set -l features (string split ',' -- "$GHOSTTY_SHELL_FEATURES")
     if contains ssh-env $features; or contains ssh-terminfo $features
-        function ssh --wraps=ssh --description "SSH wrapper with Ghostty integration"
+        function ssh --wraps=ssh --description "SSH wrapper with Nubb integration"
             set -l features (string split ',' -- "$GHOSTTY_SHELL_FEATURES")
             set -l flags
             contains ssh-env $features; or set -a flags --forward-env=false
@@ -164,7 +164,7 @@ function __ghostty_setup --on-event fish_prompt -d "Setup ghostty integration"
         printf \e\]7\;file://%s%s\a $hostname (string escape --style=url $PWD)
     end
 
-    # Enable fish to handle reflow because Ghostty clears the prompt on resize.
+    # Enable fish to handle reflow because Nubb clears the prompt on resize.
     set --global fish_handle_reflow 1
 
     # Initial calls for first prompt

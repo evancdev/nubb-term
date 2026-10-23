@@ -526,7 +526,7 @@ pub const Shaper = struct {
             // This is EXCEPTIONALLY rare. Only happens for languages with
             // complex shaping which we don't even really support properly
             // right now, so are very unlikely to be used heavily by users
-            // of Ghostty.
+            // of Nubb.
             @branchHint(.cold);
             std.mem.sort(
                 font.shape.Cell,

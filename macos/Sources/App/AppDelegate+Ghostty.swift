@@ -1,8 +1,8 @@
 import AppKit
 
-// MARK: Ghostty Delegate
+// MARK: Nubb Delegate
 
-/// This implements the Ghostty app delegate protocol which is used by the Ghostty
+/// This implements the Nubb app delegate protocol which is used by the Nubb
 /// APIs for app-global information.
 extension AppDelegate: Ghostty.Delegate {
     func ghosttySurface(id: UUID) -> Ghostty.SurfaceView? {

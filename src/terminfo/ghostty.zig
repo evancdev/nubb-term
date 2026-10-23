@@ -1,7 +1,7 @@
 const std = @import("std");
 const Source = @import("Source.zig");
 
-/// Ghostty's terminfo entry.
+/// Nubb's terminfo entry.
 pub const ghostty: Source = .{
     .names = &.{
         // We support the "xterm-" prefix because some poorly behaved programs
@@ -30,7 +30,7 @@ pub const ghostty: Source = .{
     // I've marked some capabilities as "???" if I don't understand what they
     // mean but I just assume I support since other modern terminals do. In
     // this case, I'd love if anyone could help explain what this means and
-    // verify that Ghostty does indeed support it and if not we can fix it.
+    // verify that Nubb does indeed support it and if not we can fix it.
     .capabilities = &.{
         // automatic right margin -- when reaching the end of a line, text is
         // wrapped to the next line.
@@ -246,7 +246,7 @@ pub const ghostty: Source = .{
         //-----------------------------------------------------------
         // Completely unvalidated entries that are blindly copied from
         // other terminals (Kitty, Wezterm, Alacritty) and may or may not
-        // actually work with Ghostty. todo is to validate these!
+        // actually work with Nubb. todo is to validate these!
 
         .{ .name = "kDC", .value = .{ .string = "\\E[3;2~" } },
         .{ .name = "kDC3", .value = .{ .string = "\\E[3;3~" } },

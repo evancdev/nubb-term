@@ -17,7 +17,7 @@ const log = std.log.scoped(.kitty_clipboard);
 
 /// Default maximum total decoded bytes accumulated by one write
 /// transaction. Embedders can override this per-transaction via
-/// WriteState.Options (Ghostty exposes it as the
+/// WriteState.Options (Nubb exposes it as the
 /// `clipboard-write-limit-bytes` configuration).
 pub const max_write_size = 64 * 1024 * 1024;
 

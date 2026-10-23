@@ -1,6 +1,6 @@
 //
 //  GhosttyCustomConfigCase.swift
-//  Ghostty
+//  Nubb
 //
 //  Created by luca on 16.10.2025.
 //

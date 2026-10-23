@@ -27,7 +27,7 @@ extension NSPasteboard.PasteboardType {
 }
 
 extension NSPasteboard {
-    /// The pasteboard to used for Ghostty selection.
+    /// The pasteboard to used for Nubb selection.
     static var ghosttySelection: NSPasteboard = {
         NSPasteboard(name: .init("com.mitchellh.ghostty.selection"))
     }()
@@ -132,7 +132,7 @@ extension NSPasteboard {
         return result
     }
 
-    /// The pasteboard for the Ghostty enum type. Returns nil for locations
+    /// The pasteboard for the Nubb enum type. Returns nil for locations
     /// macOS can't serve; callers report those as unsupported.
     static func ghostty(_ clipboard: ghostty_clipboard_e) -> NSPasteboard? {
         switch clipboard {

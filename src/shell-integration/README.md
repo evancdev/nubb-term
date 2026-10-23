@@ -1,7 +1,7 @@
 # Shell Integration Code
 
 This is the shell-specific shell-integration code that is
-used for the shell-integration feature set that Ghostty
+used for the shell-integration feature set that Nubb
 supports.
 
 This README is meant as developer documentation and not as
@@ -22,7 +22,7 @@ Bash shell integration can also be sourced manually from `bash/ghostty.bash`.
 This also works for older versions of Bash.
 
 ```bash
-# Ghostty shell integration for Bash. This must be at the top of your bashrc!
+# Nubb shell integration for Bash. This must be at the top of your bashrc!
 if [ -n "${GHOSTTY_RESOURCES_DIR}" ]; then
     builtin source "${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
 fi
@@ -37,7 +37,7 @@ fi
 
 ### Fish
 
-For [Fish](https://fishshell.com/), Ghostty prepends to the
+For [Fish](https://fishshell.com/), Nubb prepends to the
 `XDG_DATA_DIRS` directory. Fish automatically loads configuration
 files in `<XDG_DATA_DIR>/fish/vendor_conf.d/*.fish` on startup,
 allowing us to automatically integrate with the shell. For details
@@ -52,7 +52,7 @@ value will be retained and restored after our shell integration scripts are
 run.
 
 However, if `ZDOTDIR` is set in a system-wide file like `/etc/zshenv`, it will
-override Ghostty's `ZDOTDIR` value, preventing the shell integration from being
+override Nubb's `ZDOTDIR` value, preventing the shell integration from being
 loaded. In this case, the shell integration needs to be loaded manually.
 
 To load the Zsh shell integration manually:

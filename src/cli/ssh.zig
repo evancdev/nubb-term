@@ -17,7 +17,7 @@ const usage =
     \\
     \\Flags:
     \\  --forward-env[=bool]  Enable TERM / SendEnv forwarding. Default: true.
-    \\  --terminfo[=bool]     Install Ghostty terminfo on first connect. Default: true.
+    \\  --terminfo[=bool]     Install Nubb terminfo on first connect. Default: true.
     \\  --cache[=bool]        Use the terminfo install cache. Default: true.
     \\  --ssh=<path>          Path to the ssh binary. Default: first `ssh` on PATH.
     \\  --verbose             Print +ssh status lines to stderr.
@@ -99,7 +99,7 @@ pub const Options = struct {
     }
 };
 
-/// Wrap `ssh` to automatically configure Ghostty terminal integration on
+/// Wrap `ssh` to automatically configure Nubb terminal integration on
 /// remote hosts.
 ///
 /// Any arguments that aren't recognized as `+ssh` flags are passed to
@@ -108,7 +108,7 @@ pub const Options = struct {
 /// has no long flags, and `+ssh` defines no short flags, so there's
 /// nothing to collide.
 ///
-/// This is typically called via Ghostty's shell integration. When
+/// This is typically called via Nubb's shell integration. When
 /// `shell-integration-features` includes `ssh-env` or `ssh-terminfo`,
 /// each shell defines an `ssh` function that runs:
 ///
@@ -123,12 +123,12 @@ pub const Options = struct {
 ///   1. **Environment forwarding** (`--forward-env`). Sets `TERM` to
 ///      `xterm-256color` and requests `SendEnv` forwarding of
 ///      `COLORTERM`, `TERM_PROGRAM`, and `TERM_PROGRAM_VERSION` so the
-///      remote shell can still detect that it's running inside Ghostty.
+///      remote shell can still detect that it's running inside Nubb.
 ///      The remote `sshd_config` must list these in `AcceptEnv` for
 ///      forwarding to succeed.
 ///
 ///   2. **Terminfo install** (`--terminfo`). On the first connection to a
-///      given destination, installs Ghostty's embedded terminfo entry on the
+///      given destination, installs Nubb's embedded terminfo entry on the
 ///      remote host using `ssh tic -x -` over a shared `ControlMaster`
 ///      connection. Successful installs are cached
 ///      (see `ghostty +ssh-cache`) so subsequent connections skip this
@@ -165,7 +165,7 @@ pub const Options = struct {
 ///     # Basic invocation using defaults:
 ///     ghostty +ssh user@example.com
 ///
-///     # Forward Ghostty env vars but skip the terminfo install:
+///     # Forward Nubb env vars but skip the terminfo install:
 ///     ghostty +ssh --terminfo=false user@example.com
 ///
 ///     # `ssh` flags (short-form `-p`, etc.) pass through unchanged:
@@ -480,7 +480,7 @@ fn parseDestination(alloc: Allocator, stdout: []const u8) ?[]const u8 {
     return alloc.print("{s}@{s}:{s}", .{ user, host, port }) catch null;
 }
 
-/// Install Ghostty's terminfo on the remote host over a short-lived SSH
+/// Install Nubb's terminfo on the remote host over a short-lived SSH
 /// ControlMaster connection. The master tears down with the client
 /// (`ControlPersist=no`) so no socket lingers.
 fn installRemoteTerminfo(

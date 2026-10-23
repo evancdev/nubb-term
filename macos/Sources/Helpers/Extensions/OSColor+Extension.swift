@@ -70,9 +70,9 @@ extension NSColor {
     }
 }
 
-// MARK: Ghostty Types
+// MARK: Nubb Types
 extension NSColor {
-    /// Create a color from a Ghostty color.
+    /// Create a color from a Nubb color.
     convenience init(ghostty: ghostty_config_color_s) {
         let red = Double(ghostty.r) / 255
         let green = Double(ghostty.g) / 255

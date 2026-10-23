@@ -41,11 +41,11 @@ pub const Options = struct {
     }
 };
 
-/// The `show-face` command shows what font face Ghostty will use to render a
+/// The `show-face` command shows what font face Nubb will use to render a
 /// specific codepoint. Note that this command does not take into consideration
 /// grapheme clustering or any other Unicode features that might modify the
 /// presentation of a codepoint, so this may show a different font face than
-/// Ghostty uses to render a codepoint in a terminal session.
+/// Nubb uses to render a codepoint in a terminal session.
 ///
 /// Flags:
 ///
@@ -207,7 +207,7 @@ fn lookup(
 
     const face = font_grid.resolver.collection.getFace(idx) catch |err| switch (err) {
         error.SpecialHasNoFace => {
-            try stdout.print("U+{0X:0>2} « {0u} » is handled by Ghostty's internal sprites.\n", .{cp});
+            try stdout.print("U+{0X:0>2} « {0u} » is handled by Nubb's internal sprites.\n", .{cp});
             return null;
         },
         else => {

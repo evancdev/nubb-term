@@ -53,7 +53,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// For example, terminals executing custom scripts are not restorable.
     private var restorable: Bool = true
 
-    /// The configuration derived from the Ghostty config so we don't need to rely on references.
+    /// The configuration derived from the Nubb config so we don't need to rely on references.
     private(set) var derivedConfig: DerivedConfig
 
     /// The notification cancellable for focused surface property changes.
@@ -287,7 +287,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             //
             // That weird tabbing behavior only happens in the following cases at the point of writing.
             // - Creating a window via the Shortcuts app for now.
-            // - Creating a window via `New Ghostty Window Here` service.
+            // - Creating a window via `New Nubb Window Here` service.
             c.showWindowSafely(self)
 
             // Only cascade if we aren't fullscreen.
@@ -339,7 +339,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// Create a new window with an existing split tree.
     /// The window will be sized to match the tree's current view bounds if available.
     /// - Parameters:
-    ///   - ghostty: The Ghostty app instance.
+    ///   - ghostty: The Nubb app instance.
     ///   - tree: The split tree to use for the new window.
     ///   - position: Optional screen position (top-left corner) for the new window.
     ///               If nil, the window will cascade from the last cascade point.
@@ -1135,7 +1135,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             }
         }
 
-        // In various situations, macOS automatically tabs new windows. Ghostty handles
+        // In various situations, macOS automatically tabs new windows. Nubb handles
         // its own tabbing so we DONT want this behavior. This detects this scenario and undoes
         // it.
         //
@@ -1157,7 +1157,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         if NSWindow.userTabbingPreference == .always,
            !window.styleMask.contains(.fullScreen) {
             // If we have more than 1 window in our tab group we know we're a new window.
-            // Since Ghostty manages tabbing manually this will never be more than one
+            // Since Nubb manages tabbing manually this will never be more than one
             // at this point in the AppKit lifecycle (we add to the group after this).
             if let tabGroup = window.tabGroup, tabGroup.windows.count > 1 {
                 window.tabGroup?.removeWindow(window)

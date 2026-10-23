@@ -4,7 +4,7 @@ import GhosttyKit
 extension Ghostty {
     /// Maps to a `ghostty_config_t` and the various operations on that.
     class Config: ObservableObject {
-        // The underlying C pointer to the Ghostty config structure. This
+        // The underlying C pointer to the Nubb config structure. This
         // should never be accessed directly. Any operations on this should
         // be called from the functions on this or another class.
         private(set) var config: ghostty_config_t? {
@@ -107,7 +107,7 @@ extension Ghostty {
         // MARK: - Keybindings
 
         /// Return the key equivalent for the given action. The action is the name of the action
-        /// in the Ghostty configuration. For example `keybind = cmd+q=quit` in Ghostty
+        /// in the Nubb configuration. For example `keybind = cmd+q=quit` in Nubb
         /// configuration would be "quit" action.
         ///
         /// Returns nil if there is no key equivalent for the given action.
@@ -123,7 +123,7 @@ extension Ghostty {
 
         // MARK: - Configuration Values
 
-        /// For all of the configuration values below, see the associated Ghostty documentation for
+        /// For all of the configuration values below, see the associated Nubb documentation for
         /// details on what each means. We only add documentation if there is a strange conversion
         /// due to the embedded library and Swift.
 

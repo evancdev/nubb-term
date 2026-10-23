@@ -3,7 +3,7 @@ const std = @import("std");
 /// Options set by Zig build.zig and exposed via `terminal_options`.
 pub const Options = struct {
     pub const Artifact = enum {
-        /// Ghostty application
+        /// Nubb application
         ghostty,
 
         /// libghostty-vt, Zig module
@@ -40,7 +40,7 @@ pub const Options = struct {
     /// Optional features for lib artifacts. Disabling a feature removes
     /// its C API exports and any stream-integrated handling from the
     /// build, primarily so size-conscious embedders can trim
-    /// the binary. The Ghostty application itself always builds with
+    /// the binary. The Nubb application itself always builds with
     /// every feature enabled.
     ///
     /// Field names are the accepted tokens for `-Dvt-features`, which

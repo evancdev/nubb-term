@@ -10,7 +10,7 @@ const log = std.log.scoped(.io_writer);
 
 /// A queue used for storing messages that is periodically drained.
 /// Typically used by a multi-threaded application. The capacity is
-/// hardcoded to a value that empirically has made sense for Ghostty usage
+/// hardcoded to a value that empirically has made sense for Nubb usage
 /// but I'm open to changing it with good arguments.
 const Queue = BlockingQueue(termio.Message, 64);
 

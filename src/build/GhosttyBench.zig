@@ -1,4 +1,4 @@
-//! GhosttyBench generates all the Ghostty benchmark helper binaries.
+//! GhosttyBench generates all the Nubb benchmark helper binaries.
 const GhosttyBench = @This();
 
 const std = @import("std");

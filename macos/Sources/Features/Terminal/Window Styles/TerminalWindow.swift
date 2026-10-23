@@ -29,7 +29,7 @@ class TerminalWindow: NSWindow {
         return view
     }()
 
-    /// The configuration derived from the Ghostty config so we don't need to rely on references.
+    /// The configuration derived from the Nubb config so we don't need to rely on references.
     private(set) var derivedConfig: DerivedConfig = .init()
 
     /// Sets up our tab context menu

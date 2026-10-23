@@ -565,7 +565,7 @@ const Subprocess = struct {
 
         // If we have a resources dir then set our env var
         if (cfg.resources_dir) |dir| {
-            log.info("found Ghostty resources dir: {s}", .{dir});
+            log.info("found Nubb resources dir: {s}", .{dir});
             try env.put("GHOSTTY_RESOURCES_DIR", dir);
         }
 
@@ -611,8 +611,8 @@ const Subprocess = struct {
             log.debug("appending ghostty bin to path dir={s}", .{exe_dir});
 
             // We always set this so that if the shell overwrites the path
-            // scripts still have a way to find the Ghostty binary when
-            // running in Ghostty.
+            // scripts still have a way to find the Nubb binary when
+            // running in Nubb.
             try env.put("GHOSTTY_BIN_DIR", exe_dir);
 
             // Append if we have a path. We want to append so that ghostty is
@@ -699,7 +699,7 @@ const Subprocess = struct {
             const force: ?shell_integration.Shell = switch (cfg.shell_integration) {
                 .none => {
                     // This is a source of confusion for users despite being
-                    // opt-in since it results in some Ghostty features not
+                    // opt-in since it results in some Nubb features not
                     // working. We always want to log it.
                     log.info("shell integration disabled by configuration", .{});
                     break :shell default_shell_command;
@@ -752,7 +752,7 @@ const Subprocess = struct {
         ) catch |err| switch (err) {
             // If we fail to allocate space for the command we want to
             // execute, we'd still like to try to run something so
-            // Ghostty can launch (and maybe the user can debug this further).
+            // Nubb can launch (and maybe the user can debug this further).
             // Realistically, if you're getting OOM, I think other stuff is
             // about to crash, but we can try.
             error.OutOfMemory => oom: {
@@ -930,7 +930,7 @@ const Subprocess = struct {
 
     /// This should be called after fork but before exec in the child process.
     /// To repeat: this function RUNS IN THE FORKED CHILD PROCESS before
-    /// exec is called; it does NOT run in the main Ghostty process.
+    /// exec is called; it does NOT run in the main Nubb process.
     fn childPreExec(self: *Subprocess) !void {
         // Setup our pty
         try self.pty.?.childPreExec();

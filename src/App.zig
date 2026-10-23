@@ -27,7 +27,7 @@ alloc: Allocator,
 /// The list of surfaces that are currently active.
 surfaces: SurfaceList,
 
-/// This is true if the app that Ghostty is in is focused. This may
+/// This is true if the app that Nubb is in is focused. This may
 /// mean that no surfaces (terminals) are focused but the app is still
 /// focused, i.e. may an about window. On macOS, this concept is known
 /// as the "active" app while focused windows are known as the
@@ -38,7 +38,7 @@ surfaces: SurfaceList,
 /// to process keyboard shortcuts that are not global.
 ///
 /// This defaults to true since we assume that the app is focused when
-/// Ghostty is initialized but a well behaved apprt should call
+/// Nubb is initialized but a well behaved apprt should call
 /// focusEvent to set this to the correct value right away.
 focused: bool = true,
 
@@ -59,7 +59,7 @@ device: ?*renderer.Device,
 
 // Used to rate limit desktop notifications. Some platforms (notably macOS) will
 // run out of resources if desktop notifications are sent too fast and the OS
-// will kill Ghostty.
+// will kill Nubb.
 last_notification_time: ?std.Io.Timestamp = null,
 last_notification_digest: u64 = 0,
 
@@ -331,7 +331,7 @@ pub fn newWindow(self: *App, rt_app: *apprt.App, msg: Message.NewWindow) !void {
 }
 
 /// Handle an app-level focus event. This should be called whenever
-/// the focus state of the entire app containing Ghostty changes.
+/// the focus state of the entire app containing Nubb changes.
 /// This is separate from surface focus events. See the `focused`
 /// field for more information.
 pub fn focusEvent(self: *App, focused: bool) void {
@@ -411,7 +411,7 @@ pub fn keyEvent(
     return true;
 }
 
-/// Call to notify Ghostty that the color scheme for the app has changed.
+/// Call to notify Nubb that the color scheme for the app has changed.
 /// "Color scheme" in this case refers to system themes such as "light/dark".
 pub fn colorSchemeEvent(
     self: *App,

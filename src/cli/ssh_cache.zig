@@ -27,7 +27,7 @@ pub const Options = struct {
 
 /// Manage the SSH terminfo cache for automatic remote host setup.
 ///
-/// The `+ssh` action installs Ghostty's terminfo on remote hosts and records
+/// The `+ssh` action installs Nubb's terminfo on remote hosts and records
 /// each success in this cache so it doesn't re-upload on later connections.
 /// (`+ssh` runs automatically from the shell integration when
 /// `shell-integration-features` includes `ssh-terminfo`.) This command

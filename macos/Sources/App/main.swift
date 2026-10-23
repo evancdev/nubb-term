@@ -2,7 +2,7 @@ import AppKit
 import Cocoa
 import GhosttyKit
 
-// Initialize Ghostty global state. We do this once right away because the
+// Initialize Nubb global state. We do this once right away because the
 // CLI APIs require it and it lets us ensure it is done immediately for the
 // rest of the app.
 if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCESS {
@@ -13,7 +13,7 @@ if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCE
     case .cli, .zig_run:
         let stderrHandle = FileHandle.standardError
         stderrHandle.write(
-            "Ghostty failed to initialize! If you're executing Ghostty from the command line\n" +
+            "Nubb failed to initialize! If you're executing Nubb from the command line\n" +
             "then this is usually because an invalid action or multiple actions were specified.\n" +
             "Actions start with the `+` character.\n\n" +
             "View all available actions by running `ghostty +help`.\n")

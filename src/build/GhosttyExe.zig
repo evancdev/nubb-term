@@ -4,7 +4,7 @@ const std = @import("std");
 const Config = @import("Config.zig");
 const SharedDeps = @import("SharedDeps.zig");
 
-/// The primary Ghostty executable.
+/// The primary Nubb executable.
 exe: *std.Build.Step.Compile,
 
 /// The install step for the executable.

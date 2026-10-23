@@ -212,7 +212,7 @@ pub fn add(
         else => {},
     }
 
-    // POSIX C imports that are used throughout Ghostty on a general basis.
+    // POSIX C imports that are used throughout Nubb on a general basis.
     // (note: errno is C stdlib but we just include it here because that's
     // where it's generally included otherwise)
     try translate_c.addImportToModule(b, "posix_c", step.root_module, .{
@@ -248,7 +248,7 @@ pub fn add(
         }
     }
 
-    // Libpng - Ghostty doesn't actually use this directly, its only used
+    // Libpng - Nubb doesn't actually use this directly, its only used
     // through dependencies, so we only need to add it to our static
     // libs list if we're not using system integration. The dependencies
     // will handle linking it.

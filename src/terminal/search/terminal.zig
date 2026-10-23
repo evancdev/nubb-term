@@ -250,7 +250,7 @@ pub const TerminalSearch = struct {
     /// `active_dirty` should be true when the active area may have
     /// changed since the last feed, which triggers a re-scan of the
     /// active area. Callers that know when the active area changes
-    /// (e.g. Ghostty's renderer-maintained dirty flag) can pass false
+    /// (e.g. Nubb's renderer-maintained dirty flag) can pass false
     /// to skip the re-scan. Callers without that knowledge should
     /// always pass true. That is always correct, just slightly more
     /// work, and the active area search is cheap by design.

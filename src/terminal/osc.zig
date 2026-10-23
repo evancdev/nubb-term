@@ -40,7 +40,7 @@ pub const Command = union(Key) {
     change_window_title: [:0]const u8,
 
     /// Set the icon of the terminal window. The name of the icon is not
-    /// well defined, so this is currently ignored by Ghostty at the time
+    /// well defined, so this is currently ignored by Nubb at the time
     /// of writing this. We just parse it so that we don't get parse errors
     /// in the log.
     change_window_icon: [:0]const u8,

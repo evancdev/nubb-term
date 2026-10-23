@@ -23,7 +23,7 @@ final class CommandLineOpenFileFilter {
             return
         }
 
-        // Ghostty treats every argument following `-e` as part of the child
+        // Nubb treats every argument following `-e` as part of the child
         // command. Existing paths in that suffix are the arguments AppKit can
         // independently turn into open-file events.
         self.filesToIgnore = Set(arguments[arguments.index(after: commandIndex)...]

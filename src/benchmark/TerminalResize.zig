@@ -54,7 +54,7 @@ pub const Options = struct {
     /// Set to 0 to only use `data`.
     @"fill-lines": u32 = 10_000,
 
-    /// The maximum scrollback size in bytes. Defaults to the Ghostty
+    /// The maximum scrollback size in bytes. Defaults to the Nubb
     /// application default. Reflow cost scales with the amount of
     /// scrollback, not just the visible screen.
     @"scrollback-bytes": usize = 50_000_000,

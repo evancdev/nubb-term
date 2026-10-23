@@ -251,14 +251,14 @@ fn genTable() Table {
 
         // High bytes are payload data, overriding the "anywhere" C1
         // transitions, matching how osc_string handles them below.
-        // Ghostty is UTF-8 only, and DCS payloads carry UTF-8 text
+        // Nubb is UTF-8 only, and DCS payloads carry UTF-8 text
         // (e.g. XTGETTCAP and DECRQSS payloads): without this, a
         // UTF-8 continuation byte in the C1 range terminates or
         // corrupts the string and 0xA0-0xFF are silently dropped.
         //
         // This includes 0x9C (8-bit ST) on purpose: a raw 0x9C is
         // indistinguishable from a UTF-8 continuation byte ("Ü" is
-        // 0xC3 0x9C), and Ghostty doesn't honor 8-bit C1 controls in
+        // 0xC3 0x9C), and Nubb doesn't honor 8-bit C1 controls in
         // the ground state either (they go through UTF-8 decoding).
         // DCS strings terminate via 7-bit ST (ESC \) and abort via
         // CAN/SUB, which are unaffected here.
@@ -413,7 +413,7 @@ test "dcs_passthrough: high bytes are payload data" {
     // Bytes 0x80-0xFF within a DCS string are payload data, not C1
     // controls. This includes 0x9C (8-bit ST): a raw 0x9C is
     // indistinguishable from a UTF-8 continuation byte (e.g. "Ü" is
-    // 0xC3 0x9C) and Ghostty doesn't support 8-bit C1 controls
+    // 0xC3 0x9C) and Nubb doesn't support 8-bit C1 controls
     // anywhere else.
     for (0x80..0x100) |c| {
         const entry = table[c][@backingInt(State.dcs_passthrough)];

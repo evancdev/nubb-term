@@ -117,7 +117,7 @@ pub const Action = union(Key) {
     /// Toggle the command palette.
     toggle_command_palette,
 
-    /// Toggle the visibility of all Ghostty terminal windows.
+    /// Toggle the visibility of all Nubb terminal windows.
     toggle_visibility,
 
     /// Toggle the window background opacity. This only has an effect
@@ -230,7 +230,7 @@ pub const Action = union(Key) {
     /// The health of the renderer has changed.
     renderer_health: renderer.Health,
 
-    /// Open the Ghostty configuration. This is platform-specific about
+    /// Open the Nubb configuration. This is platform-specific about
     /// what it means; it can mean opening a dedicated UI or just opening
     /// a file in a text editor.
     open_config: OpenConfig,
@@ -936,7 +936,7 @@ pub const OpenUrl = struct {
 
     /// Where the URL came from, used to decide how to open it.
     ///
-    /// `text` and `html` come from Ghostty itself and can be opened
+    /// `text` and `html` come from Nubb itself and can be opened
     /// directly. `unknown` and `osc8` may come from terminal output, which
     /// any program can control, so apprts must check them before opening.
     ///

@@ -1,4 +1,4 @@
-//! Build logic for Ghostty. A single "build.zig" file became far too complex
+//! Build logic for Nubb. A single "build.zig" file became far too complex
 //! and spaghetti, so this package extracts the build logic into smaller,
 //! more manageable pieces.
 

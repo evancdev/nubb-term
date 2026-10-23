@@ -8,7 +8,7 @@ const global = @import("../global.zig");
 
 pub const Options = struct {};
 
-/// The `version` command is used to display information about Ghostty. Recognized as
+/// The `version` command is used to display information about Nubb. Recognized as
 /// either `+version` or `--version`.
 pub fn run(alloc: Allocator) !u8 {
     _ = alloc;
@@ -25,7 +25,7 @@ pub fn run(alloc: Allocator) !u8 {
             .{commit_hash},
         );
     };
-    try stdout.print("Ghostty {s}\n\n", .{build_config.version_string});
+    try stdout.print("Nubb {s}\n\n", .{build_config.version_string});
     if (tty) try stdout.print("\x1b]8;;\x1b\\", .{});
 
     try stdout.print("Version\n", .{});

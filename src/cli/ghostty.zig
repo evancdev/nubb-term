@@ -49,7 +49,7 @@ pub const Action = enum {
     /// List keybind actions
     @"list-actions",
 
-    /// Wrap `ssh` to configure Ghostty terminal integration on remote hosts
+    /// Wrap `ssh` to configure Nubb terminal integration on remote hosts
     ssh,
 
     /// Manage SSH terminfo cache for automatic remote host setup
@@ -67,19 +67,19 @@ pub const Action = enum {
     // Validate passed config file
     @"validate-config",
 
-    // Show which font face Ghostty loads a codepoint from.
+    // Show which font face Nubb loads a codepoint from.
     @"show-face",
 
     // Boo!
     boo,
 
-    // Use IPC to tell the running Ghostty to open a new window.
+    // Use IPC to tell the running Nubb to open a new window.
     @"new-window",
 
-    // Use IPC to tell the running Ghostty to open a new tab.
+    // Use IPC to tell the running Nubb to open a new tab.
     @"new-tab",
 
-    // Use IPC to tell the running Ghostty to toggle the quick terminal.
+    // Use IPC to tell the running Nubb to toggle the quick terminal.
     @"toggle-quick-terminal",
 
     pub fn detectSpecialCase(arg: []const u8) ?SpecialCase(Action) {

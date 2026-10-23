@@ -9,13 +9,13 @@ const global = @import("../global.zig");
 /// defines the priority of theme search (from top to bottom).
 pub const Location = enum {
     user, // XDG config dir
-    resources, // Ghostty resources dir
+    resources, // Nubb resources dir
 
     /// Returns the directory for the given theme based on this location type.
     ///
     /// This will return null with no error if the directory type doesn't exist
     /// or is invalid for any reason. For example, it is perfectly valid to
-    /// install and run Ghostty without the resources directory.
+    /// install and run Nubb without the resources directory.
     ///
     /// Due to the way allocations are handled, an Arena allocator (or another
     /// similar allocator implementation) should be used. It may not be safe to

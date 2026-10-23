@@ -86,10 +86,10 @@ pub const ModeState = struct {
     pub fn getReport(self: *const ModeState, tag: Report.Tag) Report {
         // DECECM (Erase Color Mode, DEC private mode 117) controls whether erasing
         // and scrolling use the default background or the active background color.
-        // Ghostty's behavior is fixed equivalent to DECECM reset, and DECRQM has a
+        // Nubb's behavior is fixed equivalent to DECECM reset, and DECRQM has a
         // "permanently reset" response for recognized modes that cannot be changed.
         // Report that instead of "not recognized" so applications can query and adapt
-        // to Ghostty's erase-color behavior.
+        // to Nubb's erase-color behavior.
         //
         // See VT520/VT525 Programmer Information, "Erase Color" and DECRQM/DECRPM:
         // https://web.mit.edu/dosathena/doc/www/ek-vt520-rm.pdf
@@ -328,8 +328,8 @@ const ModeEntry = struct {
     /// True if this is an ANSI mode, false if its a DEC mode (?-prefixed).
     ansi: bool = false,
 
-    /// If true, this mode is disabled and Ghostty will not allow it to be
-    /// set or queried. The mode enum still has it, allowing Ghostty developers
+    /// If true, this mode is disabled and Nubb will not allow it to be
+    /// set or queried. The mode enum still has it, allowing Nubb developers
     /// to develop a mode without exposing it to real users.
     disabled: bool = false,
 
@@ -351,7 +351,7 @@ pub fn defaultConfigurable(mode: Mode) bool {
 }
 
 /// The full list of available entries. For documentation see how
-/// they're used within Ghostty or google their values. It is not
+/// they're used within Nubb or google their values. It is not
 /// valuable to redocument them all here.
 const entries: []const ModeEntry = &.{
     // ANSI

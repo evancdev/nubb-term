@@ -37,13 +37,13 @@ pub const Options = struct {
 };
 
 /// The `list-fonts` command is used to list all the available fonts for
-/// Ghostty. This uses the exact same font discovery mechanism Ghostty uses to
+/// Nubb. This uses the exact same font discovery mechanism Nubb uses to
 /// find fonts to use.
 ///
 /// When executed with no arguments, this will list all available fonts, sorted
 /// by family name, then font name. If a family name is given with `--family`,
 /// the sorting will be disabled and the results instead will be shown in the
-/// same priority order Ghostty would use to pick a font.
+/// same priority order Nubb would use to pick a font.
 ///
 /// Flags:
 ///
@@ -58,7 +58,7 @@ pub const Options = struct {
 ///     prioritized.
 ///
 ///   * `--family`: Filter results to a specific font family. The family handling
-///     is identical to the `font-family` set of Ghostty configuration values, so
+///     is identical to the `font-family` set of Nubb configuration values, so
 ///     this can be used to debug why your desired font may not be loading.
 pub fn run(alloc: Allocator) !u8 {
     var iter = try args.argsIterator(alloc, global.args());

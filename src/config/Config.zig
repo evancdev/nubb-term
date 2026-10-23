@@ -105,7 +105,7 @@ pub const compatibility = std.StaticStringMap(
 /// font. This is particularly useful for multiple languages, symbolic fonts,
 /// etc.
 ///
-/// Notes on emoji specifically: On macOS, Ghostty by default will always use
+/// Notes on emoji specifically: On macOS, Nubb by default will always use
 /// Apple Color Emoji and on Linux will always use Noto Emoji. You can
 /// override this behavior by specifying a font family here that contains
 /// emoji glyphs.
@@ -113,15 +113,15 @@ pub const compatibility = std.StaticStringMap(
 /// The specific styles (bold, italic, bold italic) do not need to be
 /// explicitly set. If a style is not set, then the regular style (font-family)
 /// will be searched for stylistic variants. If a stylistic variant is not
-/// found, Ghostty will use the regular style. This prevents falling back to a
+/// found, Nubb will use the regular style. This prevents falling back to a
 /// different font family just to get a style such as bold. This also applies
 /// if you explicitly specify a font family for a style. For example, if you
-/// set `font-family-bold = FooBar` and "FooBar" cannot be found, Ghostty will
+/// set `font-family-bold = FooBar` and "FooBar" cannot be found, Nubb will
 /// use whatever font is set for `font-family` for the bold style.
 ///
 /// Finally, some styles may be synthesized if they are not supported.
 /// For example, if a font does not have an italic style and no alternative
-/// italic font is specified, Ghostty will synthesize an italic style by
+/// italic font is specified, Nubb will synthesize an italic style by
 /// applying a slant to the regular style. If you want to disable these
 /// synthesized styles then you can use the `font-style` configurations
 /// as documented below.
@@ -164,10 +164,10 @@ pub const compatibility = std.StaticStringMap(
 @"font-style-italic": FontStyle = .{ .default = {} },
 @"font-style-bold-italic": FontStyle = .{ .default = {} },
 
-/// Control whether Ghostty should synthesize a style if the requested style is
+/// Control whether Nubb should synthesize a style if the requested style is
 /// not available in the specified font-family.
 ///
-/// Ghostty can synthesize bold, italic, and bold italic styles if the font
+/// Nubb can synthesize bold, italic, and bold italic styles if the font
 /// does not have a specific style. For bold, this is done by drawing an
 /// outline around the glyph of varying thickness. For italic, this is done by
 /// applying a slant to the glyph. For bold italic, both of these are applied.
@@ -209,7 +209,7 @@ pub const compatibility = std.StaticStringMap(
 ///
 /// The syntax is fairly loose, but invalid settings will be silently ignored.
 ///
-/// The font feature will apply to all fonts rendered by Ghostty. A future
+/// The font feature will apply to all fonts rendered by Nubb. A future
 /// enhancement will allow targeting specific faces.
 ///
 /// To disable programming ligatures, use `-calt` since this is the typical
@@ -333,8 +333,8 @@ pub const compatibility = std.StaticStringMap(
 /// "!" is at the end of one run and "=" is at the start of the next run,
 /// then the ligature will not be formed.
 ///
-/// Ghostty breaks runs at certain points to improve readability or usability.
-/// For example, Ghostty by default will break runs under the cursor so that
+/// Nubb breaks runs at certain points to improve readability or usability.
+/// For example, Nubb by default will break runs under the cursor so that
 /// text editing can see the individual characters rather than a ligature.
 /// This configuration lets you configure this behavior.
 ///
@@ -483,11 +483,11 @@ pub const compatibility = std.StaticStringMap(
 @"grapheme-width-method": GraphemeWidthMethod = .unicode,
 
 /// A theme to use. This can be a built-in theme name, a custom theme
-/// name, or an absolute path to a custom theme file. Ghostty also supports
+/// name, or an absolute path to a custom theme file. Nubb also supports
 /// specifying a different theme to use for light and dark mode. Each
 /// option is documented below.
 ///
-/// If the theme is an absolute pathname, Ghostty will attempt to load that
+/// If the theme is an absolute pathname, Nubb will attempt to load that
 /// file as a theme. If that file does not exist or is inaccessible, an error
 /// will be logged and no other directories will be searched.
 ///
@@ -496,20 +496,20 @@ pub const compatibility = std.StaticStringMap(
 /// systems with case-sensitive filesystems. It is an error for a theme name to
 /// include path separators unless it is an absolute pathname.
 ///
-/// The first directory is the `themes` subdirectory of your Ghostty
+/// The first directory is the `themes` subdirectory of your Nubb
 /// configuration directory. This is `$XDG_CONFIG_HOME/ghostty/themes` or
 /// `~/.config/ghostty/themes`.
 ///
-/// The second directory is the `themes` subdirectory of the Ghostty resources
-/// directory. Ghostty ships with a multitude of themes that will be installed
+/// The second directory is the `themes` subdirectory of the Nubb resources
+/// directory. Nubb ships with a multitude of themes that will be installed
 /// into this directory. On macOS, this list is in the
-/// `Ghostty.app/Contents/Resources/ghostty/themes` directory. On Linux, this
+/// `Nubb.app/Contents/Resources/ghostty/themes` directory. On Linux, this
 /// list is in the `share/ghostty/themes` directory (wherever you installed the
-/// Ghostty "share" directory.
+/// Nubb "share" directory.
 ///
 /// To see a list of available themes, run `ghostty +list-themes`.
 ///
-/// A theme file is simply another Ghostty configuration file. They share
+/// A theme file is simply another Nubb configuration file. They share
 /// the same syntax and same configuration options. A theme can set any valid
 /// configuration option so please do not use a theme file from an untrusted
 /// source. The built-in themes are audited to only set safe configuration
@@ -517,7 +517,7 @@ pub const compatibility = std.StaticStringMap(
 ///
 /// Some options cannot be set within theme files. The reason these are not
 /// supported should be self-evident. A theme file cannot set `theme` or
-/// `config-file`. At the time of writing this, Ghostty will not show any
+/// `config-file`. At the time of writing this, Nubb will not show any
 /// warnings or errors if you set these options in a theme file but they will
 /// be silently ignored.
 ///
@@ -552,11 +552,11 @@ foreground: Color = .{ .r = 0xFF, .g = 0xFF, .b = 0xFF },
 ///
 /// The background image is currently per-terminal, not per-window. If
 /// you are a heavy split user, the background image will be repeated across
-/// splits. A future improvement to Ghostty will address this.
+/// splits. A future improvement to Nubb will address this.
 ///
 /// WARNING: Background images are currently duplicated in VRAM per-terminal.
 /// For sufficiently large images, this could lead to a large increase in
-/// memory usage (specifically VRAM usage). A future Ghostty improvement
+/// memory usage (specifically VRAM usage). A future Nubb improvement
 /// will resolve this by sharing image textures across terminals.
 ///
 /// Available since: 1.2.0
@@ -826,7 +826,7 @@ palette: Palette = .{},
 /// If this is not set, the cursor blinks by default. Note that this is not the
 /// same as a "true" value, as noted below.
 ///
-/// If this is not set at all (`null`), then Ghostty will respect DEC Mode 12
+/// If this is not set at all (`null`), then Nubb will respect DEC Mode 12
 /// (AT&T cursor blink) as an alternate approach to turning blinking on/off. If
 /// this is set to any value other than null, DEC mode 12 will be ignored but
 /// `DECSCUSR` will still be respected.
@@ -851,7 +851,7 @@ palette: Palette = .{},
 ///
 /// This feature requires prompt marking via `OSC 133`. Some shells like Fish
 /// (v4.1+) and Nu (0.111+) natively support this while others may require
-/// additional configuration or Ghostty's shell integration features to be
+/// additional configuration or Nubb's shell integration features to be
 /// enabled.
 ///
 /// Depending on the shell, this works either by translating your click
@@ -874,7 +874,7 @@ palette: Palette = .{},
 ///
 /// - `keystroke` If set, scroll the surface to the bottom when the user
 ///   presses a key that results in data being sent to the PTY (basically
-///   anything but modifiers or keybinds that are processed by Ghostty).
+///   anything but modifiers or keybinds that are processed by Nubb).
 ///
 /// - `output` If set, scroll the surface to the bottom if there is new data
 ///   to display (e.g., when new lines are printed to the terminal).
@@ -944,7 +944,7 @@ palette: Palette = .{},
 /// fullscreen. This is because the background becomes gray and it can cause
 /// widgets to show through which isn't generally desirable.
 ///
-/// On macOS, changing this configuration requires restarting Ghostty completely.
+/// On macOS, changing this configuration requires restarting Nubb completely.
 @"background-opacity": f64 = 1.0,
 
 /// Applies background opacity to cells with an explicit background color
@@ -983,7 +983,7 @@ palette: Palette = .{},
 /// on non-macOS platforms.
 ///
 /// On Linux, the exact blur intensity is ignored and any positive integer
-/// or `true` value will enable background blur. On Wayland, Ghostty uses
+/// or `true` value will enable background blur. On Wayland, Nubb uses
 /// the [`ext-background-effect-v1`](https://wayland.app/protocols/ext-background-effect-v1)
 /// protocol to enable the blur effect, but this is not always supported
 /// on all compositors. Check the documentation of your compositor or
@@ -1019,7 +1019,7 @@ palette: Palette = .{},
 /// Available since: 1.1.0
 @"split-divider-color": ?Color = null,
 
-/// Control when Ghostty preserves a zoomed split. Under normal circumstances,
+/// Control when Nubb preserves a zoomed split. Under normal circumstances,
 /// any operation that changes focus or layout of the split tree in a window
 /// will unzoom any zoomed split. This configuration allows you to control
 /// this behavior.
@@ -1087,16 +1087,16 @@ palette: Palette = .{},
 ///
 /// This command will be used for all new terminal surfaces, i.e. new windows,
 /// tabs, etc. If you want to run a command only for the first terminal surface
-/// created when Ghostty starts, use the `initial-command` configuration.
+/// created when Nubb starts, use the `initial-command` configuration.
 ///
-/// Ghostty supports the common `-e` flag for executing a command with
+/// Nubb supports the common `-e` flag for executing a command with
 /// arguments. For example, `ghostty -e fish --with --custom --args`.
 /// This flag sets the `initial-command` configuration, see that for more
 /// information.
 command: ?Command = null,
 
 /// This is the same as "command", but only applies to the first terminal
-/// surface created when Ghostty starts. Subsequent terminal surfaces will use
+/// surface created when Nubb starts. Subsequent terminal surfaces will use
 /// the `command` configuration.
 ///
 /// After the first terminal surface is created (or closed), there is no
@@ -1113,7 +1113,7 @@ command: ?Command = null,
 ///     be shell-expanded by the upstream (e.g. the shell used to type in
 ///     the `ghostty -e` command).
 ///
-///   * `quit-after-last-window-closed=true` - This ensures that the Ghostty
+///   * `quit-after-last-window-closed=true` - This ensures that the Nubb
 ///     process will exit when the command exits.
 ///
 ///   * `shell-integration=detect` (if not `none`) - This prevents forcibly
@@ -1224,11 +1224,11 @@ command: ?Command = null,
 /// will result in `foo=baz` being passed to the launched commands.
 ///
 /// These environment variables will override any existing environment
-/// variables set by Ghostty. For example, if you set `GHOSTTY_RESOURCES_DIR`
-/// then the value you set here will override the value Ghostty typically
+/// variables set by Nubb. For example, if you set `GHOSTTY_RESOURCES_DIR`
+/// then the value you set here will override the value Nubb typically
 /// automatically injects.
 ///
-/// These environment variables _will not_ be passed to commands run by Ghostty
+/// These environment variables _will not_ be passed to commands run by Nubb
 /// for other purposes, like `open` or `xdg-open` used to open URLs in your
 /// browser.
 ///
@@ -1305,13 +1305,13 @@ input: RepeatableReadableIO = .{},
 ///
 /// Scrollback is stored in memory and allocated lazily up to this limit, so
 /// setting a very large limit does not immediately consume that amount of
-/// memory. On supported systems with scrollback compression enabled, Ghostty
+/// memory. On supported systems with scrollback compression enabled, Nubb
 /// attempts to compress fully historical pages which are not currently visible
 /// while the terminal is idle. This can reduce physical memory usage, depending
 /// on the contents of the scrollback.
 ///
 /// This limit always measures the uncompressed logical size of the terminal
-/// pages. Compression does not allow Ghostty to retain more history than the
+/// pages. Compression does not allow Nubb to retain more history than the
 /// configured limit. Accessing compressed history restores it transparently
 /// and may increase the terminal's physical memory usage again.
 ///
@@ -1329,7 +1329,7 @@ input: RepeatableReadableIO = .{},
 /// The maximum number of lines of scrollback to retain. This excludes
 /// the active screen. Soft-wrapped lines count as multiple lines.
 ///
-/// This limit is an estimate. Internally, Ghostty will only trim lines
+/// This limit is an estimate. Internally, Nubb will only trim lines
 /// up to the minimum allocation unit that is used internally (called a
 /// "page"). The size of a page depends on how many styles, graphemes, etc.
 /// take up the screen. In practice, this can be anywhere from a handful to
@@ -1346,7 +1346,7 @@ input: RepeatableReadableIO = .{},
 
 /// Whether to compress scrollback pages while the terminal is idle.
 ///
-/// Ghostty does its best to only compress when idle and decompress
+/// Nubb does its best to only compress when idle and decompress
 /// as needed. This means that compression doesn't lower IO throughput.
 /// We recommend you keep it on.
 ///
@@ -1359,7 +1359,7 @@ input: RepeatableReadableIO = .{},
 /// in physical memory for pages which are compressed. Compression savings are
 /// content-dependent.
 ///
-/// Note that the way Ghostty works is that we compress and discard the
+/// Note that the way Nubb works is that we compress and discard the
 /// physical/resident memory but we retain virtual mappings. You will not
 /// see a decrease in virtual memory usage, but you will see a decrease
 /// in physical/memory usage.
@@ -1457,8 +1457,8 @@ maximize: bool = false,
 /// decorations.
 fullscreen: Fullscreen = .false,
 
-/// The title Ghostty will use for the window. This will force the title of the
-/// window to be this title at all times and Ghostty will ignore any set title
+/// The title Nubb will use for the window. This will force the title of the
+/// window to be this title at all times and Nubb will ignore any set title
 /// escape sequences programs (such as Neovim) may send.
 ///
 /// If you want a blank title, set this to one or more spaces by quoting
@@ -1476,14 +1476,14 @@ title: ?[:0]const u8 = null,
 /// The directory to change to after starting the command.
 ///
 /// This setting is secondary to the `window-inherit-working-directory`
-/// setting. If a previous Ghostty terminal exists in the same process,
+/// setting. If a previous Nubb terminal exists in the same process,
 /// `window-inherit-working-directory` will take precedence. Otherwise, this
 /// setting will be used. Typically, this setting is used only for the first
 /// window.
 ///
 /// The default is `inherit` except in special scenarios listed next. On macOS,
-/// if Ghostty can detect it is launched from launchd (double-clicked) or
-/// `open`, then it defaults to `home`. On Linux with GTK, if Ghostty can detect
+/// if Nubb can detect it is launched from launchd (double-clicked) or
+/// `open`, then it defaults to `home`. On Linux with GTK, if Nubb can detect
 /// it was launched from a desktop launcher, then it defaults to `home`.
 ///
 /// The value of this must be an absolute path, a path prefixed with `~/`
@@ -1546,7 +1546,7 @@ title: ?[:0]const u8 = null,
 /// The special key `catch_all` can be used to match any key that is not
 /// otherwise bound. This can be combined with modifiers, for example
 /// `ctrl+catch_all` will match any key pressed with `ctrl` that is not
-/// otherwise bound. When looking up a binding, Ghostty first tries to match
+/// otherwise bound. When looking up a binding, Nubb first tries to match
 /// `catch_all` with modifiers. If no match is found and the event has
 /// modifiers, it falls back to `catch_all` without modifiers.
 ///
@@ -1557,7 +1557,7 @@ title: ?[:0]const u8 = null,
 ///
 /// Note: The fn or "globe" key on keyboards are not supported as a
 /// modifier. This is a limitation of the operating systems and GUI toolkits
-/// that Ghostty uses.
+/// that Nubb uses.
 ///
 /// Some additional notes for triggers:
 ///
@@ -1581,7 +1581,7 @@ title: ?[:0]const u8 = null,
 ///
 /// A trigger sequence has some special handling:
 ///
-///   * Ghostty will wait an indefinite amount of time for the next key in
+///   * Nubb will wait an indefinite amount of time for the next key in
 ///     the sequence. There is no way to specify a timeout. The only way to
 ///     force the output of a prefix key is to assign another keybind to
 ///     specifically output that key (e.g. `ctrl+a>ctrl+a=text:foo`) or
@@ -1659,10 +1659,10 @@ title: ?[:0]const u8 = null,
 ///
 ///  * `global:`
 ///
-///    Make the keybind global. By default, keybinds only work within Ghostty
+///    Make the keybind global. By default, keybinds only work within Nubb
 ///    and under the right conditions (application focused, sometimes terminal
 ///    focused, etc.). If you want a keybind to work globally across your system
-///    (e.g. even when Ghostty is not focused), specify this prefix.
+///    (e.g. even when Nubb is not focused), specify this prefix.
 ///    This prefix implies `all:`.
 ///
 ///    Note: this does not work in all environments; see the additional notes
@@ -1687,7 +1687,7 @@ title: ?[:0]const u8 = null,
 ///
 ///    Only consume the input if the action is able to be performed.
 ///    For example, the `copy_to_clipboard` action will only consume the input
-///    if there is a selection to copy. If there is no selection, Ghostty
+///    if there is a selection to copy. If there is no selection, Nubb
 ///    behaves as if the keybind was not set. This has no effect with `global:`
 ///    or `all:`-prefixed keybinds. For key sequences, this will reset the
 ///    sequence if the action is not performable (acting identically to not
@@ -1711,8 +1711,8 @@ title: ?[:0]const u8 = null,
 /// and not consume the input to reload the config.
 ///
 /// On macOS, this feature requires accessibility permissions to be granted
-/// to Ghostty. When a `global:` keybind is specified and Ghostty is launched
-/// or reloaded, Ghostty will attempt to request these permissions.
+/// to Nubb. When a `global:` keybind is specified and Nubb is launched
+/// or reloaded, Nubb will attempt to request these permissions.
 /// If the permissions are not granted, the keybind will not work. On macOS,
 /// you can find these permissions in System Preferences -> Privacy & Security
 /// -> Accessibility.
@@ -1843,7 +1843,7 @@ title: ?[:0]const u8 = null,
 /// Key tables are available since Ghostty 1.3.0.
 keybind: Keybinds = .{},
 
-/// Remap modifier keys within Ghostty. This allows you to swap or reassign
+/// Remap modifier keys within Nubb. This allows you to swap or reassign
 /// modifier keys at the application level without affecting system-wide
 /// settings.
 ///
@@ -1851,10 +1851,10 @@ keybind: Keybinds = .{},
 /// You can use generic names like `ctrl`, `alt`, `shift`, `super` (macOS:
 /// `cmd`/`command`) or sided names like `left_ctrl`, `right_alt`, etc.
 ///
-/// This will NOT change keyboard layout or key encodings outside of Ghostty.
+/// This will NOT change keyboard layout or key encodings outside of Nubb.
 /// For example, on macOS, `option+a` may still produce `å` even if `option` is
 /// remapped to `ctrl`. Desktop environments usually handle key layout long
-/// before Ghostty receives the key events.
+/// before Nubb receives the key events.
 ///
 /// Example:
 ///
@@ -1871,7 +1871,7 @@ keybind: Keybinds = .{},
 ///
 /// * This affects both keybind matching and terminal input encoding.
 ///   This does NOT impact keyboard layout or how keys are interpreted
-///   prior to Ghostty receiving them. For example, `option+a` on macOS
+///   prior to Nubb receiving them. For example, `option+a` on macOS
 ///   may still produce `å` even if `option` is remapped to `ctrl`.
 ///
 /// * Generic modifiers (e.g. `ctrl`) match both left and right physical keys.
@@ -1882,7 +1882,7 @@ keybind: Keybinds = .{},
 ///
 /// * On macOS, bindings in the main menu will trigger before any remapping
 ///   is done. This is because macOS itself handles menu activation and
-///   this happens before Ghostty receives the key event. To workaround
+///   this happens before Nubb receives the key event. To workaround
 ///   this, you should unbind the menu items and rebind them using your
 ///   desired modifier.
 ///
@@ -2009,7 +2009,7 @@ keybind: Keybinds = .{},
 
 /// Configure a preference for window decorations. This setting specifies
 /// a _preference_; the actual OS, desktop environment, window manager, etc.
-/// may override this preference. Ghostty will do its best to respect this
+/// may override this preference. Nubb will do its best to respect this
 /// preference but it may not always be possible.
 ///
 /// Valid values:
@@ -2024,7 +2024,7 @@ keybind: Keybinds = .{},
 ///
 ///    Automatically decide to use either client-side or server-side
 ///    decorations based on the detected preferences of the current OS and
-///    desktop environment. This option usually makes Ghostty look the most
+///    desktop environment. This option usually makes Nubb look the most
 ///    "native" for your desktop.
 ///
 ///  * `client`
@@ -2081,12 +2081,12 @@ keybind: Keybinds = .{},
 ///   * `light` - Use the light theme regardless of system theme.
 ///   * `dark` - Use the dark theme regardless of system theme.
 ///   * `ghostty` - Use the background and foreground colors specified in the
-///     Ghostty configuration. This is only supported on Linux builds.
+///     Nubb configuration. This is only supported on Linux builds.
 ///
 /// On macOS, if `macos-titlebar-style` is `tabs` or `transparent`, the window theme will be
 /// automatically set based on the luminosity of the terminal background color.
 /// This only applies to terminal windows. This setting will still apply to
-/// non-terminal windows within Ghostty.
+/// non-terminal windows within Nubb.
 ///
 /// This is currently only supported on macOS and Linux.
 @"window-theme": WindowTheme = .auto,
@@ -2113,7 +2113,7 @@ keybind: Keybinds = .{},
 ///
 /// Note that the window manager may put limits on the size or override the
 /// size. For example, a tiling window manager may force the window to be a
-/// certain size to fit within the grid. There is nothing Ghostty will do about
+/// certain size to fit within the grid. There is nothing Nubb will do about
 /// this, but it will make an effort.
 ///
 /// Sizes larger than the screen size will be clamped to the screen size.
@@ -2139,7 +2139,7 @@ keybind: Keybinds = .{},
 ///
 /// Note that the window manager may put limits on the position or override
 /// the position. For example, a tiling window manager may force the window
-/// to be a certain position to fit within the grid. There is nothing Ghostty
+/// to be a certain position to fit within the grid. There is nothing Nubb
 /// will do about this, but it will make an effort.
 ///
 /// Also note that negative values are also up to the operating system and
@@ -2172,18 +2172,18 @@ keybind: Keybinds = .{},
 ///
 ///   * `never` will never save window state.
 ///
-///   * `always` will always save window state whenever Ghostty is exited.
+///   * `always` will always save window state whenever Nubb is exited.
 ///
-/// If you change this value to `never` while Ghostty is not running, the next
-/// Ghostty launch will NOT restore the window state.
+/// If you change this value to `never` while Nubb is not running, the next
+/// Nubb launch will NOT restore the window state.
 ///
-/// If you change this value to `default` while Ghostty is not running and the
-/// previous exit saved state, the next Ghostty launch will still restore the
-/// window state. This is because Ghostty cannot know if the previous exit was
+/// If you change this value to `default` while Nubb is not running and the
+/// previous exit saved state, the next Nubb launch will still restore the
+/// window state. This is because Nubb cannot know if the previous exit was
 /// due to a forced save or not (macOS doesn't provide this information).
 ///
-/// If you change this value so that window state is saved while Ghostty is not
-/// running, the previous window state will not be restored because Ghostty only
+/// If you change this value so that window state is saved while Nubb is not
+/// running, the previous window state will not be restored because Nubb only
 /// saves state on exit if this is enabled.
 ///
 /// The default value is `default`.
@@ -2316,14 +2316,14 @@ keybind: Keybinds = .{},
 /// The maximum size in bytes of a single clipboard write by a program
 /// running in the terminal via the Kitty clipboard protocol (OSC 5522).
 /// This doesn't apply to OSC 52, which is limited by the maximum length
-/// of an escape sequence hardcoded into Ghostty for now.
+/// of an escape sequence hardcoded into Nubb for now.
 ///
 /// Data beyond the limit fails the entire write with an `EFBIG` status,
 /// discards the transaction, and leaves the clipboard untouched. Later
 /// write-related packets are ignored until a new write begins.
 ///
 /// The data is buffered in memory while the write is in progress, so
-/// this limit bounds how much memory a program can make Ghostty
+/// this limit bounds how much memory a program can make Nubb
 /// allocate per write. A future improvement will attempt to spool large
 /// writes to disk.
 ///
@@ -2464,7 +2464,7 @@ keybind: Keybinds = .{},
 /// config path ($XDG_CONFIG_HOME/ghostty/config.ghostty).
 ///
 /// If this is false, the default configuration paths will not be loaded.
-/// This is targeted directly at using Ghostty from the CLI in a way
+/// This is targeted directly at using Nubb from the CLI in a way
 /// that minimizes external effects.
 ///
 /// This is a CLI-only configuration. Setting this in a configuration file
@@ -2487,7 +2487,7 @@ keybind: Keybinds = .{},
 /// generally expected behavior.
 @"quit-after-last-window-closed": bool = builtin.target.os.tag == .linux,
 
-/// This controls whether an initial window is created when Ghostty
+/// This controls whether an initial window is created when Nubb
 /// is run. Only implemented on Linux and macOS.
 @"initial-window": bool = true,
 
@@ -2551,7 +2551,7 @@ keybind: Keybinds = .{},
 ///   * `right` - Terminal appears at the right of the screen.
 ///   * `center` - Terminal appears at the center of the screen.
 ///
-/// On macOS, changing this configuration requires restarting Ghostty
+/// On macOS, changing this configuration requires restarting Nubb
 /// completely.
 ///
 /// Note: There is no default keybind for toggling the quick terminal.
@@ -2588,7 +2588,7 @@ keybind: Keybinds = .{},
 ///  * `main` - The screen that the operating system recommends as the main
 ///    screen. On macOS, this is the screen that is currently receiving
 ///    keyboard input. This screen is defined by the operating system and
-///    not chosen by Ghostty.
+///    not chosen by Nubb.
 ///
 ///  * `mouse` - The screen that the mouse is currently hovered over.
 ///
@@ -2604,7 +2604,7 @@ keybind: Keybinds = .{},
 /// On Linux/Wayland, `macos-menu-bar` is treated as equivalent to `main`.
 ///
 /// Note: On Linux, there is no universal concept of a "primary" monitor.
-/// Ghostty uses the compositor-reported primary output when available and
+/// Nubb uses the compositor-reported primary output when available and
 /// falls back to the first monitor reported by GDK if no primary output can
 /// be resolved.
 @"quick-terminal-screen": QuickTerminalScreen = .main,
@@ -2704,20 +2704,20 @@ keybind: Keybinds = .{},
 ///     (Available since: 1.2.0)
 ///
 ///   * `ssh-terminfo` - Enable automatic terminfo installation on remote hosts.
-///     Attempts to install Ghostty's embedded terminfo entry using `tic` on local
+///     Attempts to install Nubb's embedded terminfo entry using `tic` on local
 ///     cache misses. Requires `tic` to be available on remote hosts. Successful
 ///     installations are cached locally to avoid repeat installations.
 ///     If desired, the `+ssh-cache` CLI action can be used to manage the installation
 ///     cache manually using various arguments.
 ///     (Available since: 1.2.0)
 ///
-///   * `path` - Add Ghostty's binary directory to PATH. This ensures the `ghostty`
+///   * `path` - Add Nubb's binary directory to PATH. This ensures the `ghostty`
 ///     command is available in the shell even if shell init scripts reset PATH.
 ///     This is particularly useful on macOS where PATH is often overridden by
 ///     system scripts. The directory is only added if not already present.
 ///
 /// SSH features work independently and can be combined for optimal experience:
-/// when both `ssh-env` and `ssh-terminfo` are enabled, Ghostty will install its
+/// when both `ssh-env` and `ssh-terminfo` are enabled, Nubb will install its
 /// terminfo on remote hosts and use `xterm-ghostty` as TERM, falling back to
 /// `xterm-256color` with environment variables if terminfo installation fails.
 @"shell-integration-features": ShellIntegrationFeatures = .{},
@@ -2743,7 +2743,7 @@ keybind: Keybinds = .{},
 /// command-palette-entry = title:Reset Font Style, action:csi:0m
 /// command-palette-entry = title:Crash on Main Thread,description:Causes a crash on the main (UI) thread.,action:crash:main
 /// command-palette-entry = title:Focus Split: Right,description:"Focus the split to the right, if it exists.",action:goto_split:right
-/// command-palette-entry = title:"Ghostty",description:"Add a little Ghostty to your terminal.",action:"text:\xf0\x9f\x91\xbb"
+/// command-palette-entry = title:"Nubb",description:"Add a little Nubb to your terminal.",action:"text:\xf0\x9f\x91\xbb"
 /// ```
 ///
 /// There are some additional special values that can be specified for
@@ -2766,7 +2766,7 @@ keybind: Keybinds = .{},
 @"command-palette-entry": RepeatableCommand = .{},
 
 /// Sets the reporting format for OSC sequences that request color information.
-/// Ghostty currently supports OSC 10 (foreground), OSC 11 (background), and
+/// Nubb currently supports OSC 10 (foreground), OSC 11 (background), and
 /// OSC 4 (256 color palette) queries, and by default the reported values
 /// are scaled-up RGB values, where each component are 16 bits. This is how
 /// most terminals report these values. However, some legacy applications may
@@ -2854,7 +2854,7 @@ keybind: Keybinds = .{},
 /// and its [control sequence documentation](https://github.com/ThomasDickey/xterm-snapshots/blob/xterm-411/ctlseqs.ms#L2562-L2569),
 /// but where those disagree with xterm's
 /// [implementation](https://github.com/ThomasDickey/xterm-snapshots/blob/xterm-411/screen.c#L3162-L3290),
-/// Ghostty follows the implementation. The documentation describes bit 3
+/// Nubb follows the implementation. The documentation describes bit 3
 /// as omitting cells that were never written to, but xterm skips those
 /// cells by default and counts them as spaces with the bit set, which is
 /// `undrawn` here. It also lists a bit 5 that xterm doesn't implement.
@@ -2865,13 +2865,13 @@ keybind: Keybinds = .{},
 /// Custom shaders to run after the default shaders. This is a file path
 /// to a GLSL-syntax shader for all platforms.
 ///
-/// Warning: Invalid shaders can cause Ghostty to become unusable such as by
+/// Warning: Invalid shaders can cause Nubb to become unusable such as by
 /// causing the window to be completely black. If this happens, you can
 /// unset this configuration to disable the shader.
 ///
 /// Custom shader support is based on and compatible with the Shadertoy shaders.
 /// Shaders should specify a `mainImage` function and the available uniforms
-/// largely match Shadertoy, with some caveats and Ghostty-specific extensions.
+/// largely match Shadertoy, with some caveats and Nubb-specific extensions.
 ///
 /// The uniform values available to shaders are as follows:
 ///
@@ -2904,7 +2904,7 @@ keybind: Keybinds = .{},
 ///
 ///  * `float iSampleRate` - Sample rate for audio. (N/A)
 ///
-/// Ghostty-specific extensions:
+/// Nubb-specific extensions:
 ///
 ///  * `vec4 iCurrentCursor` - Info about the terminal cursor.
 ///
@@ -3024,7 +3024,7 @@ keybind: Keybinds = .{},
 ///
 ///  * `attention` *(enabled by default)*
 ///
-///    Request the user's attention when Ghostty is unfocused, until it has
+///    Request the user's attention when Nubb is unfocused, until it has
 ///    received focus again. On macOS, this will bounce the app icon in the
 ///    dock once. On Linux, the behavior depends on the desktop environment
 ///    and/or the window manager/compositor:
@@ -3033,7 +3033,7 @@ keybind: Keybinds = .{},
 ///      highlighted;
 ///
 ///    - On GNOME, you may receive a notification that, when clicked, would
-///      bring the Ghostty window into focus;
+///      bring the Nubb window into focus;
 ///
 ///    - On Sway, the window may be decorated with a distinctly colored border;
 ///
@@ -3155,7 +3155,7 @@ keybind: Keybinds = .{},
 /// When "hidden", the top titlebar area can no longer be used for dragging
 /// the window. To drag the window, you can use option+click on the resizable
 /// areas of the frame to drag the window. This is a standard macOS behavior
-/// and not something Ghostty enables.
+/// and not something Nubb enables.
 ///
 /// The default value is "transparent". This is an opinionated choice
 /// but its one I think is the most aesthetically pleasing and works in
@@ -3186,7 +3186,7 @@ keybind: Keybinds = .{},
 @"macos-titlebar-proxy-icon": MacTitlebarProxyIcon = .visible,
 
 /// Controls the windowing behavior when dropping a file or folder
-/// onto the Ghostty icon in the macOS dock.
+/// onto the Nubb icon in the macOS dock.
 ///
 /// Valid values are:
 ///
@@ -3261,12 +3261,12 @@ keybind: Keybinds = .{},
 /// Available since: 1.2.0
 @"macos-hidden": MacHidden = .never,
 
-/// If true, Ghostty on macOS will automatically enable the "Secure Input"
+/// If true, Nubb on macOS will automatically enable the "Secure Input"
 /// feature when it detects that a password prompt is being displayed.
 ///
 /// "Secure Input" is a macOS security feature that prevents applications from
 /// reading keyboard events. This can always be enabled manually using the
-/// `Ghostty > Secure Keyboard Entry` menu item.
+/// `Nubb > Secure Keyboard Entry` menu item.
 ///
 /// Note that automatic password prompt detection is based on heuristics
 /// and may not always work as expected. Specifically, it does not work
@@ -3279,7 +3279,7 @@ keybind: Keybinds = .{},
 /// reading keyboard events.
 @"macos-auto-secure-input": bool = true,
 
-/// If true, Ghostty will show a graphical indication when secure input is
+/// If true, Nubb will show a graphical indication when secure input is
 /// enabled. This indication is generally recommended to know when secure input
 /// is enabled.
 ///
@@ -3356,7 +3356,7 @@ _conditional_set: std.EnumSet(conditional.Key) = .{},
 /// as loadTheme which has more details on why.
 _replay_steps: std.ArrayList(Replay.Step) = .empty,
 
-/// Set to true if Ghostty was executed as xdg-terminal-exec on Linux.
+/// Set to true if Nubb was executed as xdg-terminal-exec on Linux.
 @"_xdg-terminal-exec": bool = false,
 
 pub fn deinit(self: *Config) void {
@@ -4082,7 +4082,7 @@ pub fn finalize(self: *Config) !void {
         // window-theme = auto since that breaks it.
         if (different) {
             // This setting doesn't make sense with different light/dark themes
-            // because it'll force the theme based on the Ghostty theme.
+            // because it'll force the theme based on the Nubb theme.
             if (self.@"window-theme" == .auto) self.@"window-theme" = .system;
 
             // Mark that we use a conditional theme
@@ -4564,7 +4564,7 @@ pub const ChangeIterator = struct {
 };
 
 /// This runs a heuristic to determine if we are likely running
-/// Ghostty in a CLI environment. We need this to change some behaviors.
+/// Nubb in a CLI environment. We need this to change some behaviors.
 /// We should keep the set of behaviors that depend on this as small
 /// as possible because magic sucks, but each place is well documented.
 fn probableCliEnvironment() bool {

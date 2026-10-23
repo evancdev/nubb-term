@@ -47,7 +47,7 @@ pub fn build(b: *std.Build) !void {
         "Filter for test. Only applies to Zig tests.",
     ) orelse &[0][]const u8{};
 
-    // Ghostty dependencies used by many artifacts.
+    // Nubb dependencies used by many artifacts.
     const deps = try buildpkg.SharedDeps.init(b, &config);
 
     // The modules exported for Zig consumers of libghostty. If you're
@@ -71,13 +71,13 @@ pub fn build(b: *std.Build) !void {
         "Build libghostty-vt tests without running them (compile check)",
     );
 
-    // Ghostty resources like terminfo, shell integration, themes, etc.
+    // Nubb resources like terminfo, shell integration, themes, etc.
     const resources = try buildpkg.GhosttyResources.init(b, &config, &deps);
 
-    // Ghostty executable, the actual runnable Ghostty program.
+    // Nubb executable, the actual runnable Nubb program.
     const exe = try buildpkg.GhosttyExe.init(b, &config, &deps);
 
-    // Ghostty docs
+    // Nubb docs
     const docs = try buildpkg.GhosttyDocs.init(b, &deps);
     if (config.emit_docs) {
         docs.install();
@@ -88,17 +88,17 @@ pub fn build(b: *std.Build) !void {
         docs.installDummy(b.getInstallStep());
     }
 
-    // Ghostty webdata
+    // Nubb webdata
     const webdata = try buildpkg.GhosttyWebdata.init(b, &deps);
     if (config.emit_webdata) webdata.install();
 
-    // Ghostty bench tools
+    // Nubb bench tools
     if (config.emit_bench) {
         const bench = try buildpkg.GhosttyBench.init(b, &deps);
         bench.install();
     }
 
-    // Ghostty dist tarball
+    // Nubb dist tarball
     const dist = try buildpkg.GhosttyDist.init(b, &config);
     {
         const step = b.step("dist", "Build the dist tarball");
@@ -118,11 +118,11 @@ pub fn build(b: *std.Build) !void {
             resources.install();
         }
     } else if (!config.emit_lib_vt) {
-        // The macOS Ghostty Library
+        // The macOS Nubb Library
         //
         // This is NOT libghostty (even though its named that for historical
-        // reasons). It is just the glue between Ghostty GUI on macOS and
-        // the full Ghostty GUI core.
+        // reasons). It is just the glue between Nubb GUI on macOS and
+        // the full Nubb GUI core.
         const lib_shared = try buildpkg.GhosttyLib.initShared(b, &deps);
         const lib_static = try buildpkg.GhosttyLib.initStatic(b, &deps);
 
@@ -140,7 +140,7 @@ pub fn build(b: *std.Build) !void {
     if (!config.emit_lib_vt and config.target.result.os.tag.isDarwin() and
         (config.emit_xcframework or config.emit_macos_app))
     {
-        // Ghostty xcframework
+        // Nubb xcframework
         const xcframework = try buildpkg.GhosttyXCFramework.init(
             b,
             &deps,
@@ -154,7 +154,7 @@ pub fn build(b: *std.Build) !void {
             resources.install();
         }
 
-        // Ghostty macOS app
+        // Nubb macOS app
         const macos_app = try buildpkg.GhosttyXcodebuild.init(
             b,
             &config,
@@ -176,7 +176,7 @@ pub fn build(b: *std.Build) !void {
             run_cmd.addPassthruArgs();
 
             // Set the proper resources dir so things like shell integration
-            // work correctly. If we're running `zig build run` in Ghostty,
+            // work correctly. If we're running `zig build run` in Nubb,
             // this also ensures it overwrites the release one with our debug
             // build.
             // FIXME: This is not possible after Zig 0.17.

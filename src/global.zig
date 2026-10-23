@@ -22,7 +22,7 @@ comptime {
 }
 
 /// We export the xev backend we want to use so that the rest of
-/// Ghostty can import this once and have access to the proper
+/// Nubb can import this once and have access to the proper
 /// backend.
 pub const xev = @import("xev").Dynamic;
 
