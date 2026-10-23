@@ -19,5 +19,5 @@ pub const parseInt = lib.parseInt;
 pub const TaggedUnion = lib.TaggedUnion;
 pub const Struct = lib.Struct;
 pub const String = lib.String;
-pub const checkGhosttyHEnum = lib.checkGhosttyHEnum;
+pub const checkNubbHEnum = lib.checkNubbHEnum;
 pub const structSizedFieldFits = lib.structSizedFieldFits;

@@ -1,5 +1,5 @@
 import Cocoa
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
     /// A comparable event.

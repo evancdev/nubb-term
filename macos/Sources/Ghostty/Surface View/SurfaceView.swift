@@ -1,6 +1,6 @@
 import SwiftUI
 import UserNotifications
-import GhosttyKit
+import NubbKit
 import System
 
 extension Ghostty {
@@ -219,7 +219,7 @@ extension Ghostty {
     // size during a resize operation.
     struct SurfaceResizeOverlay: View {
         let geoSize: CGSize
-        let size: ghostty_surface_size_s
+        let size: nubb_surface_size_s
         let overlay: Ghostty.Config.ResizeOverlay
         let position: Ghostty.Config.ResizeOverlayPosition
         let duration: UInt
@@ -405,7 +405,7 @@ extension Ghostty {
                     Button(action: {
                         guard let surface = surfaceView.surface else { return }
                         let action = "navigate_search:previous"
-                        ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8)))
+                        nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8)))
                     }, label: {
                         Image(systemName: "chevron.down")
                     })
@@ -597,11 +597,11 @@ extension Ghostty {
         var waitAfterCommand: Bool = false
 
         /// Context for surface creation
-        var context: ghostty_surface_context_e = GHOSTTY_SURFACE_CONTEXT_WINDOW
+        var context: nubb_surface_context_e = NUBB_SURFACE_CONTEXT_WINDOW
 
         init() {}
 
-        init(from config: ghostty_surface_config_s) {
+        init(from config: nubb_surface_config_s) {
             self.fontSize = config.font_size
             if let workingDirectory = config.working_directory {
                 self.workingDirectory = String.init(cString: workingDirectory, encoding: .utf8)
@@ -625,11 +625,11 @@ extension Ghostty {
 
         /// Provides a C-compatible ghostty configuration within a closure. The configuration
         /// and all its string pointers are only valid within the closure.
-        func withCValue<T>(view: SurfaceView, _ body: (inout ghostty_surface_config_s) throws -> T) rethrows -> T {
-            var config = ghostty_surface_config_new()
+        func withCValue<T>(view: SurfaceView, _ body: (inout nubb_surface_config_s) throws -> T) rethrows -> T {
+            var config = nubb_surface_config_new()
             config.userdata = Unmanaged.passUnretained(view).toOpaque()
-            config.platform_tag = GHOSTTY_PLATFORM_MACOS
-            config.platform = ghostty_platform_u(macos: ghostty_platform_macos_s(
+            config.platform_tag = NUBB_PLATFORM_MACOS
+            config.platform = nubb_platform_u(macos: nubb_platform_macos_s(
                 nsview: Unmanaged.passUnretained(view).toOpaque()
             ))
             config.scale_factor = NSScreen.main!.backingScaleFactor
@@ -660,11 +660,11 @@ extension Ghostty {
                         // Create C strings for all keys and values
                         return try keys.withCStrings { keyCStrings in
                             return try values.withCStrings { valueCStrings in
-                                // Create array of ghostty_env_var_s
-                                var envVars = [ghostty_env_var_s]()
+                                // Create array of nubb_env_var_s
+                                var envVars = [nubb_env_var_s]()
                                 envVars.reserveCapacity(environmentVariables.count)
                                 for i in 0..<environmentVariables.count {
-                                    envVars.append(ghostty_env_var_s(
+                                    envVars.append(nubb_env_var_s(
                                         key: keyCStrings[i],
                                         value: valueCStrings[i]
                                     ))

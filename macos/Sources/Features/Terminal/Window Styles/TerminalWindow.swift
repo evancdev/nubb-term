@@ -1,7 +1,7 @@
 import AppKit
 import Combine
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 /// The base class for all standalone, "normal" terminal windows. This sets the basic
 /// style and configuration of the window based on the app configuration.
@@ -526,7 +526,7 @@ class TerminalWindow: NSWindow {
 
             // We don't need to set blur when using glass
             if !surfaceConfig.backgroundBlur.isGlassStyle, let appDelegate = NSApp.delegate as? AppDelegate {
-                ghostty_set_window_background_blur(
+                nubb_set_window_background_blur(
                     appDelegate.ghostty.app,
                     Unmanaged.passUnretained(self).toOpaque())
             }

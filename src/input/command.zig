@@ -20,7 +20,7 @@ pub const Command = struct {
     title: [:0]const u8,
     description: [:0]const u8 = "",
 
-    /// ghostty_command_s
+    /// nubb_command_s
     pub const C = extern struct {
         action_key: [*:0]const u8,
         action: [*:0]const u8,

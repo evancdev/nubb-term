@@ -1,5 +1,5 @@
 import Foundation
-import GhosttyKit
+import NubbKit
 import SwiftUI
 
 extension Ghostty {
@@ -44,7 +44,7 @@ extension Ghostty {
 
         // Returns sizing information for the surface. This is the raw C
         // structure because I'm lazy.
-        @Published var surfaceSize: ghostty_surface_size_s?
+        @Published var surfaceSize: nubb_surface_size_s?
 
         /// True when the surface is in readonly mode.
         @Published private(set) var readonly: Bool = false
@@ -52,10 +52,10 @@ extension Ghostty {
         /// True when the surface should show a highlight effect (e.g., when presented via goto_split).
         @Published private(set) var highlighted: Bool = false
 
-        /// A message sent from `ghostty_surface_t` when a child process exited
+        /// A message sent from `nubb_surface_t` when a child process exited
         @Published private(set) var childExitedMessage: ChildExitedMessage?
 
-        var surface: ghostty_surface_t? {
+        var surface: nubb_surface_t? {
             nil
         }
 
@@ -172,7 +172,7 @@ extension Ghostty.OSSurfaceView {
     func navigateSearchToNext() -> Bool {
         guard let surface = self.surface else { return false }
         let action = "navigate_search:next"
-        if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+        if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
             AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             return false
         }
@@ -182,7 +182,7 @@ extension Ghostty.OSSurfaceView {
     func navigateSearchToPrevious() -> Bool {
         guard let surface = self.surface else { return false }
         let action = "navigate_search:previous"
-        if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+        if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
             AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             return false
         }

@@ -8,22 +8,22 @@
 #include <hwy/highway.h>
 
 HWY_BEFORE_NAMESPACE();
-namespace ghostty {
+namespace nubb {
 namespace HWY_NAMESPACE {
 
 namespace hn = hwy::HWY_NAMESPACE;
 
 }  // namespace HWY_NAMESPACE
-}  // namespace ghostty
+}  // namespace nubb
 HWY_AFTER_NAMESPACE();
 
 #if HWY_ONCE
 
-namespace ghostty {
+namespace nubb {
 
 typedef void (*PrintFunc)(const char32_t* chars, size_t count);
 
-}  // namespace ghostty
+}  // namespace nubb
 
 #endif  // HWY_ONCE
 

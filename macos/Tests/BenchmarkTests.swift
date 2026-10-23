@@ -6,7 +6,7 @@
 //
 
 import Testing
-import GhosttyKit
+import NubbKit
 
 extension Tag {
     @Tag static var benchmark: Self
@@ -25,7 +25,7 @@ extension Tag {
 )
 struct BenchmarkTests {
     @Test func example() async throws {
-        ghostty_benchmark_cli(
+        nubb_benchmark_cli(
             "terminal-stream",
             "--data=/Users/mitchellh/Documents/ghostty/bug.osc.txt")
     }

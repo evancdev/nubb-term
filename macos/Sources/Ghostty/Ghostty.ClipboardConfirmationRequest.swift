@@ -1,6 +1,6 @@
 import AppKit
 import Foundation
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
     /// The type of a clipboard request.
@@ -45,17 +45,17 @@ extension Ghostty {
             }
         }
 
-        static func from(request: ghostty_clipboard_request_e) -> ClipboardRequest? {
+        static func from(request: nubb_clipboard_request_e) -> ClipboardRequest? {
             switch request {
-            case GHOSTTY_CLIPBOARD_REQUEST_PASTE:
+            case NUBB_CLIPBOARD_REQUEST_PASTE:
                 return .paste
-            case GHOSTTY_CLIPBOARD_REQUEST_OSC_52_READ:
+            case NUBB_CLIPBOARD_REQUEST_OSC_52_READ:
                 return .osc_52_read
-            case GHOSTTY_CLIPBOARD_REQUEST_OSC_52_WRITE:
+            case NUBB_CLIPBOARD_REQUEST_OSC_52_WRITE:
                 return .osc_52_write
-            case GHOSTTY_CLIPBOARD_REQUEST_KITTY_READ:
+            case NUBB_CLIPBOARD_REQUEST_KITTY_READ:
                 return .kitty_read
-            case GHOSTTY_CLIPBOARD_REQUEST_KITTY_WRITE:
+            case NUBB_CLIPBOARD_REQUEST_KITTY_WRITE:
                 return .kitty_write
             default:
                 return nil

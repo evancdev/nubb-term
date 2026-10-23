@@ -7,7 +7,7 @@ const scalar_decoder = base64_scalar.scalar_decoder;
 const log = std.log.scoped(.simd_base64);
 
 pub fn maxLen(input: []const u8) usize {
-    if (comptime options.simd) return ghostty_simd_base64_max_length(
+    if (comptime options.simd) return nubb_simd_base64_max_length(
         input.ptr,
         input.len,
     );
@@ -24,7 +24,7 @@ fn maxLenScalar(input: []const u8) usize {
 
 pub fn decode(input: []const u8, output: []u8) error{Base64Invalid}![]const u8 {
     if (comptime options.simd) {
-        const res = ghostty_simd_base64_decode(
+        const res = nubb_simd_base64_decode(
             input.ptr,
             input.len,
             output.ptr,
@@ -219,11 +219,11 @@ pub const Streaming = struct {
 };
 
 // base64.cpp
-extern "c" fn ghostty_simd_base64_max_length(
+extern "c" fn nubb_simd_base64_max_length(
     input: [*]const u8,
     len: usize,
 ) usize;
-extern "c" fn ghostty_simd_base64_decode(
+extern "c" fn nubb_simd_base64_decode(
     input: [*]const u8,
     len: usize,
     output: [*]u8,

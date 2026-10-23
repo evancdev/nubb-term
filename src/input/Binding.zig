@@ -51,7 +51,7 @@ pub const Flags = packed struct {
 
     /// Converts this to a C-compatible value.
     ///
-    /// Sync with ghostty.h for enums.
+    /// Sync with nubb.h for enums.
     pub fn cval(self: Flags) C {
         const Backing = @typeInfo(Flags).@"struct".backing_integer.?;
         return @as(Backing, @bitCast(self));
@@ -1685,7 +1685,7 @@ pub const Action = union(enum) {
 /// Trigger is the associated key state that can trigger an action.
 /// This is an extern struct because this is also used in the C API.
 ///
-/// This must be kept in sync with include/ghostty.h ghostty_input_trigger_s
+/// This must be kept in sync with include/nubb.h nubb_input_trigger_s
 pub const Trigger = struct {
     /// The key that has to be pressed for a binding to take action.
     key: Trigger.Key = .{ .physical = .unidentified },

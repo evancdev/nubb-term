@@ -1,4 +1,4 @@
-import GhosttyKit
+import NubbKit
 
 /// Represents the Nubb `quick-terminal-size` configuration. See the documentation for
 /// that for more details on exactly how it works. Some of those docs will be reproduced in various comments
@@ -15,7 +15,7 @@ struct QuickTerminalSize {
         self.secondary = secondary
     }
 
-    init(from cStruct: ghostty_config_quick_terminal_size_s) {
+    init(from cStruct: nubb_config_quick_terminal_size_s) {
         self.primary = Size(from: cStruct.primary)
         self.secondary = Size(from: cStruct.secondary)
     }
@@ -24,13 +24,13 @@ struct QuickTerminalSize {
         case percentage(Float)
         case pixels(UInt32)
 
-        init?(from cStruct: ghostty_quick_terminal_size_s) {
+        init?(from cStruct: nubb_quick_terminal_size_s) {
             switch cStruct.tag {
-            case GHOSTTY_QUICK_TERMINAL_SIZE_NONE:
+            case NUBB_QUICK_TERMINAL_SIZE_NONE:
                 return nil
-            case GHOSTTY_QUICK_TERMINAL_SIZE_PERCENTAGE:
+            case NUBB_QUICK_TERMINAL_SIZE_PERCENTAGE:
                 self = .percentage(cStruct.value.percentage)
-            case GHOSTTY_QUICK_TERMINAL_SIZE_PIXELS:
+            case NUBB_QUICK_TERMINAL_SIZE_PIXELS:
                 self = .pixels(cStruct.value.pixels)
             default:
                 assertionFailure()

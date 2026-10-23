@@ -2,7 +2,7 @@ import Foundation
 import Cocoa
 import SwiftUI
 import Combine
-import GhosttyKit
+import NubbKit
 
 /// A classic, tabbed terminal experience.
 class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Controller {
@@ -1612,7 +1612,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
         // Get the tab index from the notification
         guard let tabEnumAny = notification.userInfo?[Ghostty.Notification.GotoTabKey] else { return }
-        guard let tabEnum = tabEnumAny as? ghostty_action_goto_tab_e else { return }
+        guard let tabEnum = tabEnumAny as? nubb_action_goto_tab_e else { return }
         let tabIndex: Int32 = tabEnum.rawValue
 
         guard let windowController = window.windowController else { return }
@@ -1627,19 +1627,19 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             guard let selectedWindow = tabGroup.selectedWindow else { return }
             guard let selectedIndex = tabbedWindows.firstIndex(where: { $0 == selectedWindow }) else { return }
 
-            if tabIndex == GHOSTTY_GOTO_TAB_PREVIOUS.rawValue {
+            if tabIndex == NUBB_GOTO_TAB_PREVIOUS.rawValue {
                 if selectedIndex == 0 {
                     finalIndex = tabbedWindows.count - 1
                 } else {
                     finalIndex = selectedIndex - 1
                 }
-            } else if tabIndex == GHOSTTY_GOTO_TAB_NEXT.rawValue {
+            } else if tabIndex == NUBB_GOTO_TAB_NEXT.rawValue {
                 if selectedIndex == tabbedWindows.count - 1 {
                     finalIndex = 0
                 } else {
                     finalIndex = selectedIndex + 1
                 }
-            } else if tabIndex == GHOSTTY_GOTO_TAB_LAST.rawValue {
+            } else if tabIndex == NUBB_GOTO_TAB_LAST.rawValue {
                 finalIndex = tabbedWindows.count - 1
             } else {
                 return

@@ -1,5 +1,5 @@
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 func sortedTerminalPaletteOptions(_ options: [CommandOption]) -> [CommandOption] {
     options.sorted { lhs, rhs in

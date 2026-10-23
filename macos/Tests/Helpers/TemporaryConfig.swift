@@ -1,6 +1,6 @@
 import Foundation
 @testable import Ghostty
-@testable import GhosttyKit
+@testable import NubbKit
 
 /// Create a temporary config file and delete it when this is deallocated
 class TemporaryConfig: Ghostty.Config {

@@ -1,7 +1,7 @@
 import Cocoa
 import SwiftUI
 import Combine
-import GhosttyKit
+import NubbKit
 
 /// A base class for windows that can contain Nubb windows. This base class implements
 /// the bare minimum functionality that every terminal window in Nubb should implement.
@@ -80,7 +80,7 @@ class BaseTerminalController: NSWindowController,
     private var savedFrame: SavedFrame?
 
     /// Cache previously applied appearance to avoid unnecessary updates
-    private var appliedColorScheme: ghostty_color_scheme_e?
+    private var appliedColorScheme: nubb_color_scheme_e?
 
     /// The configuration derived from the Nubb config so we don't need to rely on references.
     private var derivedConfig: DerivedConfig
@@ -146,8 +146,8 @@ class BaseTerminalController: NSWindowController,
         super.init(window: nil)
 
         // Initialize our initial surface.
-        guard let ghostty_app = ghostty.app else { preconditionFailure("app must be loaded") }
-        self.surfaceTree = tree ?? .init(view: Ghostty.SurfaceView(ghostty_app, baseConfig: base))
+        guard let nubb_app = ghostty.app else { preconditionFailure("app must be loaded") }
+        self.surfaceTree = tree ?? .init(view: Ghostty.SurfaceView(nubb_app, baseConfig: base))
         Self.updateSurfaceControllers(self, from: .init(), to: surfaceTree)
 
         // Setup our bell state for the window
@@ -285,8 +285,8 @@ class BaseTerminalController: NSWindowController,
         guard surfaceTree.root?.node(view: oldView) != nil else { return nil }
 
         // Create a new surface view
-        guard let ghostty_app = ghostty.app else { return nil }
-        let newView = Ghostty.SurfaceView(ghostty_app, baseConfig: config)
+        guard let nubb_app = ghostty.app else { return nil }
+        let newView = Ghostty.SurfaceView(nubb_app, baseConfig: config)
 
         // Do the split
         let newTree: SplitTree<Ghostty.SurfaceView>
@@ -671,13 +671,13 @@ class BaseTerminalController: NSWindowController,
 
         // Determine our desired direction
         guard let directionAny = notification.userInfo?["direction"] else { return }
-        guard let direction = directionAny as? ghostty_action_split_direction_e else { return }
+        guard let direction = directionAny as? nubb_action_split_direction_e else { return }
         let splitDirection: SplitTree<Ghostty.SurfaceView>.NewDirection
         switch direction {
-        case GHOSTTY_SPLIT_DIRECTION_RIGHT: splitDirection = .right
-        case GHOSTTY_SPLIT_DIRECTION_LEFT: splitDirection = .left
-        case GHOSTTY_SPLIT_DIRECTION_DOWN: splitDirection = .down
-        case GHOSTTY_SPLIT_DIRECTION_UP: splitDirection = .up
+        case NUBB_SPLIT_DIRECTION_RIGHT: splitDirection = .right
+        case NUBB_SPLIT_DIRECTION_LEFT: splitDirection = .left
+        case NUBB_SPLIT_DIRECTION_DOWN: splitDirection = .down
+        case NUBB_SPLIT_DIRECTION_UP: splitDirection = .up
         default: return
         }
 
@@ -1045,7 +1045,7 @@ class BaseTerminalController: NSWindowController,
         let len = action.utf8CString.count
         if len == 0 { return }
         _ = action.withCString { cString in
-            ghostty_surface_binding_action(surface, cString, UInt(len - 1))
+            nubb_surface_binding_action(surface, cString, UInt(len - 1))
         }
     }
 
@@ -1252,7 +1252,7 @@ class BaseTerminalController: NSWindowController,
         let visible = self.window?.occlusionState.contains(.visible) ?? false
         for view in surfaceTree {
             if let surface = view.surface, view.isWindowVisible != visible {
-                ghostty_surface_set_occlusion(surface, visible)
+                nubb_surface_set_occlusion(surface, visible)
                 view.isWindowVisible = visible
             }
         }
@@ -1300,22 +1300,22 @@ class BaseTerminalController: NSWindowController,
 
     @IBAction func splitRight(_ sender: Any) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.split(surface: surface, direction: GHOSTTY_SPLIT_DIRECTION_RIGHT)
+        ghostty.split(surface: surface, direction: NUBB_SPLIT_DIRECTION_RIGHT)
     }
 
     @IBAction func splitLeft(_ sender: Any) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.split(surface: surface, direction: GHOSTTY_SPLIT_DIRECTION_LEFT)
+        ghostty.split(surface: surface, direction: NUBB_SPLIT_DIRECTION_LEFT)
     }
 
     @IBAction func splitDown(_ sender: Any) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.split(surface: surface, direction: GHOSTTY_SPLIT_DIRECTION_DOWN)
+        ghostty.split(surface: surface, direction: NUBB_SPLIT_DIRECTION_DOWN)
     }
 
     @IBAction func splitUp(_ sender: Any) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.split(surface: surface, direction: GHOSTTY_SPLIT_DIRECTION_UP)
+        ghostty.split(surface: surface, direction: NUBB_SPLIT_DIRECTION_UP)
     }
 
     @IBAction func splitZoom(_ sender: Any) {
@@ -1477,7 +1477,7 @@ extension BaseTerminalController: NSMenuItemValidation {
 
     /// Update the surface tree's color scheme only when it actually changes.
     ///
-    /// Calling ``ghostty_surface_set_color_scheme`` triggers
+    /// Calling ``nubb_surface_set_color_scheme`` triggers
     /// ``syncAppearance(_:)`` via notification,
     /// so we avoid redundant calls.
     func updateColorSchemeForSurfaceTree() {
@@ -1487,18 +1487,18 @@ extension BaseTerminalController: NSMenuItemValidation {
         ///
         /// Using App's effectiveAppearance here to prevent incorrect updates.
         let themeAppearance = NSApplication.shared.effectiveAppearance
-        let scheme: ghostty_color_scheme_e
+        let scheme: nubb_color_scheme_e
         if themeAppearance.isDark {
-            scheme = GHOSTTY_COLOR_SCHEME_DARK
+            scheme = NUBB_COLOR_SCHEME_DARK
         } else {
-            scheme = GHOSTTY_COLOR_SCHEME_LIGHT
+            scheme = NUBB_COLOR_SCHEME_LIGHT
         }
         guard scheme != appliedColorScheme else {
             return
         }
         for surfaceView in surfaceTree {
             if let surface = surfaceView.surface {
-                ghostty_surface_set_color_scheme(surface, scheme)
+                nubb_surface_set_color_scheme(surface, scheme)
             }
         }
         appliedColorScheme = scheme

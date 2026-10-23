@@ -40,7 +40,7 @@ constexpr T array_max(const T (&a)[N]) {
 #endif  // NUBB_SIMD_CPW_HELPERS_
 
 HWY_BEFORE_NAMESPACE();
-namespace ghostty {
+namespace nubb {
 namespace HWY_NAMESPACE {
 
 namespace hn = hwy::HWY_NAMESPACE;
@@ -492,13 +492,13 @@ int8_t CodepointWidth(uint32_t input) {
 }
 
 }  // namespace HWY_NAMESPACE
-}  // namespace ghostty
+}  // namespace nubb
 HWY_AFTER_NAMESPACE();
 
 // HWY_ONCE is true for only one of the target passes
 #if HWY_ONCE
 
-namespace ghostty {
+namespace nubb {
 
 HWY_EXPORT(CodepointWidth);
 
@@ -506,12 +506,12 @@ int8_t CodepointWidth(uint32_t cp) {
   return HWY_DYNAMIC_DISPATCH(CodepointWidth)(cp);
 }
 
-}  // namespace ghostty
+}  // namespace nubb
 
 extern "C" {
 
-int8_t ghostty_simd_codepoint_width(uint32_t cp) {
-  return ghostty::CodepointWidth(cp);
+int8_t nubb_simd_codepoint_width(uint32_t cp) {
+  return nubb::CodepointWidth(cp);
 }
 
 }  // extern "C"

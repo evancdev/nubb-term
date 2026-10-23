@@ -1,6 +1,6 @@
 import os
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 // MARK: C Extensions
 
@@ -16,12 +16,12 @@ extension Ghostty {
 
 extension Ghostty {
     struct Info {
-        var mode: ghostty_build_mode_e
+        var mode: nubb_build_mode_e
         var version: String
     }
 
     static var info: Info {
-        let raw = ghostty_info()
+        let raw = nubb_info()
         let version = NSString(
             bytes: raw.version,
             length: Int(raw.version_len),
@@ -65,9 +65,9 @@ extension Ghostty {
 
 extension Ghostty {
     class AllocatedString {
-        private let cString: ghostty_string_s
+        private let cString: nubb_string_s
 
-        init(_ c: ghostty_string_s) {
+        init(_ c: nubb_string_s) {
             self.cString = c
         }
 
@@ -78,7 +78,7 @@ extension Ghostty {
         }
 
         deinit {
-            ghostty_string_free(cString)
+            nubb_string_free(cString)
         }
     }
 }
@@ -89,15 +89,15 @@ extension Ghostty {
         case off
         case toggle
 
-        static func from(_ c: ghostty_action_float_window_e) -> Self? {
+        static func from(_ c: nubb_action_float_window_e) -> Self? {
             switch c {
-            case GHOSTTY_FLOAT_WINDOW_ON:
+            case NUBB_FLOAT_WINDOW_ON:
                 return .on
 
-            case GHOSTTY_FLOAT_WINDOW_OFF:
+            case NUBB_FLOAT_WINDOW_OFF:
                 return .off
 
-            case GHOSTTY_FLOAT_WINDOW_TOGGLE:
+            case NUBB_FLOAT_WINDOW_TOGGLE:
                 return .toggle
 
             default:
@@ -111,15 +111,15 @@ extension Ghostty {
         case off
         case toggle
 
-        static func from(_ c: ghostty_action_secure_input_e) -> Self? {
+        static func from(_ c: nubb_action_secure_input_e) -> Self? {
             switch c {
-            case GHOSTTY_SECURE_INPUT_ON:
+            case NUBB_SECURE_INPUT_ON:
                 return .on
 
-            case GHOSTTY_SECURE_INPUT_OFF:
+            case NUBB_SECURE_INPUT_OFF:
                 return .off
 
-            case GHOSTTY_SECURE_INPUT_TOGGLE:
+            case NUBB_SECURE_INPUT_TOGGLE:
                 return .toggle
 
             default:
@@ -133,24 +133,24 @@ extension Ghostty {
         case previous, next, up, down, left, right
 
         /// Initialize from a Nubb API enum.
-        static func from(direction: ghostty_action_goto_split_e) -> Self? {
+        static func from(direction: nubb_action_goto_split_e) -> Self? {
             switch direction {
-            case GHOSTTY_GOTO_SPLIT_PREVIOUS:
+            case NUBB_GOTO_SPLIT_PREVIOUS:
                 return .previous
 
-            case GHOSTTY_GOTO_SPLIT_NEXT:
+            case NUBB_GOTO_SPLIT_NEXT:
                 return .next
 
-            case GHOSTTY_GOTO_SPLIT_UP:
+            case NUBB_GOTO_SPLIT_UP:
                 return .up
 
-            case GHOSTTY_GOTO_SPLIT_DOWN:
+            case NUBB_GOTO_SPLIT_DOWN:
                 return .down
 
-            case GHOSTTY_GOTO_SPLIT_LEFT:
+            case NUBB_GOTO_SPLIT_LEFT:
                 return .left
 
-            case GHOSTTY_GOTO_SPLIT_RIGHT:
+            case NUBB_GOTO_SPLIT_RIGHT:
                 return .right
 
             default:
@@ -158,25 +158,25 @@ extension Ghostty {
             }
         }
 
-        func toNative() -> ghostty_action_goto_split_e {
+        func toNative() -> nubb_action_goto_split_e {
             switch self {
             case .previous:
-                return GHOSTTY_GOTO_SPLIT_PREVIOUS
+                return NUBB_GOTO_SPLIT_PREVIOUS
 
             case .next:
-                return GHOSTTY_GOTO_SPLIT_NEXT
+                return NUBB_GOTO_SPLIT_NEXT
 
             case .up:
-                return GHOSTTY_GOTO_SPLIT_UP
+                return NUBB_GOTO_SPLIT_UP
 
             case .down:
-                return GHOSTTY_GOTO_SPLIT_DOWN
+                return NUBB_GOTO_SPLIT_DOWN
 
             case .left:
-                return GHOSTTY_GOTO_SPLIT_LEFT
+                return NUBB_GOTO_SPLIT_LEFT
 
             case .right:
-                return GHOSTTY_GOTO_SPLIT_RIGHT
+                return NUBB_GOTO_SPLIT_RIGHT
             }
         }
     }
@@ -185,31 +185,31 @@ extension Ghostty {
     enum SplitResizeDirection {
         case up, down, left, right
 
-        static func from(direction: ghostty_action_resize_split_direction_e) -> Self? {
+        static func from(direction: nubb_action_resize_split_direction_e) -> Self? {
             switch direction {
-            case GHOSTTY_RESIZE_SPLIT_UP:
+            case NUBB_RESIZE_SPLIT_UP:
                 return .up
-            case GHOSTTY_RESIZE_SPLIT_DOWN:
+            case NUBB_RESIZE_SPLIT_DOWN:
                 return .down
-            case GHOSTTY_RESIZE_SPLIT_LEFT:
+            case NUBB_RESIZE_SPLIT_LEFT:
                 return .left
-            case GHOSTTY_RESIZE_SPLIT_RIGHT:
+            case NUBB_RESIZE_SPLIT_RIGHT:
                 return .right
             default:
                 return nil
             }
         }
 
-        func toNative() -> ghostty_action_resize_split_direction_e {
+        func toNative() -> nubb_action_resize_split_direction_e {
             switch self {
             case .up:
-                return GHOSTTY_RESIZE_SPLIT_UP
+                return NUBB_RESIZE_SPLIT_UP
             case .down:
-                return GHOSTTY_RESIZE_SPLIT_DOWN
+                return NUBB_RESIZE_SPLIT_DOWN
             case .left:
-                return GHOSTTY_RESIZE_SPLIT_LEFT
+                return NUBB_RESIZE_SPLIT_LEFT
             case .right:
-                return GHOSTTY_RESIZE_SPLIT_RIGHT
+                return NUBB_RESIZE_SPLIT_RIGHT
             }
         }
     }
@@ -252,7 +252,7 @@ extension Ghostty {
         /// The data as text, if it is valid UTF-8.
         var string: String? { String(data: data, encoding: .utf8) }
 
-        static func from(content: ghostty_clipboard_content_s) -> ClipboardContent? {
+        static func from(content: nubb_clipboard_content_s) -> ClipboardContent? {
             guard let mimePtr = content.mime,
                   let dataPtr = content.data else {
                 return nil
@@ -405,4 +405,4 @@ extension Ghostty.Notification {
 }
 
 // Make the input enum hashable.
-extension ghostty_input_key_e: @retroactive Hashable {}
+extension nubb_input_key_e: @retroactive Hashable {}

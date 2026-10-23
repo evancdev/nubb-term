@@ -10,7 +10,7 @@
 #include <stddef.h>
 
 HWY_BEFORE_NAMESPACE();
-namespace ghostty {
+namespace nubb {
 namespace HWY_NAMESPACE {
 
 namespace hn = hwy::HWY_NAMESPACE;
@@ -96,7 +96,7 @@ size_t IndexOf(const uint8_t needle,
                size_t count);
 
 }  // namespace HWY_NAMESPACE
-}  // namespace ghostty
+}  // namespace nubb
 HWY_AFTER_NAMESPACE();
 
 #endif  // NUBB_SIMD_INDEX_OF_H_

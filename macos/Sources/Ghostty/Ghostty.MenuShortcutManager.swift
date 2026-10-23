@@ -1,6 +1,6 @@
 import AppKit
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
     /// The manager that's responsible for updating shortcuts of Nubb's app menu
@@ -95,7 +95,7 @@ private extension Ghostty.MenuShortcutManager {
             let shortcut = Ghostty.keyboardShortcut(for: trigger)
         else { return false }
 
-        let isPhysical = trigger.tag == GHOSTTY_TRIGGER_PHYSICAL
+        let isPhysical = trigger.tag == NUBB_TRIGGER_PHYSICAL
         let physicalKeyCode = isPhysical ? Ghostty.Input.Key(cKey: trigger.key.physical)?.keyCode : nil
         // Build a direct lookup for key-equivalent dispatch so we don't need to
         // linearly walk the full menu hierarchy at event time.

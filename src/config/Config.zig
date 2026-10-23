@@ -4719,7 +4719,7 @@ const Replay = struct {
 
 /// Valid values for confirm-close-surface
 /// c_int because it needs to be extern compatible
-/// If this is changed, you must also update ghostty.h
+/// If this is changed, you must also update nubb.h
 pub const ConfirmCloseSurface = enum(c_int) {
     false,
     true,
@@ -4728,7 +4728,7 @@ pub const ConfirmCloseSurface = enum(c_int) {
 
 /// Valid values for custom-shader-animation
 /// c_int because it needs to be extern compatible
-/// If this is changed, you must also update ghostty.h
+/// If this is changed, you must also update nubb.h
 pub const CustomShaderAnimation = enum(c_int) {
     false,
     true,
@@ -4737,7 +4737,7 @@ pub const CustomShaderAnimation = enum(c_int) {
 
 /// Valid values for macos-non-native-fullscreen
 /// c_int because it needs to be extern compatible
-/// If this is changed, you must also update ghostty.h
+/// If this is changed, you must also update nubb.h
 pub const NonNativeFullscreen = enum(c_int) {
     false,
     true,
@@ -4747,7 +4747,7 @@ pub const NonNativeFullscreen = enum(c_int) {
 
 /// Valid values for fullscreen config option
 /// c_int because it needs to be extern compatible
-/// If this is changed, you must also update ghostty.h
+/// If this is changed, you must also update nubb.h
 pub const Fullscreen = enum(c_int) {
     false,
     true,
@@ -4894,7 +4894,7 @@ pub const Color = struct {
     g: u8,
     b: u8,
 
-    /// ghostty_config_color_s
+    /// nubb_config_color_s
     pub const C = extern struct {
         r: u8,
         g: u8,
@@ -5118,7 +5118,7 @@ pub const Palette = struct {
     /// Keep track of which indexes were manually set by the user.
     mask: terminal.color.PaletteMask = .empty,
 
-    /// ghostty_config_palette_s
+    /// nubb_config_palette_s
     pub const C = extern struct {
         colors: [256]Color.C,
     };
@@ -7974,7 +7974,7 @@ pub const RepeatableCommand = struct {
     value: std.ArrayListUnmanaged(inputpkg.Command) = .empty,
     value_c: std.ArrayListUnmanaged(inputpkg.Command.C) = .empty,
 
-    /// ghostty_config_command_list_s
+    /// nubb_config_command_list_s
     pub const C = extern struct {
         commands: [*]inputpkg.Command.C,
         len: usize,

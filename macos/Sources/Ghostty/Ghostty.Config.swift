@@ -1,17 +1,17 @@
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
-    /// Maps to a `ghostty_config_t` and the various operations on that.
+    /// Maps to a `nubb_config_t` and the various operations on that.
     class Config: ObservableObject {
         // The underlying C pointer to the Nubb config structure. This
         // should never be accessed directly. Any operations on this should
         // be called from the functions on this or another class.
-        private(set) var config: ghostty_config_t? {
+        private(set) var config: nubb_config_t? {
             didSet {
                 // Free the old value whenever we change
                 guard let old = oldValue else { return }
-                ghostty_config_free(old)
+                nubb_config_free(old)
             }
         }
 
@@ -23,9 +23,9 @@ extension Ghostty {
             guard let cfg = self.config else { return [] }
 
             var diags: [String] = []
-            let diagsCount = ghostty_config_diagnostics_count(cfg)
+            let diagsCount = nubb_config_diagnostics_count(cfg)
             for i in 0..<diagsCount {
-                let diag = ghostty_config_get_diagnostic(cfg, UInt32(i))
+                let diag = nubb_config_get_diagnostic(cfg, UInt32(i))
                 let message = String(cString: diag.message)
                 diags.append(message)
             }
@@ -33,7 +33,7 @@ extension Ghostty {
             return diags
         }
 
-        init(config: ghostty_config_t?) {
+        init(config: nubb_config_t?) {
             self.config = config
         }
 
@@ -41,11 +41,11 @@ extension Ghostty {
             self.init(config: Self.loadConfig(at: path, finalize: finalize))
         }
 
-        convenience init(clone config: ghostty_config_t) {
-            self.init(config: ghostty_config_clone(config))
+        convenience init(clone config: nubb_config_t) {
+            self.init(config: nubb_config_clone(config))
         }
 
-        func clone(config: ghostty_config_t) {
+        func clone(config: nubb_config_t) {
             self.config = config
         }
 
@@ -57,27 +57,27 @@ extension Ghostty {
         /// - Parameters:
         ///   - path: An optional preferred config file path. Pass `nil` to load the default configuration files.
         ///   - finalize: Whether to finalize the configuration to populate default values.
-        static func loadConfig(at path: String?, finalize: Bool) -> ghostty_config_t? {
+        static func loadConfig(at path: String?, finalize: Bool) -> nubb_config_t? {
             // Initialize the global configuration.
-            guard let cfg = ghostty_config_new() else {
-                logger.critical("ghostty_config_new failed")
+            guard let cfg = nubb_config_new() else {
+                logger.critical("nubb_config_new failed")
                 return nil
             }
 
             // Load our configuration from files, CLI args, and then any referenced files.
             if let path {
-                ghostty_config_load_file(cfg, path)
+                nubb_config_load_file(cfg, path)
             } else {
-                ghostty_config_load_default_files(cfg)
+                nubb_config_load_default_files(cfg)
             }
 
             // We only load CLI args when not running in Xcode because in Xcode we
             // pass some special parameters to control the debugger.
             if !isRunningInXcode() {
-                ghostty_config_load_cli_args(cfg)
+                nubb_config_load_cli_args(cfg)
             }
 
-            ghostty_config_load_recursive_files(cfg)
+            nubb_config_load_recursive_files(cfg)
 
             // TODO: we'd probably do some config loading here... for now we'd
             // have to do this synchronously. When we support config updating we can do
@@ -85,16 +85,16 @@ extension Ghostty {
 
             if finalize {
                 // Finalize will make our defaults available.
-                ghostty_config_finalize(cfg)
+                nubb_config_finalize(cfg)
             }
             // Log any configuration errors. These will be automatically shown in a
             // pop-up window too.
-            let diagsCount = ghostty_config_diagnostics_count(cfg)
+            let diagsCount = nubb_config_diagnostics_count(cfg)
             if diagsCount > 0 {
                 logger.warning("config error: \(diagsCount, privacy: .public) configuration errors on reload")
                 var diags: [String] = []
                 for i in 0..<diagsCount {
-                    let diag = ghostty_config_get_diagnostic(cfg, UInt32(i))
+                    let diag = nubb_config_get_diagnostic(cfg, UInt32(i))
                     let message = String(cString: diag.message)
                     diags.append(message)
                     logger.warning("config error: \(message, privacy: .public)")
@@ -116,9 +116,9 @@ extension Ghostty {
             return Ghostty.keyboardShortcut(for: trigger)
         }
 
-        func keybindTrigger(for action: String) -> ghostty_input_trigger_s? {
+        func keybindTrigger(for action: String) -> nubb_input_trigger_s? {
             guard let config else { return nil }
-            return ghostty_config_trigger(config, action, UInt(action.lengthOfBytes(using: .utf8)))
+            return nubb_config_trigger(config, action, UInt(action.lengthOfBytes(using: .utf8)))
         }
 
         // MARK: - Configuration Values
@@ -131,15 +131,15 @@ extension Ghostty {
             guard let config = self.config else { return .defaultValue }
             var v: CUnsignedInt = 0
             let key = "bell-features"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .defaultValue }
             return .init(rawValue: v)
         }
 
         var bellAudioPath: ConfigPath? {
             guard let config = self.config else { return nil }
-            var v = ghostty_config_path_s()
+            var v = nubb_config_path_s()
             let key = "bell-audio-path"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
             let path = String(cString: v.path)
             return path.isEmpty ? nil : ConfigPath(path: path, optional: v.optional)
         }
@@ -148,7 +148,7 @@ extension Ghostty {
             guard let config = self.config else { return 0.5 }
             var v: Double = 0.5
             let key = "bell-audio-volume"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return Float(v)
         }
 
@@ -156,7 +156,7 @@ extension Ghostty {
             guard let config = self.config else { return .never }
             var v: UnsafePointer<Int8>?
             let key = "notify-on-command-finish"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .never }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .never }
             guard let ptr = v else { return .never }
             return NotifyOnCommandFinish(rawValue: String(cString: ptr)) ?? .never
         }
@@ -166,7 +166,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: CUnsignedInt = 0
             let key = "notify-on-command-finish-action"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             return .init(rawValue: v)
         }
 
@@ -174,7 +174,7 @@ extension Ghostty {
             guard let config = self.config else { return .seconds(5) }
             var v: UInt = 0
             let key = "notify-on-command-finish-after"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return .milliseconds(v)
         }
 
@@ -182,7 +182,7 @@ extension Ghostty {
             guard let config = self.config else { return .init() }
             var v: CUnsignedInt = 0
             let key = "split-preserve-zoom"
-            guard ghostty_config_get(config, &v, key, UInt(key.count)) else { return .init() }
+            guard nubb_config_get(config, &v, key, UInt(key.count)) else { return .init() }
             return .init(rawValue: v)
         }
 
@@ -190,7 +190,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = true
             let key = "initial-window"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -198,7 +198,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = false
             let key = "quit-after-last-window-closed"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -206,7 +206,7 @@ extension Ghostty {
             guard let config = self.config else { return nil }
             var v: UnsafePointer<Int8>?
             let key = "title"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
             guard let ptr = v else { return nil }
             return String(cString: ptr)
         }
@@ -215,7 +215,7 @@ extension Ghostty {
             guard let config = self.config else { return "" }
             var v: UnsafePointer<Int8>?
             let key = "window-save-state"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return "" }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return "" }
             guard let ptr = v else { return "" }
             return String(cString: ptr)
         }
@@ -224,21 +224,21 @@ extension Ghostty {
             guard let config = self.config else { return nil }
             var v: Int16 = 0
             let key = "window-position-x"
-            return ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) ? v : nil
+            return nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) ? v : nil
         }
 
         var windowPositionY: Int16? {
             guard let config = self.config else { return nil }
             var v: Int16 = 0
             let key = "window-position-y"
-            return ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) ? v : nil
+            return nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) ? v : nil
         }
 
         var windowNewTabPosition: String {
             guard let config = self.config else { return "" }
             var v: UnsafePointer<Int8>?
             let key = "window-new-tab-position"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return "" }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return "" }
             guard let ptr = v else { return "" }
             return String(cString: ptr)
         }
@@ -248,7 +248,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "window-decoration"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return WindowDecoration(rawValue: str)?.enabled() ?? defaultValue
@@ -258,7 +258,7 @@ extension Ghostty {
             guard let config = self.config else { return nil }
             var v: UnsafePointer<Int8>?
             let key = "window-theme"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
             guard let ptr = v else { return nil }
             return String(cString: ptr)
         }
@@ -267,7 +267,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = false
             let key = "window-step-resize"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -276,7 +276,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "drag-handle"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             return DragHandle(rawValue: String(cString: ptr)) ?? defaultValue
         }
@@ -288,7 +288,7 @@ extension Ghostty {
             guard let config = self.config else { return nil }
             var v: UnsafePointer<Int8>?
             let key = "fullscreen"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
             guard let ptr = v else { return nil }
             let str = String(cString: ptr)
             return switch str {
@@ -314,7 +314,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "macos-non-native-fullscreen"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return switch str {
@@ -335,7 +335,7 @@ extension Ghostty {
             guard let config = self.config else { return nil }
             var v: UnsafePointer<Int8>?
             let key = "window-title-font-family"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return nil }
             guard let ptr = v else { return nil }
             return String(cString: ptr)
         }
@@ -345,7 +345,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "macos-window-buttons"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return MacOSWindowButtons(rawValue: str) ?? defaultValue
@@ -356,7 +356,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "macos-titlebar-style"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             return MacOSTitlebarStyle(rawValue: String(cString: ptr)) ?? defaultValue
         }
@@ -366,7 +366,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "macos-titlebar-proxy-icon"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return MacOSTitlebarProxyIcon(rawValue: str) ?? defaultValue
@@ -377,7 +377,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "macos-dock-drop-behavior"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return MacDockDropBehavior(rawValue: str) ?? defaultValue
@@ -387,7 +387,7 @@ extension Ghostty {
             guard let config = self.config else { return false }
             var v = false
             let key = "macos-window-shadow"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -395,7 +395,7 @@ extension Ghostty {
             guard let config = self.config else { return .never }
             var v: UnsafePointer<Int8>?
             let key = "macos-hidden"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .never }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .never }
             guard let ptr = v else { return .never }
             let str = String(cString: ptr)
             return MacHidden(rawValue: str) ?? .never
@@ -405,14 +405,14 @@ extension Ghostty {
             guard let config = self.config else { return false }
             var v = false
             let key = "focus-follows-mouse"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
         var backgroundColor: Color {
-            var color: ghostty_config_color_s = .init()
+            var color: nubb_config_color_s = .init()
             let bg_key = "background"
-            if !ghostty_config_get(config, &color, bg_key, UInt(bg_key.lengthOfBytes(using: .utf8))) {
+            if !nubb_config_get(config, &color, bg_key, UInt(bg_key.lengthOfBytes(using: .utf8))) {
                 return Color(NSColor.windowBackgroundColor)
             }
 
@@ -427,7 +427,7 @@ extension Ghostty {
             guard let config = self.config else { return 1 }
             var v: Double = 1
             let key = "background-opacity"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -435,7 +435,7 @@ extension Ghostty {
             guard let config = self.config else { return .disabled }
             var v: Int16 = 0
             let key = "background-blur"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return BackgroundBlur(fromCValue: v)
         }
 
@@ -443,18 +443,18 @@ extension Ghostty {
             guard let config = self.config else { return 1 }
             var opacity: Double = 0.85
             let key = "unfocused-split-opacity"
-            _ = ghostty_config_get(config, &opacity, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &opacity, key, UInt(key.lengthOfBytes(using: .utf8)))
             return 1 - opacity
         }
 
         var unfocusedSplitFill: Color {
             guard let config = self.config else { return .white }
 
-            var color: ghostty_config_color_s = .init()
+            var color: nubb_config_color_s = .init()
             let key = "unfocused-split-fill"
-            if !ghostty_config_get(config, &color, key, UInt(key.lengthOfBytes(using: .utf8))) {
+            if !nubb_config_get(config, &color, key, UInt(key.lengthOfBytes(using: .utf8))) {
                 let bg_key = "background"
-                _ = ghostty_config_get(config, &color, bg_key, UInt(bg_key.lengthOfBytes(using: .utf8)))
+                _ = nubb_config_get(config, &color, bg_key, UInt(bg_key.lengthOfBytes(using: .utf8)))
             }
 
             return .init(
@@ -471,9 +471,9 @@ extension Ghostty {
 
             guard let config = self.config else { return Color(newColor) }
 
-            var color: ghostty_config_color_s = .init()
+            var color: nubb_config_color_s = .init()
             let key = "split-divider-color"
-            if !ghostty_config_get(config, &color, key, UInt(key.lengthOfBytes(using: .utf8))) {
+            if !nubb_config_get(config, &color, key, UInt(key.lengthOfBytes(using: .utf8))) {
                 return Color(newColor)
             }
 
@@ -488,7 +488,7 @@ extension Ghostty {
             guard let config = self.config else { return .top }
             var v: UnsafePointer<Int8>?
             let key = "quick-terminal-position"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .top }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .top }
             guard let ptr = v else { return .top }
             let str = String(cString: ptr)
             return QuickTerminalPosition(rawValue: str) ?? .top
@@ -498,7 +498,7 @@ extension Ghostty {
             guard let config = self.config else { return .main }
             var v: UnsafePointer<Int8>?
             let key = "quick-terminal-screen"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .main }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .main }
             guard let ptr = v else { return .main }
             let str = String(cString: ptr)
             return QuickTerminalScreen(fromGhosttyConfig: str) ?? .main
@@ -508,7 +508,7 @@ extension Ghostty {
             guard let config = self.config else { return 0.2 }
             var v: Double = 0.2
             let key = "quick-terminal-animation-duration"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -516,7 +516,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = true
             let key = "quick-terminal-autohide"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -524,7 +524,7 @@ extension Ghostty {
             guard let config = self.config else { return .move }
             var v: UnsafePointer<Int8>?
             let key = "quick-terminal-space-behavior"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .move }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .move }
             guard let ptr = v else { return .move }
             let str = String(cString: ptr)
             return QuickTerminalSpaceBehavior(fromGhosttyConfig: str) ?? .move
@@ -532,9 +532,9 @@ extension Ghostty {
 
         var quickTerminalSize: QuickTerminalSize {
             guard let config = self.config else { return QuickTerminalSize() }
-            var v = ghostty_config_quick_terminal_size_s()
+            var v = nubb_config_quick_terminal_size_s()
             let key = "quick-terminal-size"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return QuickTerminalSize() }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return QuickTerminalSize() }
             return QuickTerminalSize(from: v)
         }
 
@@ -542,7 +542,7 @@ extension Ghostty {
             guard let config = self.config else { return .after_first }
             var v: UnsafePointer<Int8>?
             let key = "resize-overlay"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .after_first }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .after_first }
             guard let ptr = v else { return .after_first }
             let str = String(cString: ptr)
             return ResizeOverlay(rawValue: str) ?? .after_first
@@ -553,7 +553,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "resize-overlay-position"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return ResizeOverlayPosition(rawValue: str) ?? defaultValue
@@ -563,7 +563,7 @@ extension Ghostty {
             guard let config = self.config else { return 1000 }
             var v: UInt = 0
             let key = "resize-overlay-duration"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -571,7 +571,7 @@ extension Ghostty {
             guard let config = self.config else { return .seconds(5) }
             var v: UInt = 0
             let key = "undo-timeout"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return .milliseconds(v)
         }
 
@@ -579,7 +579,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = false
             let key = "macos-auto-secure-input"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -587,7 +587,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = false
             let key = "macos-secure-input-indication"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -595,7 +595,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = false
             let key = "maximize"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
 
@@ -604,7 +604,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UInt32?
             let key = "abnormal-command-exit-runtime"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let v else { return defaultValue }
             return .milliseconds(v)
         }
@@ -614,7 +614,7 @@ extension Ghostty {
             guard let config = self.config else { return defaultValue }
             var v: UnsafePointer<Int8>?
             let key = "scrollbar"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
             guard let ptr = v else { return defaultValue }
             let str = String(cString: ptr)
             return Scrollbar(rawValue: str) ?? defaultValue
@@ -622,9 +622,9 @@ extension Ghostty {
 
         var commandPaletteEntries: [Ghostty.Command] {
             guard let config = self.config else { return [] }
-            var v: ghostty_config_command_list_s = .init()
+            var v: nubb_config_command_list_s = .init()
             let key = "command-palette-entry"
-            guard ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return [] }
+            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return [] }
             guard v.len > 0 else { return [] }
             let buffer = UnsafeBufferPointer(start: v.commands, count: v.len)
             return buffer.map { Ghostty.Command(cValue: $0) }
@@ -634,7 +634,7 @@ extension Ghostty {
             guard let config = self.config else { return true }
             var v = true
             let key = "progress-style"
-            _ = ghostty_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
             return v
         }
     }

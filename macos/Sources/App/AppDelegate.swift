@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import UserNotifications
 import OSLog
-import GhosttyKit
+import NubbKit
 
 class AppDelegate: NSObject,
                     ObservableObject,
@@ -287,14 +287,14 @@ class AppDelegate: NSObject,
         ) { _, change in
             guard let appearance = change.newValue else { return }
             guard let app = self.ghostty.app else { return }
-            let scheme: ghostty_color_scheme_e
+            let scheme: nubb_color_scheme_e
             if appearance.isDark {
-                scheme = GHOSTTY_COLOR_SCHEME_DARK
+                scheme = NUBB_COLOR_SCHEME_DARK
             } else {
-                scheme = GHOSTTY_COLOR_SCHEME_LIGHT
+                scheme = NUBB_COLOR_SCHEME_LIGHT
             }
 
-            ghostty_app_set_color_scheme(app, scheme)
+            nubb_app_set_color_scheme(app, scheme)
         }
 
         // Setup our menu
@@ -588,14 +588,14 @@ class AppDelegate: NSObject,
 
         // If this event as-is would result in a key binding then we send it.
         if let app = ghostty.app, let config = ghostty.config.config {
-            var ghosttyEvent = event.ghosttyKeyEvent(GHOSTTY_ACTION_PRESS)
+            var ghosttyEvent = event.ghosttyKeyEvent(NUBB_ACTION_PRESS)
             let match = (event.characters ?? "").withCString { ptr in
                 ghosttyEvent.text = ptr
-                if !ghostty_config_key_is_binding(config, ghosttyEvent) {
+                if !nubb_config_key_is_binding(config, ghosttyEvent) {
                     return false
                 }
 
-                return ghostty_app_key(app, ghosttyEvent)
+                return nubb_app_key(app, ghosttyEvent)
             }
 
             // If the key was handled by Nubb we stop the event chain. If
@@ -620,7 +620,7 @@ class AppDelegate: NSObject,
         guard let ghostty = self.ghostty.app else { return event }
 
         // Build our event input and call ghostty
-        if ghostty_app_key(ghostty, event.ghosttyKeyEvent(GHOSTTY_ACTION_PRESS)) {
+        if nubb_app_key(ghostty, event.ghosttyKeyEvent(NUBB_ACTION_PRESS)) {
             // The key was used so we want to stop it from going to our Mac app
             Ghostty.logger.debug("local key event handled event=\(event, privacy: .public)")
             return nil

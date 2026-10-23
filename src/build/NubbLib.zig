@@ -184,8 +184,8 @@ pub fn install(self: *const NubbLib, name: []const u8) void {
 pub fn installHeader(self: *const NubbLib) void {
     const b = self.step.owner;
     const header_install = b.addInstallHeaderFile(
-        b.path("include/ghostty.h"),
-        "ghostty.h",
+        b.path("include/nubb.h"),
+        "nubb.h",
     );
     b.getInstallStep().dependOn(&header_install.step);
 }

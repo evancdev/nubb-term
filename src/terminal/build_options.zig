@@ -57,8 +57,8 @@ pub const Options = struct {
         /// such as cursor position, palette, modes, and tabstops. Used
         /// for copy-to-clipboard, dump-to-file, and debugging.
         ///
-        /// C API: `ghostty_formatter_*` and, together with `selection`,
-        /// `ghostty_terminal_selection_format_*`.
+        /// C API: `nubb_formatter_*` and, together with `selection`,
+        /// `nubb_terminal_selection_format_*`.
         formatter: bool = true,
 
         /// Text selection: select word/line/output/all, selection
@@ -69,8 +69,8 @@ pub const Options = struct {
         /// reference constructors even if `grid_introspection` is
         /// disabled.
         ///
-        /// C API: `ghostty_terminal_select_*`,
-        /// `ghostty_terminal_selection_*`, `ghostty_selection_gesture_*`.
+        /// C API: `nubb_terminal_select_*`,
+        /// `nubb_terminal_selection_*`, `nubb_selection_gesture_*`.
         selection: bool = true,
 
         /// Terminal search: find matches for a string in the active
@@ -79,7 +79,7 @@ pub const Options = struct {
         /// scrollback pruning, plus match selection with wrap-around
         /// and viewport scrolling. Used to implement find bars.
         ///
-        /// C API: `ghostty_search_*`.
+        /// C API: `nubb_search_*`.
         search: bool = true,
 
         /// The render state API: a coherent, update-in-place view of
@@ -88,7 +88,7 @@ pub const Options = struct {
         /// is the primary read path for embedders that draw the
         /// terminal.
         ///
-        /// C API: `ghostty_render_state_*`.
+        /// C API: `nubb_render_state_*`.
         render_state: bool = true,
 
         /// Encoding of host input events into the byte sequences a
@@ -97,9 +97,9 @@ pub const Options = struct {
         /// and (bracketed) paste. Any interactive embedder needs this;
         /// a read-only viewer does not.
         ///
-        /// C API: `ghostty_key_event_*`, `ghostty_key_encoder_*`,
-        /// `ghostty_mouse_event_*`, `ghostty_mouse_encoder_*`,
-        /// `ghostty_focus_encode`, `ghostty_paste_*`.
+        /// C API: `nubb_key_event_*`, `nubb_key_encoder_*`,
+        /// `nubb_mouse_event_*`, `nubb_mouse_encoder_*`,
+        /// `nubb_focus_encode`, `nubb_paste_*`.
         input_encode: bool = true,
 
         /// Color utilities: luminance, perceived luminance, and
@@ -109,7 +109,7 @@ pub const Options = struct {
         /// and palette generation from configurable bases, and the X11
         /// color name table itself.
         ///
-        /// C API: `ghostty_color_*`.
+        /// C API: `nubb_color_*`.
         color: bool = true,
 
         /// Direct inspection of grid contents at a position via grid
@@ -120,10 +120,10 @@ pub const Options = struct {
         /// tests; deliberately not built for render loops (use
         /// `render_state` for that).
         ///
-        /// C API: `ghostty_grid_ref_*`, `ghostty_tracked_grid_ref_*`,
-        /// `ghostty_cell_get*`, `ghostty_row_get*`, and (shared with
-        /// `selection`) `ghostty_terminal_grid_ref` /
-        /// `ghostty_terminal_point_from_grid_ref`.
+        /// C API: `nubb_grid_ref_*`, `nubb_tracked_grid_ref_*`,
+        /// `nubb_cell_get*`, `nubb_row_get*`, and (shared with
+        /// `selection`) `nubb_terminal_grid_ref` /
+        /// `nubb_terminal_point_from_grid_ref`.
         grid_introspection: bool = true,
 
         /// The Kitty graphics protocol: APC command parsing, image
@@ -134,7 +134,7 @@ pub const Options = struct {
         ///
         /// This requires the ability to get timestamps from the OS.
         ///
-        /// C API: `ghostty_kitty_graphics_*`.
+        /// C API: `nubb_kitty_graphics_*`.
         kitty_graphics: bool = true,
 
         pub fn parse(list: []const u8) error{UnknownFeature}!Features {

@@ -35,7 +35,7 @@ pub const IMEPos = struct {
 
 /// The clipboard type.
 ///
-/// If this is changed, you must also update ghostty.h
+/// If this is changed, you must also update nubb.h
 pub const Clipboard = enum(Backing) {
     standard = 0, // ctrl+c/v
     selection = 1,
@@ -62,7 +62,7 @@ pub const ClipboardRequestType = enum(u8) {
 /// facts about the clipboard; how each state is answered on the wire
 /// (if at all) is up to the protocol handling of the requester.
 ///
-/// If this is changed, you must also update ghostty.h
+/// If this is changed, you must also update nubb.h
 pub const ClipboardReadResult = enum(c_int) {
     /// The request was started and will be completed asynchronously
     /// via the core surface completeClipboardRequest API.

@@ -1,5 +1,5 @@
 import AppKit
-import GhosttyKit
+import NubbKit
 import UniformTypeIdentifiers
 
 extension NSPasteboard.PasteboardType {
@@ -134,15 +134,15 @@ extension NSPasteboard {
 
     /// The pasteboard for the Nubb enum type. Returns nil for locations
     /// macOS can't serve; callers report those as unsupported.
-    static func ghostty(_ clipboard: ghostty_clipboard_e) -> NSPasteboard? {
+    static func ghostty(_ clipboard: nubb_clipboard_e) -> NSPasteboard? {
         switch clipboard {
-        case GHOSTTY_CLIPBOARD_STANDARD:
+        case NUBB_CLIPBOARD_STANDARD:
             return Self.general
 
-        case GHOSTTY_CLIPBOARD_SELECTION:
+        case NUBB_CLIPBOARD_SELECTION:
             return Self.ghosttySelection
 
-        case GHOSTTY_CLIPBOARD_PRIMARY:
+        case NUBB_CLIPBOARD_PRIMARY:
             // macOS has no primary selection.
             return nil
 

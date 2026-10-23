@@ -1,4 +1,4 @@
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
     /// Represents a single surface within Nubb.
@@ -8,20 +8,20 @@ extension Ghostty {
     /// functionality that is not encapsulated in this class. It is planned to migrate that
     /// all over.
     ///
-    /// Wraps a `ghostty_surface_t`
+    /// Wraps a `nubb_surface_t`
     final class Surface: Sendable {
         /// A surface is sendable because it is just a reference type. Using the surface in parameters
         /// may be unsafe but the value itself is safe to send across threads.
-        nonisolated(unsafe) private let surface: ghostty_surface_t
+        nonisolated(unsafe) private let surface: nubb_surface_t
 
         /// Read the underlying C value for this surface. This is unsafe because the value will be
         /// freed when the Surface class is deinitialized.
-        var unsafeCValue: ghostty_surface_t {
+        var unsafeCValue: nubb_surface_t {
             surface
         }
 
         /// Initialize from the C structure.
-        init(cSurface: ghostty_surface_t) {
+        init(cSurface: nubb_surface_t) {
             self.surface = cSurface
         }
 
@@ -30,7 +30,7 @@ extension Ghostty {
                 // The surface remains registered with the app and holds unretained
                 // userdata until it is freed. When already on the main thread, free
                 // it synchronously so teardown completes before we disappear.
-                ghostty_surface_free(surface)
+                nubb_surface_free(surface)
                 return
             }
             // deinit is not guaranteed to happen on the main actor and our API
@@ -40,7 +40,7 @@ extension Ghostty {
             // but that's okay.
             let surface = self.surface
             Task.detached { @MainActor in
-                ghostty_surface_free(surface)
+                nubb_surface_free(surface)
             }
         }
 
@@ -54,7 +54,7 @@ extension Ghostty {
 
             text.withCString { ptr in
                 // len includes the null terminator so we do len - 1
-                ghostty_surface_paste_text(surface, ptr, UInt(len - 1))
+                nubb_surface_paste_text(surface, ptr, UInt(len - 1))
             }
         }
 
@@ -66,13 +66,13 @@ extension Ghostty {
         /// - Parameter event: The key event to check
         /// - Returns: The binding flags if a binding matches, or nil if no binding matches
         @MainActor
-        func keyIsBinding(_ event: ghostty_input_key_s) -> Input.BindingFlags? {
-            var flags = ghostty_binding_flags_e(0)
-            guard ghostty_surface_key_is_binding(surface, event, &flags) else { return nil }
+        func keyIsBinding(_ event: nubb_input_key_s) -> Input.BindingFlags? {
+            var flags = nubb_binding_flags_e(0)
+            guard nubb_surface_key_is_binding(surface, event, &flags) else { return nil }
             return Input.BindingFlags(cFlags: flags)
         }
 
-        /// See `keyIsBinding(_ event: ghostty_input_key_s)`.
+        /// See `keyIsBinding(_ event: nubb_input_key_s)`.
         @MainActor
         func keyIsBinding(_ event: Input.KeyEvent) -> Input.BindingFlags? {
             event.withCValue { keyIsBinding($0) }
@@ -85,13 +85,13 @@ extension Ghostty {
         /// a terminal application enables mouse reporting mode.
         @MainActor
         var mouseCaptured: Bool {
-            ghostty_surface_mouse_captured(surface)
+            nubb_surface_mouse_captured(surface)
         }
 
         /// The PID of the foreground process group attached to the PTY.
         @MainActor
         var foregroundPID: Int? {
-            let pid = ghostty_surface_foreground_pid(surface)
+            let pid = nubb_surface_foreground_pid(surface)
             guard pid != 0 else { return nil }
             return Int(exactly: pid)
         }
@@ -99,7 +99,7 @@ extension Ghostty {
         /// The PTY device name for this surface.
         @MainActor
         var ttyName: String? {
-            let ttyName = AllocatedString(ghostty_surface_tty_name(surface)).string
+            let ttyName = AllocatedString(nubb_surface_tty_name(surface)).string
             return ttyName.isEmpty ? nil : ttyName
         }
 
@@ -112,7 +112,7 @@ extension Ghostty {
         /// - Parameter event: The mouse button event to send to the terminal
         @MainActor
         func sendMouseButton(_ event: Input.MouseButtonEvent) {
-            ghostty_surface_mouse_button(
+            nubb_surface_mouse_button(
                 surface,
                 event.action.cMouseState,
                 event.button.cMouseButton,
@@ -128,7 +128,7 @@ extension Ghostty {
         /// - Parameter event: The mouse position event to send to the terminal
         @MainActor
         func sendMousePos(_ event: Input.MousePosEvent) {
-            ghostty_surface_mouse_pos(
+            nubb_surface_mouse_pos(
                 surface,
                 event.x,
                 event.y,
@@ -144,7 +144,7 @@ extension Ghostty {
         /// - Parameter event: The mouse scroll event to send to the terminal
         @MainActor
         func sendMouseScroll(_ event: Input.MouseScrollEvent) {
-            ghostty_surface_mouse_scroll(
+            nubb_surface_mouse_scroll(
                 surface,
                 event.x,
                 event.y,
@@ -162,7 +162,7 @@ extension Ghostty {
             let len = action.utf8CString.count
             if len == 0 { return false }
             return action.withCString { cString in
-                ghostty_surface_binding_action(surface, cString, UInt(len - 1))
+                nubb_surface_binding_action(surface, cString, UInt(len - 1))
             }
         }
     }

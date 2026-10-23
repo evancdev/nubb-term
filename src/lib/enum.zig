@@ -103,9 +103,9 @@ test "zig values remain stable across multiple holes" {
 }
 
 /// Verify that for every key in enum T, there is a matching declaration in
-/// `ghostty.h` with the correct value. This should only ever be called inside a `test`
-/// because the `ghostty.h` module is only available then.
-pub fn checkGhosttyHEnum(
+/// `nubb.h` with the correct value. This should only ever be called inside a `test`
+/// because the `nubb.h` module is only available then.
+pub fn checkNubbHEnum(
     comptime T: type,
     comptime prefix: []const u8,
 ) !void {
@@ -117,7 +117,7 @@ pub fn checkGhosttyHEnum(
 
     @setEvalBranchQuota(100_000);
 
-    const c = @import("ghostty.h");
+    const c = @import("nubb.h");
 
     var set: std.EnumSet(T) = .full;
 
@@ -152,7 +152,7 @@ pub fn checkGhosttyHEnum(
         while (it.next()) |v| {
             var buf: [128]u8 = undefined;
             const upper_string = std.ascii.upperString(&buf, @tagName(v));
-            std.log.err("ghostty.h is missing value for {s}{s}", .{ prefix, upper_string });
+            std.log.err("nubb.h is missing value for {s}{s}", .{ prefix, upper_string });
         }
         return e;
     };

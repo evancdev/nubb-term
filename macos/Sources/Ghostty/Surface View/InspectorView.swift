@@ -1,7 +1,7 @@
 import Foundation
 import MetalKit
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
     /// InspectableSurface is a type of Surface view that allows an inspector to be attached.
@@ -57,16 +57,16 @@ extension Ghostty {
         private func onControlInspector(_ notification: SwiftUI.Notification) {
             // Determine our mode
             guard let modeAny = notification.userInfo?["mode"] else { return }
-            guard let mode = modeAny as? ghostty_action_inspector_e else { return }
+            guard let mode = modeAny as? nubb_action_inspector_e else { return }
 
             switch mode {
-            case GHOSTTY_INSPECTOR_TOGGLE:
+            case NUBB_INSPECTOR_TOGGLE:
                 surfaceView.inspectorVisible = !surfaceView.inspectorVisible
 
-            case GHOSTTY_INSPECTOR_SHOW:
+            case NUBB_INSPECTOR_SHOW:
                 surfaceView.inspectorVisible = true
 
-            case GHOSTTY_INSPECTOR_HIDE:
+            case NUBB_INSPECTOR_HIDE:
                 surfaceView.inspectorVisible = false
 
             default:
@@ -227,25 +227,25 @@ extension Ghostty {
         override func mouseDown(with event: NSEvent) {
             guard let inspector = self.inspector else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            inspector.mouseButton(GHOSTTY_MOUSE_PRESS, button: GHOSTTY_MOUSE_LEFT, mods: mods)
+            inspector.mouseButton(NUBB_MOUSE_PRESS, button: NUBB_MOUSE_LEFT, mods: mods)
         }
 
         override func mouseUp(with event: NSEvent) {
             guard let inspector = self.inspector else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            inspector.mouseButton(GHOSTTY_MOUSE_RELEASE, button: GHOSTTY_MOUSE_LEFT, mods: mods)
+            inspector.mouseButton(NUBB_MOUSE_RELEASE, button: NUBB_MOUSE_LEFT, mods: mods)
         }
 
         override func rightMouseDown(with event: NSEvent) {
             guard let inspector = self.inspector else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            inspector.mouseButton(GHOSTTY_MOUSE_PRESS, button: GHOSTTY_MOUSE_RIGHT, mods: mods)
+            inspector.mouseButton(NUBB_MOUSE_PRESS, button: NUBB_MOUSE_RIGHT, mods: mods)
         }
 
         override func rightMouseUp(with event: NSEvent) {
             guard let inspector = self.inspector else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            inspector.mouseButton(GHOSTTY_MOUSE_RELEASE, button: GHOSTTY_MOUSE_RIGHT, mods: mods)
+            inspector.mouseButton(NUBB_MOUSE_RELEASE, button: NUBB_MOUSE_RIGHT, mods: mods)
         }
 
         override func mouseMoved(with event: NSEvent) {
@@ -274,20 +274,20 @@ extension Ghostty {
             }
 
             // Determine our momentum value
-            var momentum: ghostty_input_mouse_momentum_e = GHOSTTY_MOUSE_MOMENTUM_NONE
+            var momentum: nubb_input_mouse_momentum_e = NUBB_MOUSE_MOMENTUM_NONE
             switch event.momentumPhase {
             case .began:
-                momentum = GHOSTTY_MOUSE_MOMENTUM_BEGAN
+                momentum = NUBB_MOUSE_MOMENTUM_BEGAN
             case .stationary:
-                momentum = GHOSTTY_MOUSE_MOMENTUM_STATIONARY
+                momentum = NUBB_MOUSE_MOMENTUM_STATIONARY
             case .changed:
-                momentum = GHOSTTY_MOUSE_MOMENTUM_CHANGED
+                momentum = NUBB_MOUSE_MOMENTUM_CHANGED
             case .ended:
-                momentum = GHOSTTY_MOUSE_MOMENTUM_ENDED
+                momentum = NUBB_MOUSE_MOMENTUM_ENDED
             case .cancelled:
-                momentum = GHOSTTY_MOUSE_MOMENTUM_CANCELLED
+                momentum = NUBB_MOUSE_MOMENTUM_CANCELLED
             case .mayBegin:
-                momentum = GHOSTTY_MOUSE_MOMENTUM_MAY_BEGIN
+                momentum = NUBB_MOUSE_MOMENTUM_MAY_BEGIN
             default:
                 break
             }
@@ -299,23 +299,23 @@ extension Ghostty {
         }
 
         override func keyDown(with event: NSEvent) {
-            let action = event.isARepeat ? GHOSTTY_ACTION_REPEAT : GHOSTTY_ACTION_PRESS
+            let action = event.isARepeat ? NUBB_ACTION_REPEAT : NUBB_ACTION_PRESS
             keyAction(action, event: event)
             self.interpretKeyEvents([event])
         }
 
         override func keyUp(with event: NSEvent) {
-            keyAction(GHOSTTY_ACTION_RELEASE, event: event)
+            keyAction(NUBB_ACTION_RELEASE, event: event)
         }
 
         override func flagsChanged(with event: NSEvent) {
             let mod: UInt32
             switch event.keyCode {
-            case 0x39: mod = GHOSTTY_MODS_CAPS.rawValue
-            case 0x38, 0x3C: mod = GHOSTTY_MODS_SHIFT.rawValue
-            case 0x3B, 0x3E: mod = GHOSTTY_MODS_CTRL.rawValue
-            case 0x3A, 0x3D: mod = GHOSTTY_MODS_ALT.rawValue
-            case 0x37, 0x36: mod = GHOSTTY_MODS_SUPER.rawValue
+            case 0x39: mod = NUBB_MODS_CAPS.rawValue
+            case 0x38, 0x3C: mod = NUBB_MODS_SHIFT.rawValue
+            case 0x3B, 0x3E: mod = NUBB_MODS_CTRL.rawValue
+            case 0x3A, 0x3D: mod = NUBB_MODS_ALT.rawValue
+            case 0x37, 0x36: mod = NUBB_MODS_SUPER.rawValue
             default: return
             }
 
@@ -324,13 +324,13 @@ extension Ghostty {
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
 
             // If the key that pressed this is active, its a press, else release
-            var action = GHOSTTY_ACTION_RELEASE
-            if mods.rawValue & mod != 0 { action = GHOSTTY_ACTION_PRESS }
+            var action = NUBB_ACTION_RELEASE
+            if mods.rawValue & mod != 0 { action = NUBB_ACTION_PRESS }
 
             keyAction(action, event: event)
         }
 
-        private func keyAction(_ action: ghostty_input_action_e, event: NSEvent) {
+        private func keyAction(_ action: nubb_input_action_e, event: NSEvent) {
             guard let inspector = self.inspector else { return }
             guard let key = Ghostty.Input.Key(keyCode: event.keyCode) else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)

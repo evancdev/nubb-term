@@ -1,7 +1,7 @@
 // This makes Nubb available to the XCode build for the macOS app.
 // We append "Kit" to it not to be cute, but because targets have to have
 // unique names and we use Nubb for other things.
-module GhosttyKit {
-    umbrella header "ghostty.h"
+module NubbKit {
+    umbrella header "nubb.h"
     export *
 }

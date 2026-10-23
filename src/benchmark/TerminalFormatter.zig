@@ -21,7 +21,7 @@
 //!   and search do.
 //! * `terminal` formats the whole terminal with a TerminalFormatter and
 //!   every extra (palette, modes, scrolling region, tabstops, cursor,
-//!   style and so on), as `ghostty_formatter_terminal_new` in the
+//!   style and so on), as `nubb_formatter_terminal_new` in the
 //!   libnubb-vt C API does for a snapshot of a terminal. Extras only
 //!   apply to `--emit=vt`.
 //!
@@ -279,7 +279,7 @@ const AnyFormatter = union(Formatter) {
 /// Build the formatter matching our options for the terminal t. The
 /// screen formatter mirrors how Surface clipboard copy and
 /// write_screen_file construct formatters; the terminal formatter mirrors
-/// the libnubb-vt C API's ghostty_formatter_terminal_new.
+/// the libnubb-vt C API's nubb_formatter_terminal_new.
 fn formatter(
     self: *TerminalFormatter,
     t: *const Terminal,

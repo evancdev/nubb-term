@@ -24,18 +24,18 @@ pub fn init(
         Config.genericMacOSTarget(b, null),
     ));
 
-    // Generate a headers directory with only ghostty.h and the module
+    // Generate a headers directory with only nubb.h and the module
     // map, so Clang's module system sees exactly the umbrella header.
     const wf = b.addWriteFiles();
-    _ = wf.addCopyFile(b.path("include/ghostty.h"), "ghostty.h");
+    _ = wf.addCopyFile(b.path("include/nubb.h"), "nubb.h");
     _ = wf.addCopyFile(b.path("include/module.modulemap"), "module.modulemap");
     const headers = wf.getDirectory();
 
     // The xcframework wraps our ghostty library so that we can link
     // it to the final app built with Swift.
     const xcframework = XCFrameworkStep.create(b, .{
-        .name = "GhosttyKit",
-        .out_path = .{ .source_tree = "macos/GhosttyKit.xcframework" },
+        .name = "NubbKit",
+        .out_path = .{ .source_tree = "macos/NubbKit.xcframework" },
         .libraries = switch (target) {
             .universal => &.{
                 .{

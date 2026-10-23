@@ -1,5 +1,5 @@
 import Foundation
-import GhosttyKit
+import NubbKit
 import SwiftUI
 
 extension Ghostty {
@@ -10,7 +10,7 @@ extension Ghostty {
         let text: String
         let level: Level
 
-        init(_ message: ghostty_surface_message_childexited_s, threshold abnormalCommandExitRuntime: Duration) {
+        init(_ message: nubb_surface_message_childexited_s, threshold abnormalCommandExitRuntime: Duration) {
             var level: Level
             switch Int(message.exit_code) {
             case Int(EXIT_SUCCESS):

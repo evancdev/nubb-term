@@ -17,7 +17,7 @@ pub const Options = struct {
         /// Write into the install prefix
         install_prefix: []const u8,
 
-        /// Write directly into the source tree. Used by e.g. GhosttyKit
+        /// Write directly into the source tree. Used by e.g. NubbKit
         /// which can then be integrated with the Swift code.
         source_tree: []const u8,
     },

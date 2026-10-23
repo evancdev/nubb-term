@@ -1,5 +1,5 @@
 import Cocoa
-import GhosttyKit
+import NubbKit
 
 extension NSEvent {
     /// Create a Nubb key event for a given keyboard action.
@@ -10,10 +10,10 @@ extension NSEvent {
     /// The translationMods should be set to the modifiers used for actual character
     /// translation if available.
     func ghosttyKeyEvent(
-        _ action: ghostty_input_action_e,
+        _ action: nubb_input_action_e,
         translationMods: NSEvent.ModifierFlags? = nil
-    ) -> ghostty_input_key_s {
-        var key_ev: ghostty_input_key_s = .init()
+    ) -> nubb_input_key_s {
+        var key_ev: nubb_input_key_s = .init()
         key_ev.action = action
         key_ev.keycode = UInt32(keyCode)
 

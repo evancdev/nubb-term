@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import Testing
 @testable import Ghostty
-import GhosttyKit
+import NubbKit
 
 /// The menu-shortcut path must translate the key equivalent with only the
 /// command modifier applied: command can select a distinct layout table, while
@@ -10,11 +10,11 @@ import GhosttyKit
 @MainActor
 struct KeyboardShortcutTranslationTests {
     @Test func keyEquivalentIgnoresNonCommandModifiers() throws {
-        var trigger = ghostty_input_trigger_s()
-        trigger.tag = GHOSTTY_TRIGGER_PHYSICAL
-        trigger.key.physical = GHOSTTY_KEY_BACKQUOTE
-        trigger.mods = ghostty_input_mods_e(
-            GHOSTTY_MODS_SUPER.rawValue | GHOSTTY_MODS_SHIFT.rawValue | GHOSTTY_MODS_ALT.rawValue)
+        var trigger = nubb_input_trigger_s()
+        trigger.tag = NUBB_TRIGGER_PHYSICAL
+        trigger.key.physical = NUBB_KEY_BACKQUOTE
+        trigger.mods = nubb_input_mods_e(
+            NUBB_MODS_SUPER.rawValue | NUBB_MODS_SHIFT.rawValue | NUBB_MODS_ALT.rawValue)
 
         let shortcut = try #require(Ghostty.keyboardShortcut(for: trigger))
         let expected = try #require(KeyboardLayout.character(

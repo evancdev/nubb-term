@@ -29,7 +29,7 @@ const Boo = struct {
     // binary from increasing too much in size
     buffer: [frame_width * frame_height]vaxis.Cell = undefined,
 
-    ghostty_style: vaxis.Style,
+    nubb_style: vaxis.Style,
     outline_style: vaxis.Style,
 
     // Width of a single frame
@@ -124,7 +124,7 @@ const Boo = struct {
         var line_iter = std.mem.splitScalar(u8, frame, '\n');
         while (line_iter.next()) |line| {
             var state: State = .normal;
-            var style = self.ghostty_style;
+            var style = self.nubb_style;
             var cp_iter: std.unicode.Utf8Iterator = .{ .bytes = line, .i = 0 };
             while (cp_iter.nextCodepointSlice()) |char| {
                 switch (state) {
@@ -136,7 +136,7 @@ const Boo = struct {
                     },
                     .span => if (std.mem.eql(u8, "<", char)) {
                         state = .in_tag;
-                        style = self.ghostty_style;
+                        style = self.nubb_style;
                         continue;
                     },
                     .in_tag => {
@@ -204,7 +204,7 @@ pub fn run(gpa: Allocator) !u8 {
     var boo: Boo = undefined;
     boo.frame = 0;
     boo.framerate = 1000 / 30;
-    boo.ghostty_style = .{};
+    boo.nubb_style = .{};
     boo.outline_style = .{ .fg = .{ .index = 4 } };
     @memset(&boo.buffer, .{});
 

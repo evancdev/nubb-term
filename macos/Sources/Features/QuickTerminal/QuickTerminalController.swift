@@ -1,7 +1,7 @@
 import Foundation
 import Cocoa
 import SwiftUI
-import GhosttyKit
+import NubbKit
 
 /// Controller for the "quick" terminal.
 class QuickTerminalController: BaseTerminalController {
@@ -360,7 +360,7 @@ class QuickTerminalController: BaseTerminalController {
         // tree can be empty if for example we run "exit" in the terminal and force
         // animate out.
         if surfaceTree.isEmpty,
-           let ghostty_app = ghostty.app {
+           let nubb_app = ghostty.app {
             if let tree = restorationState?.surfaceTree, !tree.isEmpty {
                 surfaceTree = tree
                 let view = tree.first(where: { $0.id.uuidString == restorationState?.focusedSurface }) ?? tree.first!
@@ -378,7 +378,7 @@ class QuickTerminalController: BaseTerminalController {
                 var config = Ghostty.SurfaceConfiguration()
                 config.environmentVariables["NUBB_QUICK_TERMINAL"] = "1"
 
-                let view = Ghostty.SurfaceView(ghostty_app, baseConfig: config)
+                let view = Ghostty.SurfaceView(nubb_app, baseConfig: config)
                 surfaceTree = SplitTree(view: view)
                 focusedSurface = view
             }
@@ -625,7 +625,7 @@ class QuickTerminalController: BaseTerminalController {
             window.backgroundColor = .white.withAlphaComponent(0.001)
 
             if !derivedConfig.backgroundBlur.isGlassStyle {
-                ghostty_set_window_background_blur(ghostty.app, Unmanaged.passUnretained(window).toOpaque())
+                nubb_set_window_background_blur(ghostty.app, Unmanaged.passUnretained(window).toOpaque())
             }
         } else {
             window.isOpaque = true

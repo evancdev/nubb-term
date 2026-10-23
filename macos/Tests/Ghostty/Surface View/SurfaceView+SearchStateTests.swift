@@ -1,5 +1,5 @@
 import AppKit
-import GhosttyKit
+import NubbKit
 import Testing
 @testable import Ghostty
 

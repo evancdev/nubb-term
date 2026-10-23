@@ -16,29 +16,29 @@ pub const Target = union(Key) {
     app,
     surface: *CoreSurface,
 
-    // Sync with: ghostty_target_tag_e
+    // Sync with: nubb_target_tag_e
     pub const Key = enum(c_int) {
         app,
         surface,
 
-        test "ghostty.h Target.Key" {
-            try lib.checkGhosttyHEnum(Key, "GHOSTTY_TARGET_");
+        test "nubb.h Target.Key" {
+            try lib.checkNubbHEnum(Key, "NUBB_TARGET_");
         }
     };
 
-    // Sync with: ghostty_target_u
+    // Sync with: nubb_target_u
     pub const CValue = extern union {
         app: void,
         surface: *apprt.Surface,
     };
 
-    // Sync with: ghostty_target_s
+    // Sync with: nubb_target_s
     pub const C = extern struct {
         key: Key,
         value: CValue,
     };
 
-    /// Convert to ghostty_target_s.
+    /// Convert to nubb_target_s.
     pub fn cval(self: Target) C {
         return .{
             .key = @as(Key, self),
@@ -72,7 +72,7 @@ pub const Action = union(Key) {
     //    compatible (extern). If it is not, add a `C` decl to the value
     //    and a `cval` function to convert to the C ABI compatible value.
     //
-    // 4. Update `include/ghostty.h`: add the new key, value, and union
+    // 4. Update `include/nubb.h`: add the new key, value, and union
     //    entry. If the value type is void then only the key needs to be
     //    added. Ensure the order matches exactly with the Zig code.
 
@@ -363,7 +363,7 @@ pub const Action = union(Key) {
     /// split or the window is fullscreen.
     resize_window: ResizeWindow,
 
-    /// Sync with: ghostty_action_tag_e
+    /// Sync with: nubb_action_tag_e
     pub const Key = enum(c_int) {
         quit,
         new_window,
@@ -436,12 +436,12 @@ pub const Action = union(Key) {
         move_tab_to_new_window,
         resize_window,
 
-        test "ghostty.h Action.Key" {
-            try lib.checkGhosttyHEnum(Key, "GHOSTTY_ACTION_");
+        test "nubb.h Action.Key" {
+            try lib.checkNubbHEnum(Key, "NUBB_ACTION_");
         }
     };
 
-    /// Sync with: ghostty_action_u
+    /// Sync with: nubb_action_u
     pub const CValue = cvalue: {
         const key_fields = @typeInfo(Key).@"enum".field_names;
         var names: [key_fields.len][]const u8 = undefined;
@@ -465,7 +465,7 @@ pub const Action = union(Key) {
         break :cvalue @Union(.@"extern", null, &names, &types, &attrs);
     };
 
-    /// Sync with: ghostty_action_s
+    /// Sync with: nubb_action_s
     pub const C = extern struct {
         key: Key,
         value: CValue,
@@ -492,7 +492,7 @@ pub const Action = union(Key) {
         unreachable;
     }
 
-    /// Convert to ghostty_action_s.
+    /// Convert to nubb_action_s.
     pub fn cval(self: Action) C {
         const value: CValue = switch (self) {
             inline else => |v, tag| @unionInit(
@@ -517,8 +517,8 @@ pub const SplitDirection = enum(c_int) {
     left,
     up,
 
-    test "ghostty.h SplitDirection" {
-        try lib.checkGhosttyHEnum(SplitDirection, "GHOSTTY_SPLIT_DIRECTION_");
+    test "nubb.h SplitDirection" {
+        try lib.checkNubbHEnum(SplitDirection, "NUBB_SPLIT_DIRECTION_");
     }
 };
 
@@ -533,8 +533,8 @@ pub const GotoSplit = enum(c_int) {
     down,
     right,
 
-    test "ghostty.h GotoSplit" {
-        try lib.checkGhosttyHEnum(GotoSplit, "GHOSTTY_GOTO_SPLIT_");
+    test "nubb.h GotoSplit" {
+        try lib.checkNubbHEnum(GotoSplit, "NUBB_GOTO_SPLIT_");
     }
 };
 
@@ -544,8 +544,8 @@ pub const GotoWindow = enum(c_int) {
     previous,
     next,
 
-    test "ghostty.h GotoWindow" {
-        try lib.checkGhosttyHEnum(GotoWindow, "GHOSTTY_GOTO_WINDOW_");
+    test "nubb.h GotoWindow" {
+        try lib.checkNubbHEnum(GotoWindow, "NUBB_GOTO_WINDOW_");
     }
 };
 
@@ -560,8 +560,8 @@ pub const ResizeSplit = extern struct {
         left,
         right,
 
-        test "ghostty.h ResizeSplit.Direction" {
-            try lib.checkGhosttyHEnum(Direction, "GHOSTTY_RESIZE_SPLIT_");
+        test "nubb.h ResizeSplit.Direction" {
+            try lib.checkNubbHEnum(Direction, "NUBB_RESIZE_SPLIT_");
         }
     };
 };
@@ -580,8 +580,8 @@ pub const GotoTab = enum(c_int) {
     _,
 
     // TODO: check non-exhaustive enums
-    // test "ghostty.h GotoTab" {
-    //     try lib.checkGhosttyHEnum(GotoTab, "GHOSTTY_GOTO_TAB_");
+    // test "nubb.h GotoTab" {
+    //     try lib.checkNubbHEnum(GotoTab, "NUBB_GOTO_TAB_");
     // }
 };
 
@@ -595,8 +595,8 @@ pub const Fullscreen = enum(c_int) {
     macos_non_native_visible_menu,
     macos_non_native_padded_notch,
 
-    test "ghostty.h Fullscreen" {
-        try lib.checkGhosttyHEnum(Fullscreen, "GHOSTTY_FULLSCREEN_");
+    test "nubb.h Fullscreen" {
+        try lib.checkNubbHEnum(Fullscreen, "NUBB_FULLSCREEN_");
     }
 };
 
@@ -605,8 +605,8 @@ pub const FloatWindow = enum(c_int) {
     off,
     toggle,
 
-    test "ghostty.h FloatWindow" {
-        try lib.checkGhosttyHEnum(FloatWindow, "GHOSTTY_FLOAT_WINDOW_");
+    test "nubb.h FloatWindow" {
+        try lib.checkNubbHEnum(FloatWindow, "NUBB_FLOAT_WINDOW_");
     }
 };
 
@@ -615,8 +615,8 @@ pub const SecureInput = enum(c_int) {
     off,
     toggle,
 
-    test "ghostty.h SecureInput" {
-        try lib.checkGhosttyHEnum(SecureInput, "GHOSTTY_SECURE_INPUT_");
+    test "nubb.h SecureInput" {
+        try lib.checkNubbHEnum(SecureInput, "NUBB_SECURE_INPUT_");
     }
 };
 
@@ -626,8 +626,8 @@ pub const Inspector = enum(c_int) {
     show,
     hide,
 
-    test "ghostty.h Inspector" {
-        try lib.checkGhosttyHEnum(Inspector, "GHOSTTY_INSPECTOR_");
+    test "nubb.h Inspector" {
+        try lib.checkNubbHEnum(Inspector, "NUBB_INSPECTOR_");
     }
 };
 
@@ -636,7 +636,7 @@ pub const Inspector = enum(c_int) {
 pub const ExportTerminalIO = struct {
     contents: []const u8,
 
-    // Sync with: ghostty_action_export_terminal_io_s
+    // Sync with: nubb_action_export_terminal_io_s
     pub const C = extern struct {
         contents: [*]const u8,
         len: usize,
@@ -666,8 +666,8 @@ pub const QuitTimer = enum(c_int) {
     start,
     stop,
 
-    test "ghostty.h QuitTimer" {
-        try lib.checkGhosttyHEnum(QuitTimer, "GHOSTTY_QUIT_TIMER_");
+    test "nubb.h QuitTimer" {
+        try lib.checkNubbHEnum(QuitTimer, "NUBB_QUIT_TIMER_");
     }
 };
 
@@ -675,8 +675,8 @@ pub const Readonly = enum(c_int) {
     off,
     on,
 
-    test "ghostty.h Readonly" {
-        try lib.checkGhosttyHEnum(Readonly, "GHOSTTY_READONLY_");
+    test "nubb.h Readonly" {
+        try lib.checkNubbHEnum(Readonly, "NUBB_READONLY_");
     }
 };
 
@@ -684,8 +684,8 @@ pub const MouseVisibility = enum(c_int) {
     visible,
     hidden,
 
-    test "ghostty.h MouseVisibility" {
-        try lib.checkGhosttyHEnum(MouseVisibility, "GHOSTTY_MOUSE_");
+    test "nubb.h MouseVisibility" {
+        try lib.checkNubbHEnum(MouseVisibility, "NUBB_MOUSE_");
     }
 };
 
@@ -695,15 +695,15 @@ pub const PromptTitle = enum(c_int) {
     tab,
     window,
 
-    test "ghostty.h PromptTitle" {
-        try lib.checkGhosttyHEnum(PromptTitle, "GHOSTTY_PROMPT_TITLE_");
+    test "nubb.h PromptTitle" {
+        try lib.checkNubbHEnum(PromptTitle, "NUBB_PROMPT_TITLE_");
     }
 };
 
 pub const MouseOverLink = struct {
     url: [:0]const u8,
 
-    // Sync with: ghostty_action_mouse_over_link_s
+    // Sync with: nubb_action_mouse_over_link_s
     pub const C = extern struct {
         url: [*]const u8,
         len: usize,
@@ -742,7 +742,7 @@ pub const CellSize = extern struct {
 pub const SetTitle = struct {
     title: [:0]const u8,
 
-    // Sync with: ghostty_action_set_title_s
+    // Sync with: nubb_action_set_title_s
     pub const C = extern struct {
         title: [*:0]const u8,
     };
@@ -766,7 +766,7 @@ pub const SetTitle = struct {
 pub const Pwd = struct {
     pwd: [:0]const u8,
 
-    // Sync with: ghostty_action_set_pwd_s
+    // Sync with: nubb_action_set_pwd_s
     pub const C = extern struct {
         pwd: [*:0]const u8,
     };
@@ -792,7 +792,7 @@ pub const DesktopNotification = struct {
     title: [:0]const u8,
     body: [:0]const u8,
 
-    // Sync with: ghostty_action_desktop_notification_s
+    // Sync with: nubb_action_desktop_notification_s
     pub const C = extern struct {
         title: [*:0]const u8,
         body: [*:0]const u8,
@@ -823,7 +823,7 @@ pub const KeySequence = union(enum) {
     trigger: input.Trigger,
     end,
 
-    // Sync with: ghostty_action_key_sequence_s
+    // Sync with: nubb_action_key_sequence_s
     pub const C = extern struct {
         active: bool,
         trigger: input.Trigger.C,
@@ -842,14 +842,14 @@ pub const KeyTable = union(enum) {
     deactivate,
     deactivate_all,
 
-    // Sync with: ghostty_action_key_table_tag_e
+    // Sync with: nubb_action_key_table_tag_e
     pub const Tag = enum(c_int) {
         activate,
         deactivate,
         deactivate_all,
     };
 
-    // Sync with: ghostty_action_key_table_u
+    // Sync with: nubb_action_key_table_u
     pub const CValue = extern union {
         activate: extern struct {
             name: [*]const u8,
@@ -857,7 +857,7 @@ pub const KeyTable = union(enum) {
         },
     };
 
-    // Sync with: ghostty_action_key_table_s
+    // Sync with: nubb_action_key_table_s
     pub const C = extern struct {
         tag: Tag,
         value: CValue,
@@ -898,8 +898,8 @@ pub const ColorKind = enum(c_int) {
     _,
 
     // TODO: check non-non-exhaustive enums
-    // test "ghostty.h ColorKind" {
-    //     try lib.checkGhosttyHEnum(ColorKind, "GHOSTTY_COLOR_KIND_");
+    // test "nubb.h ColorKind" {
+    //     try lib.checkNubbHEnum(ColorKind, "NUBB_COLOR_KIND_");
     // }
 };
 
@@ -913,7 +913,7 @@ pub const ReloadConfig = extern struct {
 pub const ConfigChange = struct {
     config: *const configpkg.Config,
 
-    // Sync with: ghostty_action_config_change_s
+    // Sync with: nubb_action_config_change_s
     pub const C = extern struct {
         config: *const configpkg.Config,
     };
@@ -940,7 +940,7 @@ pub const OpenUrl = struct {
     /// directly. `unknown` and `osc8` may come from terminal output, which
     /// any program can control, so apprts must check them before opening.
     ///
-    /// Sync with: ghostty_action_open_url_kind_e
+    /// Sync with: nubb_action_open_url_kind_e
     pub const Kind = enum(c_int) {
         /// Untrusted. The source is unknown, such as text that a `link`
         /// config entry matched in terminal output. It may be a plain path
@@ -962,12 +962,12 @@ pub const OpenUrl = struct {
         /// program sent it. The visible link text may not match it.
         osc8,
 
-        test "ghostty.h OpenUrl.Kind" {
-            try lib.checkGhosttyHEnum(Kind, "GHOSTTY_ACTION_OPEN_URL_KIND_");
+        test "nubb.h OpenUrl.Kind" {
+            try lib.checkNubbHEnum(Kind, "NUBB_ACTION_OPEN_URL_KIND_");
         }
     };
 
-    // Sync with: ghostty_action_open_url_s
+    // Sync with: nubb_action_open_url_s
     pub const C = extern struct {
         kind: Kind,
         url: [*]const u8,
@@ -983,7 +983,7 @@ pub const OpenUrl = struct {
     }
 };
 
-/// sync with ghostty_action_close_tab_mode_e in ghostty.h
+/// sync with nubb_action_close_tab_mode_e in nubb.h
 pub const CloseTabMode = enum(c_int) {
     /// Close the current tab.
     this,
@@ -992,8 +992,8 @@ pub const CloseTabMode = enum(c_int) {
     /// Close all tabs to the right of the current tab.
     right,
 
-    test "ghostty.h CloseTabMode" {
-        try lib.checkGhosttyHEnum(CloseTabMode, "GHOSTTY_ACTION_CLOSE_TAB_MODE_");
+    test "nubb.h CloseTabMode" {
+        try lib.checkNubbHEnum(CloseTabMode, "NUBB_ACTION_CLOSE_TAB_MODE_");
     }
 };
 
@@ -1001,7 +1001,7 @@ pub const CommandFinished = struct {
     exit_code: ?u8,
     duration: configpkg.Config.Duration,
 
-    /// sync with ghostty_action_command_finished_s in ghostty.h
+    /// sync with nubb_action_command_finished_s in nubb.h
     pub const C = extern struct {
         exit_code: i16,
         duration: u64,
@@ -1018,7 +1018,7 @@ pub const CommandFinished = struct {
 pub const StartSearch = struct {
     needle: [:0]const u8,
 
-    // Sync with: ghostty_action_start_search_s
+    // Sync with: nubb_action_start_search_s
     pub const C = extern struct {
         needle: [*:0]const u8,
     };
@@ -1033,7 +1033,7 @@ pub const StartSearch = struct {
 pub const SearchTotal = struct {
     total: ?usize,
 
-    // Sync with: ghostty_action_search_total_s
+    // Sync with: nubb_action_search_total_s
     pub const C = extern struct {
         total: isize,
     };
@@ -1048,7 +1048,7 @@ pub const SearchTotal = struct {
 pub const SearchSelected = struct {
     selected: ?usize,
 
-    // Sync with: ghostty_action_search_selected_s
+    // Sync with: nubb_action_search_selected_s
     pub const C = extern struct {
         selected: isize,
     };
@@ -1060,7 +1060,7 @@ pub const SearchSelected = struct {
     }
 };
 
-/// sync with ghostty_action_close_tab_mode_e in ghostty.h
+/// sync with nubb_action_close_tab_mode_e in nubb.h
 pub const OpenConfig = enum(c_int) {
     /// Open the config in the OS default editor.
     os_open,
@@ -1068,8 +1068,8 @@ pub const OpenConfig = enum(c_int) {
     /// Open the config in a new window using $EDITOR or $VISUAL
     new_window,
 
-    test "ghostty.h OpenConfig" {
-        try lib.checkGhosttyHEnum(OpenConfig, "GHOSTTY_ACTION_OPEN_CONFIG_");
+    test "nubb.h OpenConfig" {
+        try lib.checkNubbHEnum(OpenConfig, "NUBB_ACTION_OPEN_CONFIG_");
     }
 };
 

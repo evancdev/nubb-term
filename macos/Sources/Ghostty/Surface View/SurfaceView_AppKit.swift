@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 import CoreText
 import UserNotifications
-import GhosttyKit
+import NubbKit
 
 extension Ghostty {
     /// The NSView implementation for a terminal surface.
@@ -63,13 +63,13 @@ extension Ghostty {
                         .sink { [weak self] needle in
                             guard let surface = self?.surface else { return }
                             let action = "search:\(needle)"
-                            ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8)))
+                            nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8)))
                         }
                 } else if oldValue != nil {
                     searchNeedleCancellable = nil
                     guard let surface = self.surface else { return }
                     let action = "end_search"
-                    ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8)))
+                    nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8)))
                 }
             }
         }
@@ -147,20 +147,20 @@ extension Ghostty {
         // exit safely.
         var needsConfirmQuit: Bool {
             guard let surface = self.surface else { return false }
-            return ghostty_surface_needs_confirm_quit(surface)
+            return nubb_surface_needs_confirm_quit(surface)
         }
 
         // Returns true if the process in this surface has exited.
         var processExited: Bool {
             guard let surface = self.surface else { return true }
-            return ghostty_surface_process_exited(surface)
+            return nubb_surface_process_exited(surface)
         }
 
         // Returns the inspector instance for this surface, or nil if the
         // surface has been closed or no inspector is active.
         var inspector: Ghostty.Inspector? {
             guard let surface = self.surface else { return nil }
-            guard let cInspector = ghostty_surface_inspector(surface) else { return nil }
+            guard let cInspector = nubb_surface_inspector(surface) else { return nil }
             return Ghostty.Inspector(cInspector: cInspector)
         }
 
@@ -169,7 +169,7 @@ extension Ghostty {
             didSet {
                 if oldValue && !inspectorVisible {
                     guard let surface = self.surface else { return }
-                    ghostty_inspector_free(surface)
+                    nubb_inspector_free(surface)
                 }
             }
         }
@@ -181,7 +181,7 @@ extension Ghostty {
         private(set) var surfaceModel: Ghostty.Surface?
 
         /// Returns the underlying C value for the surface. See "note" on surfaceModel.
-        override var surface: ghostty_surface_t? {
+        override var surface: nubb_surface_t? {
             surfaceModel?.unsafeCValue
         }
         /// Current scrollbar state, cached here for persistence across rebuilds
@@ -229,7 +229,7 @@ extension Ghostty {
         // We need to support being a first responder so that we can get input events
         override var acceptsFirstResponder: Bool { return true }
 
-        init(_ app: ghostty_app_t, baseConfig: SurfaceConfiguration? = nil, uuid: UUID? = nil) {
+        init(_ app: nubb_app_t, baseConfig: SurfaceConfiguration? = nil, uuid: UUID? = nil) {
             self.markedText = NSMutableAttributedString()
 
             // Our initial config always is our application wide config.
@@ -254,41 +254,41 @@ extension Ghostty {
             cachedScreenContents = .init(duration: .milliseconds(500)) { [weak self] in
                 guard let self else { return "" }
                 guard let surface = self.surface else { return "" }
-                var text = ghostty_text_s()
-                let sel = ghostty_selection_s(
-                    top_left: ghostty_point_s(
-                        tag: GHOSTTY_POINT_SCREEN,
-                        coord: GHOSTTY_POINT_COORD_TOP_LEFT,
+                var text = nubb_text_s()
+                let sel = nubb_selection_s(
+                    top_left: nubb_point_s(
+                        tag: NUBB_POINT_SCREEN,
+                        coord: NUBB_POINT_COORD_TOP_LEFT,
                         x: 0,
                         y: 0),
-                    bottom_right: ghostty_point_s(
-                        tag: GHOSTTY_POINT_SCREEN,
-                        coord: GHOSTTY_POINT_COORD_BOTTOM_RIGHT,
+                    bottom_right: nubb_point_s(
+                        tag: NUBB_POINT_SCREEN,
+                        coord: NUBB_POINT_COORD_BOTTOM_RIGHT,
                         x: 0,
                         y: 0),
                     rectangle: false)
-                guard ghostty_surface_read_text(surface, sel, &text) else { return "" }
-                defer { ghostty_surface_free_text(surface, &text) }
+                guard nubb_surface_read_text(surface, sel, &text) else { return "" }
+                defer { nubb_surface_free_text(surface, &text) }
                 return String(cString: text.text)
             }
             cachedVisibleContents = .init(duration: .milliseconds(500)) { [weak self] in
                 guard let self else { return "" }
                 guard let surface = self.surface else { return "" }
-                var text = ghostty_text_s()
-                let sel = ghostty_selection_s(
-                    top_left: ghostty_point_s(
-                        tag: GHOSTTY_POINT_VIEWPORT,
-                        coord: GHOSTTY_POINT_COORD_TOP_LEFT,
+                var text = nubb_text_s()
+                let sel = nubb_selection_s(
+                    top_left: nubb_point_s(
+                        tag: NUBB_POINT_VIEWPORT,
+                        coord: NUBB_POINT_COORD_TOP_LEFT,
                         x: 0,
                         y: 0),
-                    bottom_right: ghostty_point_s(
-                        tag: GHOSTTY_POINT_VIEWPORT,
-                        coord: GHOSTTY_POINT_COORD_BOTTOM_RIGHT,
+                    bottom_right: nubb_point_s(
+                        tag: NUBB_POINT_VIEWPORT,
+                        coord: NUBB_POINT_COORD_BOTTOM_RIGHT,
                         x: 0,
                         y: 0),
                     rectangle: false)
-                guard ghostty_surface_read_text(surface, sel, &text) else { return "" }
-                defer { ghostty_surface_free_text(surface, &text) }
+                guard nubb_surface_read_text(surface, sel, &text) else { return "" }
+                defer { nubb_surface_free_text(surface, &text) }
                 return String(cString: text.text)
             }
 
@@ -386,7 +386,7 @@ extension Ghostty {
             // Setup our surface. This will also initialize all the terminal IO.
             let surface_cfg = baseConfig ?? SurfaceConfiguration()
             let surface = surface_cfg.withCValue(view: self) { surface_cfg_c in
-                ghostty_surface_new(app, &surface_cfg_c)
+                nubb_surface_new(app, &surface_cfg_c)
             }
             guard let surface = surface else {
                 self.error = Ghostty.Error.apiFailed
@@ -455,7 +455,7 @@ extension Ghostty {
             }
 
             // Notify libnubb
-            ghostty_surface_set_focus(surface, focused)
+            nubb_surface_set_focus(surface, focused)
 
             // Update our secure input state if we are a password input
             if passwordInput {
@@ -494,10 +494,10 @@ extension Ghostty {
             guard let surface = self.surface else { return }
 
             // Update our core surface
-            ghostty_surface_set_size(surface, width, height)
+            nubb_surface_set_size(surface, width, height)
 
             // Update our cached size metrics
-            let size = ghostty_surface_size(surface)
+            let size = nubb_surface_size(surface)
             DispatchQueue.main.async {
                 // DispatchQueue required since this may be called by SwiftUI off
                 // the main thread and Published changes need to be on the main
@@ -506,51 +506,51 @@ extension Ghostty {
             }
         }
 
-        func setCursorShape(_ shape: ghostty_action_mouse_shape_e) {
+        func setCursorShape(_ shape: nubb_action_mouse_shape_e) {
             switch shape {
-            case GHOSTTY_MOUSE_SHAPE_DEFAULT:
+            case NUBB_MOUSE_SHAPE_DEFAULT:
                 pointerStyle = .default
 
-            case GHOSTTY_MOUSE_SHAPE_TEXT:
+            case NUBB_MOUSE_SHAPE_TEXT:
                 pointerStyle = .horizontalText
 
-            case GHOSTTY_MOUSE_SHAPE_GRAB:
+            case NUBB_MOUSE_SHAPE_GRAB:
                 pointerStyle = .grabIdle
 
-            case GHOSTTY_MOUSE_SHAPE_GRABBING:
+            case NUBB_MOUSE_SHAPE_GRABBING:
                 pointerStyle = .grabActive
 
-            case GHOSTTY_MOUSE_SHAPE_POINTER:
+            case NUBB_MOUSE_SHAPE_POINTER:
                 pointerStyle = .link
 
-            case GHOSTTY_MOUSE_SHAPE_W_RESIZE:
+            case NUBB_MOUSE_SHAPE_W_RESIZE:
                 pointerStyle = .resizeLeft
 
-            case GHOSTTY_MOUSE_SHAPE_E_RESIZE:
+            case NUBB_MOUSE_SHAPE_E_RESIZE:
                 pointerStyle = .resizeRight
 
-            case GHOSTTY_MOUSE_SHAPE_N_RESIZE:
+            case NUBB_MOUSE_SHAPE_N_RESIZE:
                 pointerStyle = .resizeUp
 
-            case GHOSTTY_MOUSE_SHAPE_S_RESIZE:
+            case NUBB_MOUSE_SHAPE_S_RESIZE:
                 pointerStyle = .resizeDown
 
-            case GHOSTTY_MOUSE_SHAPE_NS_RESIZE:
+            case NUBB_MOUSE_SHAPE_NS_RESIZE:
                 pointerStyle = .resizeUpDown
 
-            case GHOSTTY_MOUSE_SHAPE_EW_RESIZE:
+            case NUBB_MOUSE_SHAPE_EW_RESIZE:
                 pointerStyle = .resizeLeftRight
 
-            case GHOSTTY_MOUSE_SHAPE_VERTICAL_TEXT:
+            case NUBB_MOUSE_SHAPE_VERTICAL_TEXT:
                 pointerStyle = .verticalText
 
-            case GHOSTTY_MOUSE_SHAPE_CONTEXT_MENU:
+            case NUBB_MOUSE_SHAPE_CONTEXT_MENU:
                 pointerStyle = .contextMenu
 
-            case GHOSTTY_MOUSE_SHAPE_CROSSHAIR:
+            case NUBB_MOUSE_SHAPE_CROSSHAIR:
                 pointerStyle = .crosshair
 
-            case GHOSTTY_MOUSE_SHAPE_NOT_ALLOWED:
+            case NUBB_MOUSE_SHAPE_NOT_ALLOWED:
                 pointerStyle = .operationNotAllowed
 
             default:
@@ -723,9 +723,9 @@ extension Ghostty {
 
         @objc private func onUpdateRendererHealth(notification: SwiftUI.Notification) {
             guard let healthAny = notification.userInfo?["health"] else { return }
-            guard let health = healthAny as? ghostty_action_renderer_health_e else { return }
+            guard let health = healthAny as? nubb_action_renderer_health_e else { return }
             DispatchQueue.main.async { [weak self] in
-                self?.healthy = health == GHOSTTY_RENDERER_HEALTH_HEALTHY
+                self?.healthy = health == NUBB_RENDERER_HEALTH_HEALTHY
             }
         }
 
@@ -813,7 +813,7 @@ extension Ghostty {
             // When the window changes screens, we need to update libnubb with the screen
             // ID. If vsync is enabled, this will be used with the CVDisplayLink to ensure
             // the proper refresh rate is going.
-            ghostty_surface_set_display_id(surface, screen.displayID ?? 0)
+            nubb_surface_set_display_id(surface, screen.displayID ?? 0)
 
             // We also just trigger a backing property change. Just in case the screen has
             // a different scaling factor, this ensures that we update our content scale.
@@ -893,7 +893,7 @@ extension Ghostty {
             let fbFrame = self.convertToBacking(self.frame)
             let xScale = fbFrame.size.width / self.frame.size.width
             let yScale = fbFrame.size.height / self.frame.size.height
-            ghostty_surface_set_content_scale(surface, xScale, yScale)
+            nubb_surface_set_content_scale(surface, xScale, yScale)
 
             // When our scale factor changes, so does our fb size so we send that too
             let scaledSize = self.convertToBacking(contentSize)
@@ -903,7 +903,7 @@ extension Ghostty {
         override func mouseDown(with event: NSEvent) {
             guard let surface = self.surface else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_PRESS, GHOSTTY_MOUSE_LEFT, mods)
+            nubb_surface_mouse_button(surface, NUBB_MOUSE_PRESS, NUBB_MOUSE_LEFT, mods)
         }
 
         override func mouseUp(with event: NSEvent) {
@@ -920,34 +920,34 @@ extension Ghostty {
             // If we have an active surface, report the event
             guard let surface = self.surface else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_RELEASE, GHOSTTY_MOUSE_LEFT, mods)
+            nubb_surface_mouse_button(surface, NUBB_MOUSE_RELEASE, NUBB_MOUSE_LEFT, mods)
 
             // Release pressure
-            ghostty_surface_mouse_pressure(surface, 0, 0)
+            nubb_surface_mouse_pressure(surface, 0, 0)
         }
 
         override func otherMouseDown(with event: NSEvent) {
             guard let surface = self.surface else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
             let button = Ghostty.Input.MouseButton(fromNSEventButtonNumber: event.buttonNumber)
-            ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_PRESS, button.cMouseButton, mods)
+            nubb_surface_mouse_button(surface, NUBB_MOUSE_PRESS, button.cMouseButton, mods)
         }
 
         override func otherMouseUp(with event: NSEvent) {
             guard let surface = self.surface else { return }
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
             let button = Ghostty.Input.MouseButton(fromNSEventButtonNumber: event.buttonNumber)
-            ghostty_surface_mouse_button(surface, GHOSTTY_MOUSE_RELEASE, button.cMouseButton, mods)
+            nubb_surface_mouse_button(surface, NUBB_MOUSE_RELEASE, button.cMouseButton, mods)
         }
 
         override func rightMouseDown(with event: NSEvent) {
             guard let surface = self.surface else { return super.rightMouseDown(with: event) }
 
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            if ghostty_surface_mouse_button(
+            if nubb_surface_mouse_button(
                 surface,
-                GHOSTTY_MOUSE_PRESS,
-                GHOSTTY_MOUSE_RIGHT,
+                NUBB_MOUSE_PRESS,
+                NUBB_MOUSE_RIGHT,
                 mods
             ) {
                 // Consumed
@@ -962,10 +962,10 @@ extension Ghostty {
             guard let surface = self.surface else { return super.rightMouseUp(with: event) }
 
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
-            if ghostty_surface_mouse_button(
+            if nubb_surface_mouse_button(
                 surface,
-                GHOSTTY_MOUSE_RELEASE,
-                GHOSTTY_MOUSE_RIGHT,
+                NUBB_MOUSE_RELEASE,
+                NUBB_MOUSE_RIGHT,
                 mods
             ) {
                 // Handled
@@ -1084,7 +1084,7 @@ extension Ghostty {
             // Notify Nubb first. We do this because this will let Nubb handle
             // state setup that we'll need for later pressure handling (such as
             // QuickLook)
-            ghostty_surface_mouse_pressure(surface, UInt32(event.stage), Double(event.pressure))
+            nubb_surface_mouse_pressure(surface, UInt32(event.stage), Double(event.pressure))
 
             // Pressure stage 2 is force click. We only want to execute this on the
             // initial transition to stage 2, and not for any repeated events.
@@ -1109,7 +1109,7 @@ extension Ghostty {
 
             // We need to translate the mods (maybe) to handle configs such as option-as-alt
             let translationModsGhostty = Ghostty.eventModifierFlags(
-                mods: ghostty_surface_key_translation_mods(
+                mods: nubb_surface_key_translation_mods(
                     surface,
                     Ghostty.ghosttyMods(event.modifierFlags)
                 )
@@ -1150,7 +1150,7 @@ extension Ghostty {
                 ) ?? event
             }
 
-            let action = event.isARepeat ? GHOSTTY_ACTION_REPEAT : GHOSTTY_ACTION_PRESS
+            let action = event.isARepeat ? NUBB_ACTION_REPEAT : NUBB_ACTION_PRESS
 
             // By setting this to non-nil, we note that we're in a keyDown event. From here,
             // we call interpretKeyEvents so that we can handle complex input such as Korean
@@ -1270,7 +1270,7 @@ extension Ghostty {
         }
 
         override func keyUp(with event: NSEvent) {
-            _ = keyAction(GHOSTTY_ACTION_RELEASE, event: event)
+            _ = keyAction(NUBB_ACTION_RELEASE, event: event)
         }
 
         /// Records the timestamp of the last event to performKeyEquivalent that we need to save.
@@ -1319,7 +1319,7 @@ extension Ghostty {
 
             // Get information about if this is a binding.
             let bindingFlags = surfaceModel.flatMap { surface in
-                var ghosttyEvent = event.ghosttyKeyEvent(GHOSTTY_ACTION_PRESS)
+                var ghosttyEvent = event.ghosttyKeyEvent(NUBB_ACTION_PRESS)
                 return (event.characters ?? "").withCString { ptr in
                     ghosttyEvent.text = ptr
                     return surface.keyIsBinding(ghosttyEvent)
@@ -1428,11 +1428,11 @@ extension Ghostty {
         override func flagsChanged(with event: NSEvent) {
             let mod: UInt32
             switch event.keyCode {
-            case 0x39: mod = GHOSTTY_MODS_CAPS.rawValue
-            case 0x38, 0x3C: mod = GHOSTTY_MODS_SHIFT.rawValue
-            case 0x3B, 0x3E: mod = GHOSTTY_MODS_CTRL.rawValue
-            case 0x3A, 0x3D: mod = GHOSTTY_MODS_ALT.rawValue
-            case 0x37, 0x36: mod = GHOSTTY_MODS_SUPER.rawValue
+            case 0x39: mod = NUBB_MODS_CAPS.rawValue
+            case 0x38, 0x3C: mod = NUBB_MODS_SHIFT.rawValue
+            case 0x3B, 0x3E: mod = NUBB_MODS_CTRL.rawValue
+            case 0x3A, 0x3D: mod = NUBB_MODS_ALT.rawValue
+            case 0x37, 0x36: mod = NUBB_MODS_SUPER.rawValue
             default: return
             }
 
@@ -1444,7 +1444,7 @@ extension Ghostty {
             let mods = Ghostty.ghosttyMods(event.modifierFlags)
 
             // If the key that pressed this is active, its a press, else release.
-            var action = GHOSTTY_ACTION_RELEASE
+            var action = NUBB_ACTION_RELEASE
             if mods.rawValue & mod != 0 {
                 // If the key is pressed, its slightly more complicated, because we
                 // want to check if the pressed modifier is the correct side. If the
@@ -1465,7 +1465,7 @@ extension Ghostty {
                 }
 
                 if sidePressed {
-                    action = GHOSTTY_ACTION_PRESS
+                    action = NUBB_ACTION_PRESS
                 }
             }
 
@@ -1473,7 +1473,7 @@ extension Ghostty {
         }
 
         private func keyAction(
-            _ action: ghostty_input_action_e,
+            _ action: nubb_input_action_e,
             event: NSEvent,
             translationEvent: NSEvent? = nil,
             text: String? = nil,
@@ -1487,10 +1487,10 @@ extension Ghostty {
             if let text = text?.keyEventText {
                 return text.withCString { ptr in
                     key_ev.text = ptr
-                    return ghostty_surface_key(surface, key_ev)
+                    return nubb_surface_key(surface, key_ev)
                 }
             } else {
-                return ghostty_surface_key(surface, key_ev)
+                return nubb_surface_key(surface, key_ev)
             }
         }
 
@@ -1509,23 +1509,23 @@ extension Ghostty {
         }
 
         private func committedTextAction(
-            _ action: ghostty_input_action_e,
+            _ action: nubb_input_action_e,
             text: String
         ) -> Bool {
             guard let surface = self.surface else { return false }
 
-            var key_ev = ghostty_input_key_s()
+            var key_ev = nubb_input_key_s()
             key_ev.action = action
             key_ev.keycode = 0
             key_ev.text = nil
             key_ev.composing = false
-            key_ev.mods = GHOSTTY_MODS_NONE
-            key_ev.consumed_mods = GHOSTTY_MODS_NONE
+            key_ev.mods = NUBB_MODS_NONE
+            key_ev.consumed_mods = NUBB_MODS_NONE
             key_ev.unshifted_codepoint = 0
 
             return text.withCString { ptr in
                 key_ev.text = ptr
-                return ghostty_surface_key(surface, key_ev)
+                return nubb_surface_key(surface, key_ev)
             }
         }
 
@@ -1533,9 +1533,9 @@ extension Ghostty {
             guard let surface = self.surface else { return super.quickLook(with: event) }
 
             // Grab the text under the cursor
-            var text = ghostty_text_s()
-            guard ghostty_surface_quicklook_word(surface, &text) else { return super.quickLook(with: event) }
-            defer { ghostty_surface_free_text(surface, &text) }
+            var text = nubb_text_s()
+            guard nubb_surface_quicklook_word(surface, &text) else { return super.quickLook(with: event) }
+            defer { nubb_surface_free_text(surface, &text) }
             guard text.text_len > 0  else { return super.quickLook(with: event) }
 
             // If we can get a font then we use the font. This should always work
@@ -1543,8 +1543,8 @@ extension Ghostty {
             // work is if someone is using a non-CoreText build which would be
             // unofficial.
             var attributes: [ NSAttributedString.Key: Any ] = [:]
-            if let fontRaw = ghostty_surface_quicklook_font(surface) {
-                // Memory management here is wonky: ghostty_surface_quicklook_font
+            if let fontRaw = nubb_surface_quicklook_font(surface) {
+                // Memory management here is wonky: nubb_surface_quicklook_font
                 // will create a copy of a CTFont, Swift will auto-retain the
                 // unretained value passed into the dict, so we release the original.
                 let font = Unmanaged<CTFont>.fromOpaque(fontRaw)
@@ -1639,7 +1639,7 @@ extension Ghostty {
         @IBAction func copy(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "copy_to_clipboard"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1647,7 +1647,7 @@ extension Ghostty {
         @IBAction func paste(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "paste_from_clipboard"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1655,7 +1655,7 @@ extension Ghostty {
         @IBAction func pasteAsPlainText(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "paste_from_clipboard"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1663,7 +1663,7 @@ extension Ghostty {
         @IBAction func pasteSelection(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "paste_from_selection"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1671,7 +1671,7 @@ extension Ghostty {
         @IBAction override func selectAll(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "select_all"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1679,7 +1679,7 @@ extension Ghostty {
         @IBAction func find(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "start_search"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1687,7 +1687,7 @@ extension Ghostty {
         @IBAction func selectionForFind(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "search_selection"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1695,7 +1695,7 @@ extension Ghostty {
         @IBAction func scrollToSelection(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "scroll_to_selection"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1711,7 +1711,7 @@ extension Ghostty {
         @IBAction func findHide(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "end_search"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1719,35 +1719,35 @@ extension Ghostty {
         @IBAction func toggleReadonly(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "toggle_readonly"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
 
         @IBAction func splitRight(_ sender: Any) {
             guard let surface = self.surface else { return }
-            ghostty_surface_split(surface, GHOSTTY_SPLIT_DIRECTION_RIGHT)
+            nubb_surface_split(surface, NUBB_SPLIT_DIRECTION_RIGHT)
         }
 
         @IBAction func splitLeft(_ sender: Any) {
             guard let surface = self.surface else { return }
-            ghostty_surface_split(surface, GHOSTTY_SPLIT_DIRECTION_LEFT)
+            nubb_surface_split(surface, NUBB_SPLIT_DIRECTION_LEFT)
         }
 
         @IBAction func splitDown(_ sender: Any) {
             guard let surface = self.surface else { return }
-            ghostty_surface_split(surface, GHOSTTY_SPLIT_DIRECTION_DOWN)
+            nubb_surface_split(surface, NUBB_SPLIT_DIRECTION_DOWN)
         }
 
         @IBAction func splitUp(_ sender: Any) {
             guard let surface = self.surface else { return }
-            ghostty_surface_split(surface, GHOSTTY_SPLIT_DIRECTION_UP)
+            nubb_surface_split(surface, NUBB_SPLIT_DIRECTION_UP)
         }
 
         @IBAction func closeSurface(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "close_surface"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1755,7 +1755,7 @@ extension Ghostty {
         @objc func resetTerminal(_ sender: Any) {
             guard let surface = self.surface else { return }
             let action = "reset"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1763,7 +1763,7 @@ extension Ghostty {
         @objc func toggleTerminalInspector(_ sender: Any) {
             guard let surface = self.surface else { return }
             let action = "inspector:toggle"
-            if !ghostty_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
+            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
                 AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
             }
         }
@@ -1944,9 +1944,9 @@ extension Ghostty.SurfaceView: NSTextInputClient {
         // Get our range from the Nubb API. There is a race condition between getting the
         // range and actually using it since our selection may change but there isn't a good
         // way I can think of to solve this for AppKit.
-        var text = ghostty_text_s()
-        guard ghostty_surface_read_selection(surface, &text) else { return NSRange() }
-        defer { ghostty_surface_free_text(surface, &text) }
+        var text = nubb_text_s()
+        guard nubb_surface_read_selection(surface, &text) else { return NSRange() }
+        defer { nubb_surface_free_text(surface, &text) }
         return NSRange(location: Int(text.offset_start), length: Int(text.offset_len))
     }
 
@@ -1995,17 +1995,17 @@ extension Ghostty.SurfaceView: NSTextInputClient {
         // attributed string containing our selection which is... weird but works?
 
         // Get our selection text
-        var text = ghostty_text_s()
-        guard ghostty_surface_read_selection(surface, &text) else { return nil }
-        defer { ghostty_surface_free_text(surface, &text) }
+        var text = nubb_text_s()
+        guard nubb_surface_read_selection(surface, &text) else { return nil }
+        defer { nubb_surface_free_text(surface, &text) }
 
         // If we can get a font then we use the font. This should always work
         // since we always have a primary font. The only scenario this doesn't
         // work is if someone is using a non-CoreText build which would be
         // unofficial.
         var attributes: [ NSAttributedString.Key: Any ] = [:]
-        if let fontRaw = ghostty_surface_quicklook_font(surface) {
-            // Memory management here is wonky: ghostty_surface_quicklook_font
+        if let fontRaw = nubb_surface_quicklook_font(surface) {
+            // Memory management here is wonky: nubb_surface_quicklook_font
             // will create a copy of a CTFont, Swift will auto-retain the
             // unretained value passed into the dict, so we release the original.
             let font = Unmanaged<CTFont>.fromOpaque(fontRaw)
@@ -2037,20 +2037,20 @@ extension Ghostty.SurfaceView: NSTextInputClient {
         // point right now. I'm sure I'm missing something fundamental...
         if range.length > 0 && range != self.selectedRange() {
             // QuickLook
-            var text = ghostty_text_s()
-            if ghostty_surface_read_selection(surface, &text) {
+            var text = nubb_text_s()
+            if nubb_surface_read_selection(surface, &text) {
                 // The -2/+2 here is subjective. QuickLook seems to offset the rectangle
                 // a bit and I think these small adjustments make it look more natural.
                 x = text.tl_px_x - 2
                 y = text.tl_px_y + 2
 
                 // Free our text
-                ghostty_surface_free_text(surface, &text)
+                nubb_surface_free_text(surface, &text)
             } else {
-                ghostty_surface_ime_point(surface, &x, &y, &width, &height)
+                nubb_surface_ime_point(surface, &x, &y, &width, &height)
             }
         } else {
-            ghostty_surface_ime_point(surface, &x, &y, &width, &height)
+            nubb_surface_ime_point(surface, &x, &y, &width, &height)
         }
         if range.length == 0, width > 0 {
             // This fixes #8493 while speaking
@@ -2120,7 +2120,7 @@ extension Ghostty.SurfaceView: NSTextInputClient {
         // All committed text (IME, dictation, etc.) must be sent as key
         // events so programs treat it as typed input, never as a paste.
         if !chars.isEmpty {
-            _ = committedTextAction(GHOSTTY_ACTION_PRESS, text: chars)
+            _ = committedTextAction(NUBB_ACTION_PRESS, text: chars)
         }
     }
 
@@ -2147,13 +2147,13 @@ extension Ghostty.SurfaceView: NSTextInputClient {
             if len > 0 {
                 markedText.string.withCString { ptr in
                     // Subtract 1 for the null terminator
-                    ghostty_surface_preedit(surface, ptr, UInt(len - 1))
+                    nubb_surface_preedit(surface, ptr, UInt(len - 1))
                 }
             }
         } else if clearIfNeeded {
             // If we had marked text before but don't now, we're no longer
             // in a preedit state so we can clear it.
-            ghostty_surface_preedit(surface, nil, 0)
+            nubb_surface_preedit(surface, nil, 0)
         }
     }
 
@@ -2208,9 +2208,9 @@ extension Ghostty.SurfaceView: NSServicesMenuRequestor {
             // If we're expected to send back a type that requires selection, then
             // verify that we have a selection. We do this within this block because
             // validateRequestor is called a LOT and we want to prevent unnecessary
-            // performance hits because `ghostty_surface_has_selection` isn't free.
+            // performance hits because `nubb_surface_has_selection` isn't free.
             if let sendType, sendableRequiresSelection.contains(sendType) {
-                if surface == nil || !ghostty_surface_has_selection(surface) {
+                if surface == nil || !nubb_surface_has_selection(surface) {
                     return super.validRequestor(forSendType: sendType, returnType: returnType)
                 }
             }
@@ -2228,9 +2228,9 @@ extension Ghostty.SurfaceView: NSServicesMenuRequestor {
         guard let surface = self.surface else { return false }
 
         // Read the selection
-        var text = ghostty_text_s()
-        guard ghostty_surface_read_selection(surface, &text) else { return false }
-        defer { ghostty_surface_free_text(surface, &text) }
+        var text = nubb_text_s()
+        guard nubb_surface_read_selection(surface, &text) else { return false }
+        defer { nubb_surface_free_text(surface, &text) }
 
         pboard.declareTypes([.string], owner: nil)
         pboard.setString(String(cString: text.text), forType: .string)
@@ -2244,7 +2244,7 @@ extension Ghostty.SurfaceView: NSServicesMenuRequestor {
         if len == 0 { return true }
         str.withCString { ptr in
             // len includes the null terminator so we do len - 1
-            ghostty_surface_text(surface, ptr, UInt(len - 1))
+            nubb_surface_text(surface, ptr, UInt(len - 1))
         }
 
         return true
@@ -2361,9 +2361,9 @@ extension Ghostty.SurfaceView {
         guard let surface = self.surface else { return nil }
 
         // Attempt to read the selection
-        var text = ghostty_text_s()
-        guard ghostty_surface_read_selection(surface, &text) else { return nil }
-        defer { ghostty_surface_free_text(surface, &text) }
+        var text = nubb_text_s()
+        guard nubb_surface_read_selection(surface, &text) else { return nil }
+        defer { nubb_surface_free_text(surface, &text) }
 
         let str = String(cString: text.text)
         return str.isEmpty ? nil : str
@@ -2413,7 +2413,7 @@ extension Ghostty.SurfaceView {
         var attributes: [NSAttributedString.Key: Any] = [:]
 
         // Try to get the font from the surface
-        if let fontRaw = ghostty_surface_quicklook_font(surface) {
+        if let fontRaw = nubb_surface_quicklook_font(surface) {
             let font = Unmanaged<CTFont>.fromOpaque(fontRaw)
             attributes[.font] = font.takeUnretainedValue()
             font.release()

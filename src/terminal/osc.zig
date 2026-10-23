@@ -276,7 +276,7 @@ pub const Command = union(Key) {
         state: State,
         progress: ?u8 = null,
 
-        // sync with ghostty_action_progress_report_s
+        // sync with nubb_action_progress_report_s
         pub const C = extern struct {
             state: c_int,
             progress: i8,
@@ -293,10 +293,10 @@ pub const Command = union(Key) {
             };
         }
 
-        test "ghostty.h Command.ProgressReport.State" {
+        test "nubb.h Command.ProgressReport.State" {
             if (comptime build_options.artifact == .lib) return error.SkipZigTest;
             const CState = LibEnum(.c, state_keys);
-            try lib.checkGhosttyHEnum(CState, "GHOSTTY_PROGRESS_STATE_");
+            try lib.checkNubbHEnum(CState, "NUBB_PROGRESS_STATE_");
         }
     };
 

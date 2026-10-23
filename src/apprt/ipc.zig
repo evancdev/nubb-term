@@ -19,29 +19,29 @@ pub const Target = union(Key) {
     /// Detect which instance to open a new window in.
     detect,
 
-    // Sync with: ghostty_ipc_target_tag_e
+    // Sync with: nubb_ipc_target_tag_e
     pub const Key = enum(c_int) {
         class,
         detect,
 
-        test "ghostty.h Target.Key" {
-            try lib.checkGhosttyHEnum(Key, "GHOSTTY_IPC_TARGET_");
+        test "nubb.h Target.Key" {
+            try lib.checkNubbHEnum(Key, "NUBB_IPC_TARGET_");
         }
     };
 
-    // Sync with: ghostty_ipc_target_u
+    // Sync with: nubb_ipc_target_u
     pub const CValue = extern union {
         class: [*:0]const u8,
         detect: void,
     };
 
-    // Sync with: ghostty_ipc_target_s
+    // Sync with: nubb_ipc_target_s
     pub const C = extern struct {
         key: Key,
         value: CValue,
     };
 
-    /// Convert to ghostty_ipc_target_s.
+    /// Convert to nubb_ipc_target_s.
     pub fn cval(self: Target) C {
         return .{
             .key = @as(Key, self),
@@ -66,7 +66,7 @@ pub const Action = union(enum) {
     //    compatible (extern). If it is not, add a `C` decl to the value
     //    and a `cval` function to convert to the C ABI compatible value.
     //
-    // 4. Update `include/ghostty.h`: add the new key, value, and union
+    // 4. Update `include/nubb.h`: add the new key, value, and union
     //    entry. If the value type is void then only the key needs to be
     //    added. Ensure the order matches exactly with the Zig code.
 
@@ -172,18 +172,18 @@ pub const Action = union(enum) {
         }
     };
 
-    /// Sync with: ghostty_ipc_action_tag_e
+    /// Sync with: nubb_ipc_action_tag_e
     pub const Key = enum(c_int) {
         new_window,
         new_tab,
         toggle_quick_terminal,
 
-        test "ghostty.h Action.Key" {
-            try lib.checkGhosttyHEnum(Key, "GHOSTTY_IPC_ACTION_");
+        test "nubb.h Action.Key" {
+            try lib.checkNubbHEnum(Key, "NUBB_IPC_ACTION_");
         }
     };
 
-    /// Sync with: ghostty_ipc_action_u
+    /// Sync with: nubb_ipc_action_u
     pub const CValue = cvalue: {
         const key_fields = @typeInfo(Key).@"enum".field_names;
 
@@ -207,7 +207,7 @@ pub const Action = union(enum) {
         break :cvalue @Union(.@"extern", null, &names, &types, &attrs);
     };
 
-    /// Sync with: ghostty_ipc_action_s
+    /// Sync with: nubb_ipc_action_s
     pub const C = extern struct {
         key: Key,
         value: CValue,
@@ -234,7 +234,7 @@ pub const Action = union(enum) {
         unreachable;
     }
 
-    /// Convert to ghostty_ipc_action_s.
+    /// Convert to nubb_ipc_action_s.
     pub fn cval(self: Action, alloc: Allocator) C {
         const value: CValue = switch (self) {
             inline else => |v, tag| @unionInit(

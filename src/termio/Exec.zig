@@ -604,16 +604,16 @@ const Subprocess = struct {
         }
 
         // Add our binary to the path if we can find it.
-        ghostty_path: {
+        nubb_path: {
             var exe_buf: [std.Io.Dir.max_path_bytes]u8 = undefined;
             const exe_bin_path = exe_buf[0 .. std.process.executablePath(
                 global.io(),
                 &exe_buf,
             ) catch |err| {
                 log.warn("failed to get nubb exe path err={}", .{err});
-                break :ghostty_path;
+                break :nubb_path;
             }];
-            const exe_dir = std.fs.path.dirname(exe_bin_path) orelse break :ghostty_path;
+            const exe_dir = std.fs.path.dirname(exe_bin_path) orelse break :nubb_path;
             log.debug("appending nubb bin to path dir={s}", .{exe_dir});
 
             // We always set this so that if the shell overwrites the path
@@ -628,7 +628,7 @@ const Subprocess = struct {
                 // Verify that our path doesn't already contain this entry
                 var it = std.mem.tokenizeScalar(u8, path, std.fs.path.delimiter);
                 while (it.next()) |entry| {
-                    if (std.mem.eql(u8, entry, exe_dir)) break :ghostty_path;
+                    if (std.mem.eql(u8, entry, exe_dir)) break :nubb_path;
                 }
 
                 try env.put(

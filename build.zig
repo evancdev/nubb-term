@@ -257,7 +257,7 @@ pub fn build(b: *std.Build) !void {
         }
         _ = try deps.add(test_exe);
 
-        addGhosttyH(b, test_exe.root_module, config.baselineTarget(b.graph.io), .debug);
+        addNubbH(b, test_exe.root_module, config.baselineTarget(b.graph.io), .debug);
 
         // Normal test running
         const test_run = b.addRunArtifact(test_exe);
@@ -269,15 +269,15 @@ pub fn build(b: *std.Build) !void {
     }
 }
 
-fn addGhosttyH(
+fn addNubbH(
     b: *std.Build,
     module: *std.Build.Module,
     target: std.Build.ResolvedTarget,
     optimize: std.lang.Optimize,
 ) void {
-    translate_c.addImportToModule(b, "ghostty.h", module, .{
+    translate_c.addImportToModule(b, "nubb.h", module, .{
         .source = .{ .includes = .{ .files = &.{
-            .{ .path = "ghostty.h" },
+            .{ .path = "nubb.h" },
         } } },
         .target = target,
         .optimize = optimize,

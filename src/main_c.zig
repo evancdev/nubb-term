@@ -49,7 +49,7 @@ comptime {
     _ = @import("quirks_memset.zig");
 }
 
-/// ghostty_info_s
+/// nubb_info_s
 const Info = extern struct {
     mode: BuildMode,
     version: [*]const u8,
@@ -63,7 +63,7 @@ const Info = extern struct {
     };
 };
 
-/// ghostty_string_s
+/// nubb_string_s
 pub const String = extern struct {
     ptr: ?[*]const u8,
     len: usize,
@@ -106,7 +106,7 @@ pub const String = extern struct {
 };
 
 /// Initialize ghostty global state.
-pub export fn ghostty_init(argc: usize, argv: [*][*:0]u8) c_int {
+pub export fn nubb_init(argc: usize, argv: [*][*:0]u8) c_int {
     assert(builtin.link_libc);
 
     global.init(.{
@@ -135,7 +135,7 @@ pub export fn ghostty_init(argc: usize, argv: [*][*:0]u8) c_int {
 
 /// Runs an action if it is specified. If there is no action this returns
 /// false. If there is an action then this doesn't return.
-pub export fn ghostty_cli_try_action() void {
+pub export fn nubb_cli_try_action() void {
     const action = global.action() orelse return;
     std.log.info("executing CLI action={}", .{action});
     posix.system.exit(action.run(global.alloc()) catch |err| {
@@ -147,7 +147,7 @@ pub export fn ghostty_cli_try_action() void {
 }
 
 /// Return metadata about Nubb, such as version, build mode, etc.
-pub export fn ghostty_info() Info {
+pub export fn nubb_info() Info {
     return .{
         .mode = switch (builtin.mode) {
             .debug => .debug,
@@ -161,11 +161,11 @@ pub export fn ghostty_info() Info {
 }
 
 /// Free a string allocated by Nubb.
-pub export fn ghostty_string_free(str: String) void {
+pub export fn nubb_string_free(str: String) void {
     str.deinit();
 }
 
-test "ghostty_string_s empty string" {
+test "nubb_string_s empty string" {
     const testing = std.testing;
     const empty_string = String.empty;
     defer empty_string.deinit();
@@ -174,7 +174,7 @@ test "ghostty_string_s empty string" {
     try testing.expect(empty_string.sentinel == false);
 }
 
-test "ghostty_string_s c string" {
+test "nubb_string_s c string" {
     const testing = std.testing;
 
     const slice: [:0]const u8 = "hello";
@@ -189,7 +189,7 @@ test "ghostty_string_s c string" {
     try testing.expect(c_null_string.sentinel == true);
 }
 
-test "ghostty_string_s zig string" {
+test "nubb_string_s zig string" {
     const testing = std.testing;
 
     const slice: []const u8 = "hello";
