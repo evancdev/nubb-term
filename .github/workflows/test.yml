@@ -24,8 +24,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # The test cache grows past 2 GiB, and setup-zig clears it when it
+      # exceeds the limit, so the default makes every other run cold.
       - name: Setup Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          cache-size-limit: 4096
+
+      # setup-zig only caches .zig-cache. Zig keeps fetched packages in the
+      # project-local zig-pkg/, so cache that too and skip the downloads.
+      - name: Cache Zig packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: zig-pkg
+          key: zig-pkg-${{ github.job }}-${{ hashFiles('**/build.zig.zon') }}
+          restore-keys: zig-pkg-${{ github.job }}-
 
       - name: Xcode version
         run: xcodebuild -version
@@ -64,6 +77,15 @@ jobs:
 
       - name: Setup Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          cache-size-limit: 4096
+
+      - name: Cache Zig packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: zig-pkg
+          key: zig-pkg-${{ github.job }}-${{ hashFiles('**/build.zig.zon') }}
+          restore-keys: zig-pkg-${{ github.job }}-
 
       - name: Xcode version
         run: xcodebuild -version
@@ -94,6 +116,13 @@ jobs:
 
       - name: Setup Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+
+      - name: Cache Zig packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: test/esctest/zig-pkg
+          key: zig-pkg-${{ github.job }}-${{ hashFiles('**/build.zig.zon') }}
+          restore-keys: zig-pkg-${{ github.job }}-
 
       - name: Run esctest
         working-directory: test/esctest
@@ -135,6 +164,13 @@ jobs:
 
       - name: Setup Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+
+      - name: Cache Zig packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: test/fuzz-libghostty/zig-pkg
+          key: zig-pkg-${{ github.job }}-${{ hashFiles('**/build.zig.zon') }}
+          restore-keys: zig-pkg-${{ github.job }}-
 
       - name: Install AFL++
         run: |
