@@ -59,7 +59,7 @@ been removed. Do not add them back.
   without a `+action`) to verify changes. It steals focus from the user's
   fullscreen spaces. Verify headless: build, unit tests (the XCTest host
   stays headless), static checks (`du`, `size -m`, `otool -L`), and CLI
-  actions such as `Nubb.app/Contents/MacOS/ghostty +version`.
+  actions such as `Nubb.app/Contents/MacOS/nubb +version`.
 - The user may be running a terminal from `zig-out/` or `macos/build/`.
   Before deleting or cleaning any `.app` bundle, check
   `ps -axo command | grep <bundle path>` and leave running bundles alone.

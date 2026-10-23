@@ -1,8 +1,8 @@
-% GHOSTTY(1) Version @@VERSION@@ | Nubb terminal emulator
+% NUBB(1) Version @@VERSION@@ | Nubb terminal emulator
 
 # NAME
 
-**ghostty** - Nubb terminal emulator
+**nubb** - Nubb terminal emulator
 
 # DESCRIPTION
 

@@ -121,7 +121,7 @@ function __nubb_setup --on-event fish_prompt -d "Setup nubb integration"
 
     # SSH Integration
     #
-    # Wrap `ssh` with `ghostty +ssh` and translate the shell-integration
+    # Wrap `ssh` with `nubb +ssh` and translate the shell-integration
     # feature flags into command options.
     set -l features (string split ',' -- "$NUBB_SHELL_FEATURES")
     if contains ssh-env $features; or contains ssh-terminfo $features
@@ -130,7 +130,7 @@ function __nubb_setup --on-event fish_prompt -d "Setup nubb integration"
             set -l flags
             contains ssh-env $features; or set -a flags --forward-env=false
             contains ssh-terminfo $features; or set -a flags --terminfo=false
-            "$NUBB_BIN_DIR/ghostty" +ssh $flags -- $argv
+            "$NUBB_BIN_DIR/nubb" +ssh $flags -- $argv
         end
     end
 

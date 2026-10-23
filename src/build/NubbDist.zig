@@ -19,7 +19,7 @@ check_step: *std.Build.Step,
 
 pub fn init(b: *std.Build, cfg: *const Config) !NubbDist {
     // The name prefix used for all paths in the archive.
-    const name = if (cfg.emit_lib_vt) "libnubb-vt" else "ghostty";
+    const name = if (cfg.emit_lib_vt) "libnubb-vt" else "nubb";
 
     // Get the resources we're going to inject into the source tarball.
     // lib-vt doesn't need frame data.

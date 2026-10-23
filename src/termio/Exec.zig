@@ -610,18 +610,18 @@ const Subprocess = struct {
                 global.io(),
                 &exe_buf,
             ) catch |err| {
-                log.warn("failed to get ghostty exe path err={}", .{err});
+                log.warn("failed to get nubb exe path err={}", .{err});
                 break :ghostty_path;
             }];
             const exe_dir = std.fs.path.dirname(exe_bin_path) orelse break :ghostty_path;
-            log.debug("appending ghostty bin to path dir={s}", .{exe_dir});
+            log.debug("appending nubb bin to path dir={s}", .{exe_dir});
 
             // We always set this so that if the shell overwrites the path
             // scripts still have a way to find the Nubb binary when
             // running in Nubb.
             try env.put("NUBB_BIN_DIR", exe_dir);
 
-            // Append if we have a path. We want to append so that ghostty is
+            // Append if we have a path. We want to append so that nubb is
             // the last priority in the path. If we don't have a path set
             // then we just set it to the directory of the binary.
             if (env.get("PATH")) |path| {

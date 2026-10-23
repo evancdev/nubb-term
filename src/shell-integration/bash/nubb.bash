@@ -116,7 +116,7 @@ fi
 
 # SSH Integration
 #
-# Wrap `ssh` with `ghostty +ssh` and translate the shell-integration
+# Wrap `ssh` with `nubb +ssh` and translate the shell-integration
 # feature flags into command options.
 if [[ "$NUBB_SHELL_FEATURES" == *ssh-* ]]; then
   function ssh() {
@@ -124,7 +124,7 @@ if [[ "$NUBB_SHELL_FEATURES" == *ssh-* ]]; then
     flags=()
     [[ "$NUBB_SHELL_FEATURES" != *ssh-env* ]] && flags+=(--forward-env=false)
     [[ "$NUBB_SHELL_FEATURES" != *ssh-terminfo* ]] && flags+=(--terminfo=false)
-    "$NUBB_BIN_DIR/ghostty" +ssh "${flags[@]}" -- "$@"
+    "$NUBB_BIN_DIR/nubb" +ssh "${flags[@]}" -- "$@"
   }
 fi
 

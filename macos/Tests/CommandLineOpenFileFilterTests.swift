@@ -5,7 +5,7 @@ import Testing
 struct CommandLineOpenFileFilterTests {
     @Test func requiresExecuteFlag() {
         let filter = CommandLineOpenFileFilter(
-            arguments: ["ghostty", "/tmp/file.txt"],
+            arguments: ["nubb", "/tmp/file.txt"],
             workingDirectory: "/tmp",
             fileExists: { _ in true }
         )
@@ -21,7 +21,7 @@ struct CommandLineOpenFileFilterTests {
         ]
         let filter = CommandLineOpenFileFilter(
             arguments: [
-                "ghostty",
+                "nubb",
                 "/tmp/before.txt",
                 "-e",
                 "/usr/bin/vim",
@@ -42,7 +42,7 @@ struct CommandLineOpenFileFilterTests {
 
     @Test func ignoresEachPathOnce() {
         let filter = CommandLineOpenFileFilter(
-            arguments: ["ghostty", "-e", "./file.txt"],
+            arguments: ["nubb", "-e", "./file.txt"],
             workingDirectory: "/tmp/project",
             fileExists: { $0 == "/tmp/project/file.txt" }
         )
@@ -53,7 +53,7 @@ struct CommandLineOpenFileFilterTests {
 
     @Test func preservesUnrelatedOpenFileRequests() {
         let filter = CommandLineOpenFileFilter(
-            arguments: ["ghostty", "-e", "vim", "/tmp/command-file.txt"],
+            arguments: ["nubb", "-e", "vim", "/tmp/command-file.txt"],
             workingDirectory: "/tmp",
             fileExists: { $0 == "/tmp/command-file.txt" }
         )
@@ -69,7 +69,7 @@ struct CommandLineOpenFileFilterTests {
         ]
         let filter = CommandLineOpenFileFilter(
             arguments: [
-                "ghostty",
+                "nubb",
                 "-e",
                 "command",
                 "./file #100%.txt",

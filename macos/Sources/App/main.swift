@@ -16,7 +16,7 @@ if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCE
             "Nubb failed to initialize! If you're executing Nubb from the command line\n" +
             "then this is usually because an invalid action or multiple actions were specified.\n" +
             "Actions start with the `+` character.\n\n" +
-            "View all available actions by running `ghostty +help`.\n")
+            "View all available actions by running `nubb +help`.\n")
         exit(1)
 
     case .app:
@@ -27,7 +27,7 @@ if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCE
 }
 
 // This will run the CLI action and exit if one was specified. A CLI
-// action is a command starting with a `+`, such as `ghostty +boo`.
+// action is a command starting with a `+`, such as `nubb +boo`.
 ghostty_cli_try_action()
 
 _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)

@@ -1,5 +1,5 @@
 //! NubbFrameData generates a compressed file and zig module which contains (and exposes) the
-//! Nubb animation frames for use in `ghostty +boo`
+//! Nubb animation frames for use in `nubb +boo`
 const NubbFrameData = @This();
 
 const std = @import("std");

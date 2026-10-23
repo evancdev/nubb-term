@@ -12,7 +12,7 @@ install_step: *std.Build.Step.InstallArtifact,
 
 pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Ghostty {
     const exe: *std.Build.Step.Compile = b.addExecutable(.{
-        .name = "ghostty",
+        .name = "nubb",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = cfg.target,
@@ -42,7 +42,7 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Ghostty
     };
 }
 
-/// Add the ghostty exe to the install target.
+/// Add the nubb exe to the install target.
 pub fn install(self: *const Ghostty) void {
     const b = self.install_step.step.owner;
     b.getInstallStep().dependOn(&self.install_step.step);

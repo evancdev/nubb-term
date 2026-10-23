@@ -1216,7 +1216,7 @@ pub const Surface = struct {
                 _ = env.orderedRemove("XPC_SERVICE_NAME");
             }
 
-            // Remove this so that running `ghostty` within Nubb works.
+            // Remove this so that running `nubb` within Nubb works.
             _ = env.orderedRemove("NUBB_MAC_LAUNCH_SOURCE");
         }
 

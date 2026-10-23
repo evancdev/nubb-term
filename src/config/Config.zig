@@ -98,7 +98,7 @@ pub const compatibility = std.StaticStringMap(
 ///
 /// You can generate the list of valid values using the CLI:
 ///
-///     ghostty +list-fonts
+///     nubb +list-fonts
 ///
 /// This configuration can be repeated multiple times to specify preferred
 /// fallback fonts when the requested codepoint is not available in the primary
@@ -507,7 +507,7 @@ pub const compatibility = std.StaticStringMap(
 /// list is in the `share/ghostty/themes` directory (wherever you installed the
 /// Nubb "share" directory.
 ///
-/// To see a list of available themes, run `ghostty +list-themes`.
+/// To see a list of available themes, run `nubb +list-themes`.
 ///
 /// A theme file is simply another Nubb configuration file. They share
 /// the same syntax and same configuration options. A theme can set any valid
@@ -1090,7 +1090,7 @@ palette: Palette = .{},
 /// created when Nubb starts, use the `initial-command` configuration.
 ///
 /// Nubb supports the common `-e` flag for executing a command with
-/// arguments. For example, `ghostty -e fish --with --custom --args`.
+/// arguments. For example, `nubb -e fish --with --custom --args`.
 /// This flag sets the `initial-command` configuration, see that for more
 /// information.
 command: ?Command = null,
@@ -1104,14 +1104,14 @@ command: ?Command = null,
 /// this at runtime works but will only affect the next terminal surface
 /// if it is the first one ever created.
 ///
-/// If you're using the `ghostty` CLI there is also a shortcut to set this
-/// with arguments directly: you can use the `-e` flag. For example: `ghostty -e
+/// If you're using the `nubb` CLI there is also a shortcut to set this
+/// with arguments directly: you can use the `-e` flag. For example: `nubb -e
 /// fish --with --custom --args`. The `-e` flag automatically forces some
 /// other behaviors as well:
 ///
 ///   * Disables shell expansion since the input is expected to already
 ///     be shell-expanded by the upstream (e.g. the shell used to type in
-///     the `ghostty -e` command).
+///     the `nubb -e` command).
 ///
 ///   * `quit-after-last-window-closed=true` - This ensures that the Nubb
 ///     process will exit when the command exits.
@@ -1497,7 +1497,7 @@ title: ?[:0]const u8 = null,
 
 /// Key bindings. The format is `trigger=action`. Duplicate triggers will
 /// overwrite previously set values. The list of actions is available in
-/// the documentation or using the `ghostty +list-actions` command.
+/// the documentation or using the `nubb +list-actions` command.
 ///
 /// Trigger: `+`-separated list of keys and modifiers. Example: `ctrl+a`,
 /// `ctrl+shift+b`, `up`.
@@ -1575,9 +1575,9 @@ title: ?[:0]const u8 = null,
 /// is sometimes called a leader key, a key chord, a key table, etc. There
 /// is no hardcoded limit on the number of parts in a sequence.
 ///
-/// Warning: If you define a sequence as a CLI argument to `ghostty`,
+/// Warning: If you define a sequence as a CLI argument to `nubb`,
 /// you probably have to quote the keybind since `>` is a special character
-/// in most shells. Example: ghostty --keybind='ctrl+a>n=new_window'
+/// in most shells. Example: nubb --keybind='ctrl+a>n=new_window'
 ///
 /// A trigger sequence has some special handling:
 ///
@@ -1628,7 +1628,7 @@ title: ?[:0]const u8 = null,
 ///     e.g. `text:\x15` sends Ctrl-U.
 ///
 ///   * All other actions can be found in the documentation or by using the
-///     `ghostty +list-actions` command.
+///     `nubb +list-actions` command.
 ///
 /// Some notes for the action:
 ///
@@ -2711,7 +2711,7 @@ keybind: Keybinds = .{},
 ///     cache manually using various arguments.
 ///     (Available since: 1.2.0)
 ///
-///   * `path` - Add Nubb's binary directory to PATH. This ensures the `ghostty`
+///   * `path` - Add Nubb's binary directory to PATH. This ensures the `nubb`
 ///     command is available in the shell even if shell init scripts reset PATH.
 ///     This is particularly useful on macOS where PATH is often overridden by
 ///     system scripts. The directory is only added if not already present.

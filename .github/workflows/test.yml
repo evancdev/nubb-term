@@ -76,8 +76,8 @@ jobs:
 
       - name: Check app bundle
         run: |
-          test -x zig-out/Nubb.app/Contents/MacOS/ghostty
-          zig-out/Nubb.app/Contents/MacOS/ghostty +version
+          test -x zig-out/Nubb.app/Contents/MacOS/nubb
+          zig-out/Nubb.app/Contents/MacOS/nubb +version
 
       - name: Build benchmarks
         run: zig build -Demit-bench

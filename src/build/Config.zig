@@ -707,8 +707,8 @@ pub fn genericMacOSTarget(
 pub const ExeEntrypoint = enum {
     nubb,
     helpgen,
-    mdgen_ghostty_1,
-    mdgen_ghostty_5,
+    mdgen_nubb_1,
+    mdgen_nubb_5,
     webgen_config,
     webgen_actions,
     webgen_commands,

@@ -124,7 +124,7 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
         const run = b.addRunArtifact(build_data_exe);
         run.addArg("+fish");
         const wf = b.addWriteFiles();
-        _ = wf.addCopyFile(run.captureStdOut(.{}), "ghostty.fish");
+        _ = wf.addCopyFile(run.captureStdOut(.{}), "nubb.fish");
 
         const install_step = b.addInstallDirectory(.{
             .source_dir = wf.getDirectory(),
@@ -139,7 +139,7 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
         const run = b.addRunArtifact(build_data_exe);
         run.addArg("+zsh");
         const wf = b.addWriteFiles();
-        _ = wf.addCopyFile(run.captureStdOut(.{}), "_ghostty");
+        _ = wf.addCopyFile(run.captureStdOut(.{}), "_nubb");
 
         const install_step = b.addInstallDirectory(.{
             .source_dir = wf.getDirectory(),
@@ -154,7 +154,7 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
         const run = b.addRunArtifact(build_data_exe);
         run.addArg("+bash");
         const wf = b.addWriteFiles();
-        _ = wf.addCopyFile(run.captureStdOut(.{}), "ghostty.bash");
+        _ = wf.addCopyFile(run.captureStdOut(.{}), "nubb.bash");
 
         const install_step = b.addInstallDirectory(.{
             .source_dir = wf.getDirectory(),
