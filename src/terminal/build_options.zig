@@ -6,7 +6,7 @@ pub const Options = struct {
         /// Nubb application
         nubb,
 
-        /// libnubb-vt, Zig module
+        /// nubb-vt Zig module (test/esctest, test/fuzz-libnubb)
         lib,
     };
 
@@ -37,20 +37,9 @@ pub const Options = struct {
     /// The version of the application.
     version: std.SemanticVersion,
 
-    /// Optional features for lib artifacts. Disabling a feature removes
-    /// its C API exports and any stream-integrated handling from the
-    /// build, primarily so size-conscious embedders can trim
-    /// the binary. The Nubb application itself always builds with
-    /// every feature enabled.
-    ///
-    /// Field names are the accepted tokens for `-Dvt-features`, which
-    /// acts like `-Dcpu`: comma-separated modifications applied on top
-    /// of the default (all enabled) set. `+feature` and `feature`
-    /// enable, `-feature` disables. The special name `all` refers to
-    /// every feature, so `-Dvt-features=-all,+render-state` builds only
-    /// the render state API. Hyphens in names are interchangeable with
-    /// underscores. Fields are emitted verbatim as bool options on the
-    /// `terminal_options` module.
+    /// Optional feature gates. Every feature is enabled; the gates remain
+    /// so feature-specific code stays grouped. Fields are emitted
+    /// verbatim as bool options on the `terminal_options` module.
     pub const Features = packed struct {
         /// Textual export of terminal contents as plain text, VT
         /// (replayable escape sequences), or HTML, with optional extras
@@ -136,107 +125,6 @@ pub const Options = struct {
         ///
         /// C API: `nubb_kitty_graphics_*`.
         kitty_graphics: bool = true,
-
-        pub fn parse(list: []const u8) error{UnknownFeature}!Features {
-            // Modifications apply on top of the default set.
-            var result: Features = .{};
-
-            var it = std.mem.splitAny(u8, list, ", ");
-            while (it.next()) |raw| {
-                if (raw.len == 0) continue;
-
-                var name = raw;
-                var enable = true;
-                switch (name[0]) {
-                    '+' => name = name[1..],
-                    '-' => {
-                        enable = false;
-                        name = name[1..];
-                    },
-                    else => {},
-                }
-
-                // A dangling sign with no name is malformed.
-                if (name.len == 0) return error.UnknownFeature;
-
-                // The special name "all" refers to every feature.
-                if (std.mem.eql(u8, name, "all")) {
-                    inline for (@typeInfo(Features).@"struct".field_names) |field| {
-                        @field(result, field) = enable;
-                    }
-                    continue;
-                }
-
-                var found = false;
-                inline for (@typeInfo(Features).@"struct".field_names) |field| {
-                    if (eqlName(name, field)) {
-                        @field(result, field) = enable;
-                        found = true;
-                    }
-                }
-                if (!found) return error.UnknownFeature;
-            }
-
-            return result;
-        }
-
-        /// Feature name equality where '-' in the input matches '_' in
-        /// the field name.
-        fn eqlName(input: []const u8, name: []const u8) bool {
-            if (input.len != name.len) return false;
-            for (input, name) |a, b| {
-                const norm: u8 = if (a == '-') '_' else a;
-                if (norm != b) return false;
-            }
-            return true;
-        }
-
-        test "parse" {
-            const testing = std.testing;
-
-            const none: Features = @bitCast(
-                @as(@typeInfo(Features).@"struct".backing_integer.?, 0),
-            );
-
-            // Empty input keeps the defaults.
-            try testing.expectEqual(Features{}, try Features.parse(""));
-
-            // All three token forms, comma separated.
-            try testing.expectEqual(
-                Features{ .formatter = false },
-                try Features.parse("-formatter"),
-            );
-            try testing.expectEqual(
-                Features{ .formatter = false, .search = false },
-                try Features.parse("-formatter,+render_state,-search,color"),
-            );
-
-            // The special "all" name refers to every feature.
-            try testing.expectEqual(none, try Features.parse("-all"));
-            try testing.expectEqual(Features{}, try Features.parse("-all,+all"));
-            var render_only = none;
-            render_only.render_state = true;
-            try testing.expectEqual(
-                render_only,
-                try Features.parse("-all,+render-state"),
-            );
-
-            // Hyphens are interchangeable with underscores.
-            try testing.expectEqual(
-                Features{ .input_encode = false, .grid_introspection = false },
-                try Features.parse("-input-encode,-grid_introspection"),
-            );
-
-            // Later tokens win.
-            try testing.expectEqual(
-                Features{},
-                try Features.parse("-formatter,+formatter"),
-            );
-
-            // Unknown names and dangling signs are errors.
-            try testing.expectError(error.UnknownFeature, Features.parse("bogus"));
-            try testing.expectError(error.UnknownFeature, Features.parse("-formatter,-"));
-        }
     };
 
     /// Whether the Kitty graphics feature is effectively enabled for

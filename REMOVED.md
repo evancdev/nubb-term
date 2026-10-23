@@ -34,6 +34,9 @@ Every removal adds its entry here in the same commit.
 
 The Mac app never linked the C library, but every build compiled it. The
 `ghostty-vt` Zig module stays, because esctest and the fuzzer import it.
+Build options removed: `-Demit-lib-vt`, `-Dlib-version-string`,
+`-Dvt-features`, along with the lib-vt dist tarball and iOS target support.
+Dependency builds still skip the app, xcframework, and docs.
 
 - `.github/scripts/check-apple-libghostty-vt.nu`
 - `CMakeLists.txt`, `Doxyfile`, `DoxygenLayout.xml`

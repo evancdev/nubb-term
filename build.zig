@@ -7,9 +7,6 @@ const translate_c = @import("translate_c");
 /// App version from build.zig.zon.
 const app_zon_version = @import("build.zig.zon").version;
 
-/// nubb-vt version. We use a separate version from the app.
-const lib_version = "0.1.0-dev";
-
 /// Minimum required zig version.
 const minimum_zig_version = @import("build.zig.zon").minimum_zig_version;
 
@@ -39,7 +36,6 @@ pub fn build(b: *std.Build) !void {
     const config = try buildpkg.Config.init(
         b,
         file_version orelse app_zon_version,
-        lib_version,
     );
     const test_filters = b.option(
         [][]const u8,
@@ -64,11 +60,11 @@ pub fn build(b: *std.Build) !void {
     const test_step = b.step("test", "Run tests");
     const test_lib_vt_step = b.step(
         "test-lib-vt",
-        "Run libnubb-vt tests",
+        "Run nubb-vt module tests",
     );
     const test_lib_vt_build_step = b.step(
         "test-lib-vt-build",
-        "Build libnubb-vt tests without running them (compile check)",
+        "Build nubb-vt module tests without running them (compile check)",
     );
 
     // Nubb resources like terminfo, shell integration, themes, etc.
@@ -117,7 +113,7 @@ pub fn build(b: *std.Build) !void {
             exe.install();
             resources.install();
         }
-    } else if (!config.emit_lib_vt) {
+    } else if (!config.is_dep) {
         // The macOS Nubb Library
         //
         // This is NOT libnubb (even though its named that for historical
@@ -137,7 +133,7 @@ pub fn build(b: *std.Build) !void {
 
     // macOS only artifacts. These will error if they're initialized for
     // other targets.
-    if (!config.emit_lib_vt and config.target.result.os.tag.isDarwin() and
+    if (!config.is_dep and config.target.result.os.tag.isDarwin() and
         (config.emit_xcframework or config.emit_macos_app))
     {
         // Nubb xcframework
@@ -193,7 +189,7 @@ pub fn build(b: *std.Build) !void {
 
         // On macOS we can run the macOS app. For "run" we always force
         // a native-only build so that we can run as quickly as possible.
-        if (!config.emit_lib_vt and
+        if (!config.is_dep and
             config.target.result.os.tag.isDarwin() and
             (config.emit_xcframework or config.emit_macos_app))
         {
@@ -233,8 +229,8 @@ pub fn build(b: *std.Build) !void {
         test_lib_vt_build_step.dependOn(&mod_vt_test.step);
     }
 
-    // Tests (skip when building libnubb-vt)
-    if (!config.emit_lib_vt) {
+    // Tests (skip when built as a dependency, which only needs nubb-vt)
+    if (!config.is_dep) {
         // Full unit tests
         const test_exe = b.addTest(.{
             .name = "nubb-test",

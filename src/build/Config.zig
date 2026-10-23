@@ -30,7 +30,6 @@ simd: bool = true,
 /// Nubb exe properties
 exe_entrypoint: ExeEntrypoint = .nubb,
 version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
-lib_version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
 
 /// Binary properties
 pie: bool = false,
@@ -42,7 +41,6 @@ emit_bench: bool = false,
 emit_docs: bool = false,
 emit_exe: bool = false,
 emit_helpgen: bool = false,
-emit_lib_vt: bool = false,
 emit_macos_app: bool = false,
 emit_terminfo: bool = false,
 emit_termcap: bool = false,
@@ -52,30 +50,21 @@ emit_xcframework: bool = false,
 emit_webdata: bool = false,
 emit_unicode_table_gen: bool = false,
 
-/// Feature gates for libnubb-vt artifacts (-Dvt-features). The full
-/// Nubb application ignores this and always enables everything.
-vt_features: TerminalBuildOptions.Features = .{},
-
 /// True when Nubb is being built as a dependency of another project
-/// rather than as the root project.
+/// rather than as the root project. Dependency builds (test/esctest,
+/// test/fuzz-libnubb) only need the nubb-vt module, so they skip the
+/// app, xcframework, and docs by default.
 is_dep: bool = false,
 
 /// Environmental properties
 env: *const std.process.Environ.Map,
 
-pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Config {
+pub fn init(b: *std.Build, appVersion: []const u8) !Config {
     // Setup our standard Zig target and optimize options, i.e.
     // `-Doptimize` and `-Dtarget`.
     const optimize = b.standardOptimizeOption(.{});
 
-    // Default dependency builds to libnubb-vt-only mode. Consumers can
-    // still explicitly disable this to request the full Nubb build.
     const is_dep = b.dep_prefix.len > 0;
-    const emit_lib_vt = b.option(
-        bool,
-        "emit-lib-vt",
-        "Set defaults for a libnubb-vt-only build (disables xcframework, macOS app, and docs).",
-    ) orelse is_dep;
     const target = target: {
         var result = b.standardTargetOptions(.{});
 
@@ -87,24 +76,10 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
             result = genericMacOSTarget(b, result.query.cpu_arch);
         }
 
-        // The full Nubb build no longer supports iOS; Fail early
-        // with a clear message rather than partway through the build.
-        if (result.result.os.tag == .ios and !emit_lib_vt) {
-            std.log.err(
-                "iOS is not a supported target for the full Nubb build; " ++
-                    "only libnubb-vt supports iOS (-Demit-lib-vt)",
-                .{},
-            );
-            return error.UnsupportedTarget;
-        }
-
         // If we have no minimum OS version, we set the default based on
         // our tag. Not all tags have a minimum so this may be null.
         if (result.query.os_version_min == null) {
-            result.query.os_version_min = if (emit_lib_vt)
-                osVersionMinLibVt(result.result.os.tag)
-            else
-                osVersionMin(result.result.os.tag);
+            result.query.os_version_min = osVersionMin(result.result.os.tag);
         }
 
         break :target result;
@@ -231,20 +206,6 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         };
     };
 
-    // libnubb-vt properties
-
-    const lib_version_string = b.option(
-        []const u8,
-        "lib-version-string",
-        "A specific version string to use for the build of libnubb-vt. " ++
-            "If not specified, git will be used. This must be a semantic version.",
-    );
-
-    config.lib_version = if (lib_version_string) |v|
-        try std.SemanticVersion.parse(v)
-    else
-        try std.SemanticVersion.parse(libVersion);
-
     //---------------------------------------------------------------
     // Binary Properties
 
@@ -317,37 +278,11 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     //---------------------------------------------------------------
     // Artifacts to Emit
 
-    config.emit_lib_vt = emit_lib_vt;
-
-    config.vt_features = features: {
-        const list = b.option(
-            []const u8,
-            "vt-features",
-            "Comma-separated libnubb-vt feature modifications applied " ++
-                "to the default all-enabled set, -Dcpu style: `+feature` " ++
-                "or `feature` enables, `-feature` disables, and `all` " ++
-                "means every feature (e.g. `-all,+render-state` for a " ++
-                "render-only build). Only applies to lib artifacts.",
-        ) orelse break :features .{};
-        break :features TerminalBuildOptions.Features.parse(list) catch {
-            var valid: std.ArrayList(u8) = .empty;
-            inline for (@typeInfo(TerminalBuildOptions.Features).@"struct".field_names) |name| {
-                if (valid.items.len > 0) try valid.appendSlice(b.allocator, ", ");
-                try valid.appendSlice(b.allocator, name);
-            }
-            std.log.err(
-                "-Dvt-features={s} contains an unknown feature. Valid features: all, {s}",
-                .{ list, valid.items },
-            );
-            return error.UnknownVtFeature;
-        };
-    };
-
     config.emit_exe = b.option(
         bool,
         "emit-exe",
         "Build and install main executables with 'build'",
-    ) orelse !config.emit_lib_vt;
+    ) orelse !is_dep;
 
     config.emit_test_exe = b.option(
         bool,
@@ -382,7 +317,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         if (config.emit_bench or
             config.emit_test_exe or
             config.emit_helpgen or
-            config.emit_lib_vt) break :emit_docs false;
+            config.is_dep) break :emit_docs false;
 
         // We always emit docs in system package mode.
         if (system_package) break :emit_docs true;
@@ -431,14 +366,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     ) orelse emit_xcfw: {
         if (!builtin.target.os.tag.isDarwin() or target.result.os.tag != .macos)
             break :emit_xcfw false;
-        if (config.emit_lib_vt) {
-            // In lib-vt mode default to whether xcodebuild is available,
-            // since xcodebuild is required to produce the XCFramework.
-            const path = expandPath(b.graph.io, b.allocator, &b.graph.environ_map, "xcodebuild") catch
-                break :emit_xcfw false;
-            defer if (path) |p| b.allocator.free(p);
-            break :emit_xcfw path != null;
-        }
+        if (config.is_dep) break :emit_xcfw false;
         break :emit_xcfw config.app_runtime == .none and
             (!config.emit_bench and
                 !config.emit_test_exe and
@@ -449,7 +377,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         bool,
         "emit-macos-app",
         "Build and install the macOS app bundle.",
-    ) orelse !config.emit_lib_vt and config.emit_xcframework;
+    ) orelse !config.is_dep and config.emit_xcframework;
 
     //---------------------------------------------------------------
     // System Packages
@@ -555,14 +483,6 @@ pub fn addOptions(self: *const Config, step: *std.Build.Step.Options) !void {
         .{self.version},
         0,
     ));
-    var lib_version_buf: [1024]u8 = undefined;
-    step.addOption(std.SemanticVersion, "lib_version", self.lib_version);
-    step.addOption([:0]const u8, "lib_version_string", try std.mem.printSentinel(
-        &lib_version_buf,
-        "{f}",
-        .{self.lib_version},
-        0,
-    ));
     step.addOption(
         ReleaseChannel,
         "release_channel",
@@ -585,16 +505,7 @@ pub fn terminalOptions(
         .artifact = artifact,
         .simd = self.simd,
         .oniguruma = true,
-        // The application requires every feature; only lib artifacts
-        // may trim them.
-        .features = switch (artifact) {
-            .nubb => .{},
-            .lib => self.vt_features,
-        },
-        .version = switch (artifact) {
-            .nubb => self.version,
-            .lib => self.lib_version,
-        },
+        .version = self.version,
         .slow_runtime_safety = switch (optimize) {
             .debug => true,
             .safe,
@@ -667,16 +578,6 @@ pub fn osVersionMin(tag: std.Target.Os.Tag) ?std.Target.Query.OsVersion {
         // we should add a new case here.
         else => null,
     };
-}
-
-/// Returns the minimum OS version for lib-vt build.
-///
-/// This should only be used for Darwin targets.
-pub fn osVersionMinLibVt(tag: std.Target.Os.Tag) ?std.Target.Query.OsVersion {
-    // lib-vt is the only thing we still build for iOS, so its deployment
-    // target lives here rather than in osVersionMin.
-    if (tag == .ios) return .{ .semver = .{ .major = 13, .minor = 0, .patch = 0 } };
-    return osVersionMin(tag);
 }
 
 // Returns a ResolvedTarget for a mac with a `target.result.cpu.model.name` of `generic`.

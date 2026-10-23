@@ -173,8 +173,6 @@ pub fn add(
     // We don't support cross-compiling to Darwin but due to the way
     // lazy dependencies work with Zig, we call this function. So we just
     // bail. The build will fail but the build would've failed anyways.
-    // And this lets other non-platform-specific targets like `-Demit-lib-vt`
-    // cross-compile properly.
     if (!builtin.target.os.tag.isDarwin() and
         self.config.target.result.os.tag.isDarwin())
     {
