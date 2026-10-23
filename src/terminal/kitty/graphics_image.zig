@@ -198,11 +198,6 @@ pub const LoadingImage = struct {
         t: command.Transmission,
         path: []const u8,
     ) !void {
-        // android does not support POSIX shared memory.
-        if (comptime builtin.target.abi.isAndroid()) {
-            return error.UnsupportedMedium;
-        }
-
         // libc is required for shm_open
         if (comptime !builtin.link_libc) {
             return error.UnsupportedMedium;
@@ -960,11 +955,7 @@ test "shared memory names" {
 }
 
 test "image load rejects shared memory names containing NUL" {
-    if (comptime builtin.target.abi.isAndroid() or
-        !builtin.link_libc)
-    {
-        return error.SkipZigTest;
-    }
+    if (comptime !builtin.link_libc) return error.SkipZigTest;
 
     const testing = std.testing;
     const alloc = testing.allocator;
@@ -992,11 +983,7 @@ test "image load rejects shared memory names containing NUL" {
 }
 
 test "image load accepts shared memory names without a leading slash" {
-    if (comptime builtin.target.abi.isAndroid() or
-        !builtin.link_libc)
-    {
-        return error.SkipZigTest;
-    }
+    if (comptime !builtin.link_libc) return error.SkipZigTest;
 
     const testing = std.testing;
     const alloc = testing.allocator;

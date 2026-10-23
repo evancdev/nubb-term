@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 798 files and about 237,000 lines of text.
+brought back later. So far that is 800 files and about 237,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -25,7 +25,7 @@ Every removal adds its entry here in the same commit.
 
 - Zig packages: fontconfig, harfbuzz, libxml2, gtk4-layer-shell, gobject,
   wayland, wayland-protocols, plasma-wayland-protocols, zig-wayland, opengl,
-  libintl, sentry, breakpad, zig-js.
+  libintl, sentry, breakpad, zig-js, android-ndk.
 - Swift packages: Sparkle.
 
 ## Platforms and build
@@ -61,6 +61,13 @@ Nubb only targets macOS.
 - `src/font/face/web_canvas.zig`, `src/font/shaper/web_canvas.zig`
 - `src/os/wasm.zig`, `src/os/wasm/`, `src/os/windows.zig`
 - `src/terminal/kitty/windows.zig`
+
+### Android NDK
+
+Only Android targets used it, to find the NDK's libc and C++ headers for
+highway and simdutf.
+
+- `pkg/android-ndk/`
 
 ### Linux GTK app
 

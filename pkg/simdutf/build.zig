@@ -31,11 +31,6 @@ pub fn build(b: *std.Build) !void {
         try apple_sdk.addPaths(b, lib);
     }
 
-    if (target.result.abi.isAndroid()) {
-        const android_ndk = @import("android_ndk");
-        try android_ndk.addPaths(b, lib);
-    }
-
     var flags: std.ArrayList([]const u8) = .empty;
     defer flags.deinit(b.allocator);
     // Zig 0.13 bug: https://github.com/ziglang/zig/issues/20414
@@ -72,9 +67,7 @@ pub fn build(b: *std.Build) !void {
     }
 
     if (target.result.os.tag == .freebsd or
-        target.result.abi == .musl or
-        target.result.abi == .android or
-        target.result.abi == .androideabi)
+        target.result.abi == .musl)
     {
         try flags.append(b.allocator, "-fPIC");
     }

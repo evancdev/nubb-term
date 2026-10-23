@@ -31,11 +31,6 @@ pub fn build(b: *std.Build) !void {
         module.addIncludePath(upstream.path(""));
     }
 
-    if (target.result.abi.isAndroid()) {
-        const android_ndk = @import("android_ndk");
-        try android_ndk.addPaths(b, lib);
-    }
-
     // Mainly for iOS simulators, but we add for all Darwin target for
     // consistency.
     if (target.result.os.tag.isDarwin()) {
