@@ -484,60 +484,6 @@ extension Nubb {
             )
         }
 
-        var quickTerminalPosition: QuickTerminalPosition {
-            guard let config = self.config else { return .top }
-            var v: UnsafePointer<Int8>?
-            let key = "quick-terminal-position"
-            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .top }
-            guard let ptr = v else { return .top }
-            let str = String(cString: ptr)
-            return QuickTerminalPosition(rawValue: str) ?? .top
-        }
-
-        var quickTerminalScreen: QuickTerminalScreen {
-            guard let config = self.config else { return .main }
-            var v: UnsafePointer<Int8>?
-            let key = "quick-terminal-screen"
-            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .main }
-            guard let ptr = v else { return .main }
-            let str = String(cString: ptr)
-            return QuickTerminalScreen(fromNubbConfig: str) ?? .main
-        }
-
-        var quickTerminalAnimationDuration: Double {
-            guard let config = self.config else { return 0.2 }
-            var v: Double = 0.2
-            let key = "quick-terminal-animation-duration"
-            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
-            return v
-        }
-
-        var quickTerminalAutoHide: Bool {
-            guard let config = self.config else { return true }
-            var v = true
-            let key = "quick-terminal-autohide"
-            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
-            return v
-        }
-
-        var quickTerminalSpaceBehavior: QuickTerminalSpaceBehavior {
-            guard let config = self.config else { return .move }
-            var v: UnsafePointer<Int8>?
-            let key = "quick-terminal-space-behavior"
-            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return .move }
-            guard let ptr = v else { return .move }
-            let str = String(cString: ptr)
-            return QuickTerminalSpaceBehavior(fromNubbConfig: str) ?? .move
-        }
-
-        var quickTerminalSize: QuickTerminalSize {
-            guard let config = self.config else { return QuickTerminalSize() }
-            var v = nubb_config_quick_terminal_size_s()
-            let key = "quick-terminal-size"
-            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return QuickTerminalSize() }
-            return QuickTerminalSize(from: v)
-        }
-
         var resizeOverlay: ResizeOverlay {
             guard let config = self.config else { return .after_first }
             var v: UnsafePointer<Int8>?

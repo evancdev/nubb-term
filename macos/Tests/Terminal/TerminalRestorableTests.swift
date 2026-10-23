@@ -8,33 +8,6 @@ struct TerminalRestorableTests {
     func areYouForgettingToAddMigrationTests() {
         #expect(TerminalRestorableState.version == 7)
         #expect(TerminalRestorableState.minimumVersion == 5)
-
-        #expect(QuickTerminalRestorableState.version == 1)
-        #expect(QuickTerminalRestorableState.minimumVersion == 1)
-    }
-
-    @MainActor
-    @Test func quickTerminalRestorableFromV1() throws {
-        /* v1
-        let tree = try SplitTreeTests.makeHorizontalSplit()
-        let state = DummyQuickTerminalRestorableState(
-            focusedSurface: "123",
-            surfaceTree: tree.0,
-            screenStateEntries: [:],
-        )
-        let data = try archive(CodableBridge(state), className: "CodableBridge<QuickTerminal>")
-        print(data.base64EncodedString())
-        print(tree.1.id)
-        print(tree.2.id)
-        */
-
-        let decoded: CodableBridge<DummyQuickTerminalRestorableState> = try unarchive(v1QTData, className: "CodableBridge<QuickTerminal>")
-        let state = decoded.value.internalState
-
-        #expect(state.focusedSurface == "123")
-        #expect(state.screenStateEntries.isEmpty)
-        #expect(state.surfaceTree.contains(where: { $0.id.uuidString == "2F2F2D93-944C-474A-83BA-4DC1868C3EB9" }))
-        #expect(state.surfaceTree.contains(where: { $0.id.uuidString == "994C673F-B4C5-49EE-B044-65006652636D" }))
     }
 
     // To generate old data: created a dummy class, archive, and copy the printed result
@@ -121,7 +94,6 @@ struct TerminalRestorableTests {
         }
 
         #expect(TerminalRestorableState.archivedClassName == legacy(CodableBridge<TerminalRestorableState>.self))
-        #expect(QuickTerminalRestorableState.archivedClassName == legacy(CodableBridge<QuickTerminalRestorableState>.self))
     }
 
     /// AppKit stores `restorationClass` by name, so it must stay the legacy name.
@@ -245,37 +217,6 @@ private final class LegacyNamedRestorableState: TerminalRestorable {
         try internalState.encode(to: encoder)
     }
 }
-
-@MainActor
-struct DummyQuickTerminalRestorableState: TerminalRestorable {
-    static var version: Int = QuickTerminalRestorableState.version
-
-    static var minimumVersion: Int = QuickTerminalRestorableState.minimumVersion
-
-    init(copy other: DummyQuickTerminalRestorableState) {
-        internalState = other.internalState
-    }
-
-    let internalState: QuickTerminalRestorableState.InternalState<MockView>
-
-    init(_ internalState: QuickTerminalRestorableState.InternalState<MockView>) {
-        self.internalState = internalState
-    }
-
-    init(from decoder: any Decoder) throws {
-        self.internalState = try QuickTerminalRestorableState.InternalState<MockView>(from: decoder)
-    }
-
-    func encode(to encoder: any Encoder) throws {
-        try internalState.encode(to: encoder)
-    }
-}
-
-// MARK: - QuickTerminal V1 (1.3.0)
-
-private let v1QTData = Data(base64Encoded: """
-    YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGkCwwRElUkbnVsbNINDg8QVGRhdGFWJGNsYXNzgAKAA08RA6hicGxpc3QwMNQBAgMEBQYHClgkdmVyc2lvblkkYXJjaGl2ZXJUJHRvcFgkb2JqZWN0cxIAAYagXxAPTlNLZXllZEFyY2hpdmVy0QgJVXZhbHVlgAGvECALDBkaGxwfJicvMDEyODlFRkdISU9QVldYXF1jaWpwcVUkbnVsbNMNDg8QFBhXTlMua2V5c1pOUy5vYmplY3RzViRjbGFzc6MREhOAAoADgASjFRYXgAWAB4AIgBhfEBJzY3JlZW5TdGF0ZUVudHJpZXNeZm9jdXNlZFN1cmZhY2Vbc3VyZmFjZVRyZWXSDg8dHqCABtIgISIjWiRjbGFzc25hbWVYJGNsYXNzZXNeTlNNdXRhYmxlQXJyYXmjIiQlV05TQXJyYXlYTlNPYmplY3RTMTIz0w0ODygrGKIpKoAJgAqiLC2AC4AMgBhXdmVyc2lvblRyb290EAHTDQ4PMzUYoTSADaE2gA6AGFVzcGxpdNMNDg86PxikOzw9PoAPgBCAEYASpEBBQkOAE4AZgBqAHYAYVXJpZ2h0VXJhdGlvVGxlZnRZZGlyZWN0aW9u0w0OD0pMGKFLgBShTYAVgBhUdmlld9MNDg9RUxihUoAWoVSAF4AYUmlkXxAkOTk0QzY3M0YtQjRDNS00OUVFLUIwNDQtNjUwMDY2NTI2MzZE0iAhWVpfEBNOU011dGFibGVEaWN0aW9uYXJ5o1lbJVxOU0RpY3Rpb25hcnkjP+AAAAAAAADTDQ4PXmAYoUuAFKFhgBuAGNMNDg9kZhihUoAWoWeAHIAYXxAkMkYyRjJEOTMtOTQ0Qy00NzRBLTgzQkEtNERDMTg2OEMzRUI50w0OD2ttGKFsgB6hboAfgBhaaG9yaXpvbnRhbNMNDg9ycxigoIAYAAgAEQAaACQAKQAyADcASQBMAFIAVAB3AH0AhACMAJcAngCiAKQApgCoAKwArgCwALIAtADJANgA5ADpAOoA7ADxAPwBBQEUARgBIAEpAS0BNAE3ATkBOwE+AUABQgFEAUwBUQFTAVoBXAFeAWABYgFkAWoBcQF2AXgBegF8AX4BgwGFAYcBiQGLAY0BkwGZAZ4BqAGvAbEBswG1AbcBuQG+AcUBxwHJAcsBzQHPAdIB+QH+AhQCGAIlAi4CNQI3AjkCOwI9Aj8CRgJIAkoCTAJOAlACdwJ+AoACggKEAoYCiAKTApoCmwKcAAAAAAAAAgEAAAAAAAAAdQAAAAAAAAAAAAAAAAAAAp7RExRaJGNsYXNzbmFtZV8QHENvZGFibGVCcmlkZ2U8UXVpY2tUZXJtaW5hbD4ACAARABoAJAApADIANwBJAEwAUQBTAFgAXgBjAGgAbwBxAHMEHwQiBC0AAAAAAAACAQAAAAAAAAAVAAAAAAAAAAAAAAAAAAAETA==
-    """)!
 
 // MARK: - Terminal V5 (1.2.3)
 

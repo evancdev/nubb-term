@@ -142,22 +142,4 @@ final class NubbThemeTests: NubbCustomConfigCase {
         try await Task.sleep(for: .seconds(0.5))
         try assertTitlebarAppearance(.light, for: app)
     }
-
-    @MainActor
-    func testQuickTerminalThemeChange() async throws {
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night \n confirm-close-surface=false")
-        XCUIDevice.shared.appearance = .light
-        let app = try nubbApplication()
-        app.launch()
-        // close default window
-        app.typeKey("w", modifierFlags: [.command])
-        // open quick terminal
-        app.menuBarItems["View"].firstMatch.click()
-        app.menuItems["Quick Terminal"].firstMatch.click()
-        let title = "Debug builds of Nubb are very slow and you may experience performance problems. Debug builds are only recommended during development."
-        try assertTitlebarAppearance(.light, for: app, title: title, colorLocation: CGPoint(x: 5, y: 5)) // to avoid dark edge
-        XCUIDevice.shared.appearance = .dark
-        try await Task.sleep(for: .seconds(0.5))
-        try assertTitlebarAppearance(.dark, for: app, title: title, colorLocation: CGPoint(x: 5, y: 5))
-    }
 }

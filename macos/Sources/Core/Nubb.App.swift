@@ -704,9 +704,6 @@ extension Nubb {
             case NUBB_ACTION_TOGGLE_MAXIMIZE:
                 toggleMaximize(app, target: target)
 
-            case NUBB_ACTION_TOGGLE_QUICK_TERMINAL:
-                toggleQuickTerminal(app, target: target)
-
             case NUBB_ACTION_TOGGLE_VISIBILITY:
                 toggleVisibility(app, target: target)
 
@@ -1795,14 +1792,6 @@ extension Nubb {
             default:
                 assertionFailure()
             }
-        }
-
-        private static func toggleQuickTerminal(
-            _ app: nubb_app_t,
-            target: nubb_target_s
-        ) {
-            guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
-            appDelegate.toggleQuickTerminal(self)
         }
 
         private static func setTitle(

@@ -550,28 +550,6 @@ typedef struct {
   nubb_config_color_s colors[256];
 } nubb_config_palette_s;
 
-// config.QuickTerminalSize
-typedef enum {
-  NUBB_QUICK_TERMINAL_SIZE_NONE,
-  NUBB_QUICK_TERMINAL_SIZE_PERCENTAGE,
-  NUBB_QUICK_TERMINAL_SIZE_PIXELS,
-} nubb_quick_terminal_size_tag_e;
-
-typedef union {
-  float percentage;
-  uint32_t pixels;
-} nubb_quick_terminal_size_value_u;
-
-typedef struct {
-  nubb_quick_terminal_size_tag_e tag;
-  nubb_quick_terminal_size_value_u value;
-} nubb_quick_terminal_size_s;
-
-typedef struct {
-  nubb_quick_terminal_size_s primary;
-  nubb_quick_terminal_size_s secondary;
-} nubb_config_quick_terminal_size_s;
-
 // config.Fullscreen
 typedef enum {
   NUBB_CONFIG_FULLSCREEN_FALSE,
@@ -945,7 +923,6 @@ typedef enum {
   NUBB_ACTION_TOGGLE_FULLSCREEN,
   NUBB_ACTION_TOGGLE_TAB_OVERVIEW,
   NUBB_ACTION_TOGGLE_WINDOW_DECORATIONS,
-  NUBB_ACTION_TOGGLE_QUICK_TERMINAL,
   NUBB_ACTION_TOGGLE_COMMAND_PALETTE,
   NUBB_ACTION_TOGGLE_VISIBILITY,
   NUBB_ACTION_TOGGLE_BACKGROUND_OPACITY,
@@ -1119,7 +1096,6 @@ typedef union {
 typedef enum {
   NUBB_IPC_ACTION_NEW_WINDOW,
   NUBB_IPC_ACTION_NEW_TAB,
-  NUBB_IPC_ACTION_TOGGLE_QUICK_TERMINAL,
 } nubb_ipc_action_tag_e;
 
 //-------------------------------------------------------------------

@@ -27,13 +27,13 @@ struct MenuShortcutManagerTests {
     }
 
     @MainActor @Test func physicalBackquoteUsesCurrentKeyboardLayout() throws {
-        let config = try TemporaryConfig("keybind=super+backquote=toggle_quick_terminal")
+        let config = try TemporaryConfig("keybind=super+backquote=toggle_visibility")
         let expected = try #require(KeyboardLayout.character(for: 0x32, modifiers: .command))
-        let item = NSMenuItem(title: "Quick Terminal", action: nil, keyEquivalent: "")
+        let item = NSMenuItem(title: "Show All Windows", action: nil, keyEquivalent: "")
         let manager = Nubb.MenuShortcutManager()
 
         manager.reset()
-        manager.syncMenuShortcut(config, action: "toggle_quick_terminal", menuItem: item)
+        manager.syncMenuShortcut(config, action: "toggle_visibility", menuItem: item)
 
         #expect(item.keyEquivalent == String(expected))
         #expect(item.keyEquivalentModifierMask == .command)

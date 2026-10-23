@@ -76,9 +76,6 @@ pub const Action = union(enum) {
     /// Create a new tab.
     new_tab: NewTab,
 
-    /// Toggle the quick terminal.
-    toggle_quick_terminal: void,
-
     pub const NewWindow = struct {
         /// A list of configuration entries that will override the configuration
         /// of the first surface of the new window. If this is `null` there
@@ -176,7 +173,6 @@ pub const Action = union(enum) {
     pub const Key = enum(c_int) {
         new_window,
         new_tab,
-        toggle_quick_terminal,
 
         test "nubb.h Action.Key" {
             try lib.checkNubbHEnum(Key, "NUBB_IPC_ACTION_");

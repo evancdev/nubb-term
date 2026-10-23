@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 787 files and about 235,000 lines of text.
+brought back later. So far that is 798 files and about 237,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -241,6 +241,19 @@ Nubb targets macOS 26, which uses the native implementation. On older macOS,
 
 - `macos/Sources/Features/Terminal/Window Styles/TerminalTabsTitlebarVentura.xib`
 - `macos/Sources/Features/Terminal/Window Styles/TitlebarTabsVenturaTerminalWindow.swift`
+
+### Quick Terminal
+
+A drop-down terminal window toggled from the menu or a keybind. It was meant
+for global keybinds, which were removed earlier. Config options removed:
+`quick-terminal-position`, `quick-terminal-size`, `quick-terminal-screen`,
+`quick-terminal-animation-duration`, `quick-terminal-autohide`,
+`quick-terminal-space-behavior`. Keybind action removed:
+`toggle_quick_terminal`. CLI action removed: `+toggle-quick-terminal`.
+
+- `macos/Sources/Features/QuickTerminal/`
+- `macos/Tests/QuickTerminalScreenStateCacheTests.swift`
+- `src/cli/toggle_quick_terminal.zig`
 
 ## Terminal and core
 

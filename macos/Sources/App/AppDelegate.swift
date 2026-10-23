@@ -69,7 +69,6 @@ class AppDelegate: NSObject,
     @IBOutlet private var menuChangeTitle: NSMenuItem?
     @IBOutlet private var menuChangeTabTitle: NSMenuItem?
     @IBOutlet private var menuReadonly: NSMenuItem?
-    @IBOutlet private var menuQuickTerminal: NSMenuItem?
     @IBOutlet private var menuTerminalInspector: NSMenuItem?
     @IBOutlet private var menuCommandPalette: NSMenuItem?
 
@@ -102,44 +101,6 @@ class AppDelegate: NSObject,
 
     /// The global undo manager for app-level state such as window restoration.
     lazy var undoManager = ExpiringUndoManager()
-
-    /// The current state of the quick terminal.
-    private var quickTerminalControllerState: QuickTerminalState = .uninitialized
-
-    /// Whether the quick terminal has already been initialized.
-    var quickControllerInitialized: Bool {
-        if case .initialized = quickTerminalControllerState {
-            return true
-        }
-        return false
-    }
-
-    /// Our quick terminal. This starts out uninitialized and only initializes if used.
-    var quickController: QuickTerminalController {
-        switch quickTerminalControllerState {
-        case .initialized(let controller):
-            return controller
-
-        case .pendingRestore(let state):
-            let controller = QuickTerminalController(
-                nubb,
-                position: derivedConfig.quickTerminalPosition,
-                baseConfig: state.baseConfig,
-                restorationState: state
-            )
-            quickTerminalControllerState = .initialized(controller)
-            return controller
-
-        case .uninitialized:
-            let controller = QuickTerminalController(
-                nubb,
-                position: derivedConfig.quickTerminalPosition,
-                restorationState: nil
-            )
-            quickTerminalControllerState = .initialized(controller)
-            return controller
-        }
-    }
 
     /// Tracks the windows that we hid for toggleVisibility.
     private(set) var hiddenState: ToggleVisibilityState?
@@ -220,12 +181,6 @@ class AppDelegate: NSObject,
             self,
             selector: #selector(windowDidBecomeKey),
             name: NSWindow.didBecomeKeyNotification,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(quickTerminalDidChangeVisibility),
-            name: .quickTerminalDidChangeVisibility,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -633,11 +588,6 @@ class AppDelegate: NSObject,
         syncFloatOnTopMenu(notification.object as? NSWindow)
     }
 
-    @objc private func quickTerminalDidChangeVisibility(_ notification: Notification) {
-        guard let quickController = notification.object as? QuickTerminalController else { return }
-        self.menuQuickTerminal?.state = if quickController.visible { .on } else { .off }
-    }
-
     @objc private func nubbConfigDidChange(_ notification: Notification) {
         // We only care if the configuration is a global configuration, not a surface one.
         guard notification.object == nil else { return }
@@ -819,31 +769,10 @@ class AppDelegate: NSObject,
         return true
     }
 
-    func application(_ app: NSApplication, willEncodeRestorableState coder: NSCoder) {
-        guard nubb.config.windowSaveState != "never" else { return }
-
-        // Encode our quick terminal state if we have it.
-        switch quickTerminalControllerState {
-        case .initialized(let controller) where controller.restorable:
-            let data = QuickTerminalRestorableState(from: controller)
-            data.encode(with: coder)
-
-        case .pendingRestore(let state):
-            state.encode(with: coder)
-
-        default:
-            break
-        }
-    }
-
     func application(_ app: NSApplication, didDecodeRestorableState coder: NSCoder) {
+        // Window state is restored per window. App-level state written by
+        // older builds (the removed quick terminal) is ignored.
         Self.logger.debug("application will restore window state")
-
-        // Decode our quick terminal state.
-        if nubb.config.windowSaveState != "never",
-            let state = QuickTerminalRestorableState(coder: coder) {
-            quickTerminalControllerState = .pendingRestore(state)
-        }
     }
 
     // MARK: - UNUserNotificationCenterDelegate
@@ -930,10 +859,6 @@ class AppDelegate: NSObject,
         setSecureInput(.toggle)
     }
 
-    @IBAction func toggleQuickTerminal(_ sender: Any) {
-        quickController.toggle()
-    }
-
     /// Toggles visibility of all Ghosty Terminal windows. When hidden, activates Nubb as the frontmost application
     @IBAction func toggleVisibility(_ sender: Any) {
         // If we have focus, then we hide all windows.
@@ -976,18 +901,15 @@ class AppDelegate: NSObject,
     private struct DerivedConfig {
         let initialWindow: Bool
         let shouldQuitAfterLastWindowClosed: Bool
-        let quickTerminalPosition: QuickTerminalPosition
 
         init() {
             self.initialWindow = true
             self.shouldQuitAfterLastWindowClosed = false
-            self.quickTerminalPosition = .top
         }
 
         init(_ config: Nubb.Config) {
             self.initialWindow = config.initialWindow
             self.shouldQuitAfterLastWindowClosed = config.shouldQuitAfterLastWindowClosed
-            self.quickTerminalPosition = config.quickTerminalPosition
         }
     }
 
@@ -1067,7 +989,6 @@ extension AppDelegate {
         self.menuResetFontSize?.setImageIfDesired(systemSymbolName: "textformat.size")
         self.menuDecreaseFontSize?.setImageIfDesired(systemSymbolName: "textformat.size.smaller")
         self.menuCommandPalette?.setImageIfDesired(systemSymbolName: "filemenu.and.selection")
-        self.menuQuickTerminal?.setImageIfDesired(systemSymbolName: "apple.terminal")
         self.menuChangeTabTitle?.setImageIfDesired(systemSymbolName: "pencil.line")
         self.menuTerminalInspector?.setImageIfDesired(systemSymbolName: "scope")
         self.menuReadonly?.setImageIfDesired(systemSymbolName: "eye.fill")
@@ -1142,7 +1063,6 @@ extension AppDelegate {
         syncMenuShortcut(config, action: "reset_font_size", menuItem: self.menuResetFontSize)
         syncMenuShortcut(config, action: "prompt_surface_title", menuItem: self.menuChangeTitle)
         syncMenuShortcut(config, action: "prompt_tab_title", menuItem: self.menuChangeTabTitle)
-        syncMenuShortcut(config, action: "toggle_quick_terminal", menuItem: self.menuQuickTerminal)
         syncMenuShortcut(config, action: "toggle_visibility", menuItem: self.menuToggleVisibility)
         syncMenuShortcut(config, action: "toggle_window_float_on_top", menuItem: self.menuFloatOnTop)
         syncMenuShortcut(config, action: "inspector:toggle", menuItem: self.menuTerminalInspector)
@@ -1206,8 +1126,8 @@ extension AppDelegate: NSMenuItemValidation {
         switch item.action {
         case #selector(floatOnTop(_:)),
             #selector(useAsDefault(_:)):
-            // Float on top items only active if the key window is a primary
-            // terminal window (not quick terminal).
+            // Float on top items only active if the key window is a
+            // terminal window.
             return NSApp.keyWindow is TerminalWindow
 
         case #selector(undo(_:)):
@@ -1299,14 +1219,4 @@ extension AppDelegate {
             await NSApp.reply(toApplicationShouldTerminate: true)
         }
     }
-}
-
-/// Represents the state of the quick terminal controller.
-private enum QuickTerminalState {
-    /// Controller has not been initialized and has no pending restoration state.
-    case uninitialized
-    /// Restoration state is pending; controller will use this when first accessed.
-    case pendingRestore(QuickTerminalRestorableState)
-    /// Controller has been initialized.
-    case initialized(QuickTerminalController)
 }
