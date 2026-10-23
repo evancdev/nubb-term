@@ -7,7 +7,7 @@ const LibtoolStep = @import("LibtoolStep.zig");
 
 /// Combine multiple static archives into a single fat archive.
 ///
-/// `name` identifies the library (e.g. "ghostty-internal", "ghostty-vt").
+/// `name` identifies the library (e.g. "nubb-internal", "nubb-vt").
 /// Output uses a `-fat` suffix to distinguish the combined archive from
 /// the single-library archive in the build cache.
 pub fn create(

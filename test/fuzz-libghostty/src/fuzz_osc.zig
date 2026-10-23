@@ -1,7 +1,7 @@
 const std = @import("std");
-const ghostty_vt = @import("ghostty-vt");
+const nubb_vt = @import("nubb-vt");
 const mem = @import("mem.zig");
-const osc = ghostty_vt.osc;
+const osc = nubb_vt.osc;
 
 /// Use a single global allocator for simplicity and to avoid heap
 /// allocation overhead in the fuzzer. The allocator is backed by a fixed

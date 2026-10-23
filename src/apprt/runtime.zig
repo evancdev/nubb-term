@@ -8,8 +8,8 @@ pub const Runtime = enum {
     none,
 
     pub fn default(target: std.Target) Runtime {
-        // We do NONE so we don't create an exe and we create libghostty.
-        // On macOS, Xcode is used to build the app that links to libghostty.
+        // We do NONE so we don't create an exe and we create libnubb.
+        // On macOS, Xcode is used to build the app that links to libnubb.
         _ = target;
         return .none;
     }

@@ -1,7 +1,7 @@
-//! GhosttyZig generates the `ghostty-vt` Zig module: the terminal core
+//! NubbZig generates the `nubb-vt` Zig module: the terminal core
 //! as a plain Zig module. Nubb's test harnesses (test/fuzz-libghostty,
 //! test/esctest) import it, and `zig build test-lib-vt` tests it.
-const GhosttyZig = @This();
+const NubbZig = @This();
 
 const std = @import("std");
 const Config = @import("Config.zig");
@@ -14,7 +14,7 @@ pub fn init(
     b: *std.Build,
     cfg: *const Config,
     deps: *const SharedDeps,
-) !GhosttyZig {
+) !NubbZig {
     // Terminal module build options
     var vt_options = cfg.terminalOptions(.lib, cfg.optimize);
     vt_options.artifact = .lib;
@@ -36,7 +36,7 @@ fn initVt(
     const general_options = b.addOptions();
     try cfg.addOptions(general_options);
 
-    const vt = b.addModule("ghostty-vt", .{
+    const vt = b.addModule("nubb-vt", .{
         .root_source_file = b.path("src/lib_vt.zig"),
         .target = cfg.target,
         .optimize = cfg.optimize,

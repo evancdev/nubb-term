@@ -298,9 +298,9 @@ pub const Options = struct {
     /// The total storage limit for Kitty images in bytes. Has no effect
     /// if kitty images are disabled at build-time.
     kitty_image_storage_limit: usize = switch (build_options.artifact) {
-        .ghostty => 320 * 1000 * 1000, // 320MB
+        .nubb => 320 * 1000 * 1000, // 320MB
 
-        // libghostty we start with a much lower limit since this is an
+        // libnubb we start with a much lower limit since this is an
         // embedded library and we want to be more conservative with memory
         // usage by default.
         .lib => 10 * 1000 * 1000, // 10MB
@@ -2894,7 +2894,7 @@ pub fn compressionActivity(self: *const Terminal) u64 {
 
 /// The amount of compression work performed by `compress` before returning.
 ///
-/// The declaration order is part of the libghostty-vt C ABI. Removed values
+/// The declaration order is part of the libnubb-vt C ABI. Removed values
 /// must leave a `null` hole so later values retain their integer values.
 pub const CompressionMode = lib.Enum(lib.target, &.{
     "incremental",
@@ -2903,7 +2903,7 @@ pub const CompressionMode = lib.Enum(lib.target, &.{
 
 /// The scheduling result of a `compress` call.
 ///
-/// The declaration order is part of the libghostty-vt C ABI. Removed values
+/// The declaration order is part of the libnubb-vt C ABI. Removed values
 /// must leave a `null` hole so later values retain their integer values.
 pub const CompressionResult = lib.Enum(lib.target, &.{
     "unsupported",

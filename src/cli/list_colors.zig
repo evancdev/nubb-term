@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const Action = @import("ghostty.zig").Action;
+const Action = @import("nubb.zig").Action;
 const args = @import("args.zig");
 const x11_color = @import("../terminal/main.zig").x11_color;
 const vaxis = @import("vaxis");

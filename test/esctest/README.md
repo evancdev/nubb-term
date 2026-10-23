@@ -1,10 +1,10 @@
-# esctest for libghostty-vt
+# esctest for libnubb-vt
 
 Runs [esctest](https://github.com/ThomasDickey/esctest2), a conformance
-suite for terminal emulators, against libghostty-vt without a GUI.
+suite for terminal emulators, against libnubb-vt without a GUI.
 
 esctest runs under a pty. Everything it writes is fed through a
-libghostty-vt `Terminal`, and the terminal's replies (DECRQCRA checksums,
+libnubb-vt `Terminal`, and the terminal's replies (DECRQCRA checksums,
 device attributes, cursor position and size reports) are written back to
 it. When esctest exits, its log is copied to stdout. A full run takes
 about a minute.
@@ -33,7 +33,7 @@ DECSTR tests and stop at the first failure:
 zig build run -- --include=DECSTR --stop-on-failure
 ```
 
-`--verbose`, given before any esctest arguments, shows libghostty-vt's own
+`--verbose`, given before any esctest arguments, shows libnubb-vt's own
 log on stderr, which names each sequence that it ignores.
 
 To move to a newer esctest, fetch the commit you want:
@@ -54,6 +54,6 @@ runner passes it `--expected-terminal=xterm --xterm-checksum=411
 - Device attributes of a VT520, the highest level esctest tests.
 
 esctest resets the terminal with DECSTR before each test, and
-libghostty-vt doesn't implement DECSTR, so modes and margins one test
+libnubb-vt doesn't implement DECSTR, so modes and margins one test
 leaves behind can make the next one fail. The terminal never resizes
 either, so the tests that resize it with XTWINOPS or DECCOLM fail.

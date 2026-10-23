@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const args = @import("args.zig");
-const Action = @import("ghostty.zig").Action;
+const Action = @import("nubb.zig").Action;
 const global = @import("../global.zig");
 
 // Note that this options struct doesn't implement the `help` decl like other

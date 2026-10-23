@@ -398,7 +398,7 @@ extension Ghostty {
                 .compactMap { NSImage(data: $0.data) }
                 .first
 
-            // libghostty reaches this callback only when the request attempted
+            // libnubb reaches this callback only when the request attempted
             // by readClipboard requires confirmation. Reads allowed by policy
             // complete immediately and never become pending Swift state.
             let request = Ghostty.ClipboardConfirmationRequest(

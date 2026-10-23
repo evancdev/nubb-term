@@ -23,7 +23,7 @@ const log = std.log.scoped(.render_state);
 
 // Developer note: this is in src/terminal and not src/renderer because
 // the goal is that this remains generic to multiple renderers. This can
-// aid specifically with libghostty-vt with converting terminal state to
+// aid specifically with libnubb-vt with converting terminal state to
 // a renderable form.
 
 /// Contains the state required to render the screen, including optimizing

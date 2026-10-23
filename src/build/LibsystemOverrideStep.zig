@@ -5,7 +5,7 @@
 //! See src/build/libsystem_override.sh for the full rationale.
 //!
 //! This applies to every static archive we produce, public
-//! (e.g. libghostty-vt) and app-internal alike: the compiler-rt
+//! (e.g. libnubb-vt) and app-internal alike: the compiler-rt
 //! bundle must stay because the few symbols libSystem does not
 //! provide (f128 conversions, *q math, sincos*, ___zig_probe_stack)
 //! have live references, e.g. from the bundled ubsan runtime and

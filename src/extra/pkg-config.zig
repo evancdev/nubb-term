@@ -1,4 +1,4 @@
-//! Generates a `pkg-config` .pc file for `libghostty-vt`.
+//! Generates a `pkg-config` .pc file for `libnubb-vt`.
 //!
 //! This is required as of Zig 0.17 since the configurer process that runs
 //! `build.zig` build scripts can no longer access the install prefix as a

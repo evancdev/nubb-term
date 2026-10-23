@@ -24,7 +24,7 @@ pub const Mailbox = union(enum) {
     // ///
     // /// At the time of authoring this, the primary use case for this is
     // /// testing more than anything, but it probably will have a use case
-    // /// in libghostty eventually.
+    // /// in libnubb eventually.
     // unbounded: std.ArrayList(termio.Message),
 
     /// Write messages to a SPSC queue for multi-threaded applications.

@@ -8,10 +8,10 @@ pub const Screen = @import("search/screen.zig").ScreenSearch;
 pub const Terminal = @import("search/terminal.zig").TerminalSearch;
 pub const Viewport = @import("search/viewport.zig").ViewportSearch;
 
-// The search thread is not available in libghostty due to the xev dep
+// The search thread is not available in libnubb due to the xev dep
 // for now.
 pub const Thread = switch (options.artifact) {
-    .ghostty => @import("search/Thread.zig"),
+    .nubb => @import("search/Thread.zig"),
     .lib => void,
 };
 

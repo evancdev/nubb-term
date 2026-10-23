@@ -50,9 +50,9 @@ pub fn build(b: *std.Build) !void {
     // Nubb dependencies used by many artifacts.
     const deps = try buildpkg.SharedDeps.init(b, &config);
 
-    // The modules exported for Zig consumers of libghostty. If you're
-    // writing a Zig program that uses libghostty, read this file.
-    const mod = try buildpkg.GhosttyZig.init(
+    // The modules exported for Zig consumers of libnubb. If you're
+    // writing a Zig program that uses libnubb, read this file.
+    const mod = try buildpkg.NubbZig.init(
         b,
         &config,
         &deps,
@@ -64,21 +64,21 @@ pub fn build(b: *std.Build) !void {
     const test_step = b.step("test", "Run tests");
     const test_lib_vt_step = b.step(
         "test-lib-vt",
-        "Run libghostty-vt tests",
+        "Run libnubb-vt tests",
     );
     const test_lib_vt_build_step = b.step(
         "test-lib-vt-build",
-        "Build libghostty-vt tests without running them (compile check)",
+        "Build libnubb-vt tests without running them (compile check)",
     );
 
     // Nubb resources like terminfo, shell integration, themes, etc.
-    const resources = try buildpkg.GhosttyResources.init(b, &config, &deps);
+    const resources = try buildpkg.NubbResources.init(b, &config, &deps);
 
     // Nubb executable, the actual runnable Nubb program.
-    const exe = try buildpkg.GhosttyExe.init(b, &config, &deps);
+    const exe = try buildpkg.NubbExe.init(b, &config, &deps);
 
     // Nubb docs
-    const docs = try buildpkg.GhosttyDocs.init(b, &deps);
+    const docs = try buildpkg.NubbDocs.init(b, &deps);
     if (config.emit_docs) {
         docs.install();
     } else if (config.target.result.os.tag.isDarwin()) {
@@ -89,17 +89,17 @@ pub fn build(b: *std.Build) !void {
     }
 
     // Nubb webdata
-    const webdata = try buildpkg.GhosttyWebdata.init(b, &deps);
+    const webdata = try buildpkg.NubbWebdata.init(b, &deps);
     if (config.emit_webdata) webdata.install();
 
     // Nubb bench tools
     if (config.emit_bench) {
-        const bench = try buildpkg.GhosttyBench.init(b, &deps);
+        const bench = try buildpkg.NubbBench.init(b, &deps);
         bench.install();
     }
 
     // Nubb dist tarball
-    const dist = try buildpkg.GhosttyDist.init(b, &config);
+    const dist = try buildpkg.NubbDist.init(b, &config);
     {
         const step = b.step("dist", "Build the dist tarball");
         step.dependOn(dist.install_step);
@@ -111,7 +111,7 @@ pub fn build(b: *std.Build) !void {
     // Helpgen
     if (config.emit_helpgen) deps.help_strings.install();
 
-    // Runtime "none" is libghostty, anything else is an executable.
+    // Runtime "none" is libnubb, anything else is an executable.
     if (config.app_runtime != .none) {
         if (config.emit_exe) {
             exe.install();
@@ -120,18 +120,18 @@ pub fn build(b: *std.Build) !void {
     } else if (!config.emit_lib_vt) {
         // The macOS Nubb Library
         //
-        // This is NOT libghostty (even though its named that for historical
+        // This is NOT libnubb (even though its named that for historical
         // reasons). It is just the glue between Nubb GUI on macOS and
         // the full Nubb GUI core.
-        const lib_shared = try buildpkg.GhosttyLib.initShared(b, &deps);
-        const lib_static = try buildpkg.GhosttyLib.initStatic(b, &deps);
+        const lib_shared = try buildpkg.NubbLib.initShared(b, &deps);
+        const lib_static = try buildpkg.NubbLib.initStatic(b, &deps);
 
         // We shouldn't have this guard but we don't currently
         // build on macOS this way ironically so we need to fix that.
         if (!config.target.result.os.tag.isDarwin()) {
             lib_shared.installHeader(); // Only need one header
-            lib_shared.install("ghostty-internal.so");
-            lib_static.install("ghostty-internal.a");
+            lib_shared.install("nubb-internal.so");
+            lib_static.install("nubb-internal.a");
         }
     }
 
@@ -141,7 +141,7 @@ pub fn build(b: *std.Build) !void {
         (config.emit_xcframework or config.emit_macos_app))
     {
         // Nubb xcframework
-        const xcframework = try buildpkg.GhosttyXCFramework.init(
+        const xcframework = try buildpkg.NubbXCFramework.init(
             b,
             &deps,
             config.xcframework_target,
@@ -155,7 +155,7 @@ pub fn build(b: *std.Build) !void {
         }
 
         // Nubb macOS app
-        const macos_app = try buildpkg.GhosttyXcodebuild.init(
+        const macos_app = try buildpkg.NubbXcodebuild.init(
             b,
             &config,
             .{
@@ -197,12 +197,12 @@ pub fn build(b: *std.Build) !void {
             config.target.result.os.tag.isDarwin() and
             (config.emit_xcframework or config.emit_macos_app))
         {
-            const xcframework_native = try buildpkg.GhosttyXCFramework.init(
+            const xcframework_native = try buildpkg.NubbXCFramework.init(
                 b,
                 &deps,
                 .native,
             );
-            const macos_app_native_only = try buildpkg.GhosttyXcodebuild.init(
+            const macos_app_native_only = try buildpkg.NubbXcodebuild.init(
                 b,
                 &config,
                 .{
@@ -233,11 +233,11 @@ pub fn build(b: *std.Build) !void {
         test_lib_vt_build_step.dependOn(&mod_vt_test.step);
     }
 
-    // Tests (skip when building libghostty-vt)
+    // Tests (skip when building libnubb-vt)
     if (!config.emit_lib_vt) {
         // Full unit tests
         const test_exe = b.addTest(.{
-            .name = "ghostty-test",
+            .name = "nubb-test",
             .filters = test_filters,
             .root_module = b.createModule(.{
                 .root_source_file = b.path("src/main.zig"),
@@ -264,7 +264,7 @@ pub fn build(b: *std.Build) !void {
         config.addPatchElf(test_exe, &test_run.step);
         test_step.dependOn(&test_run.step);
 
-        // Normal tests always test our libghostty modules
+        // Normal tests always test our libnubb modules
         //test_step.dependOn(test_lib_vt_step);
     }
 }

@@ -1,7 +1,7 @@
 # AFL++ Fuzzer for Libghostty
 
 This directory contains [AFL++](https://aflplus.plus/) fuzzing harnesses for
-libghostty-vt (Zig module).
+libnubb-vt (Zig module).
 
 ## Fuzz Targets
 

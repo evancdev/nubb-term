@@ -1,9 +1,9 @@
-const GhosttyDist = @This();
+const NubbDist = @This();
 
 const std = @import("std");
 const Config = @import("Config.zig");
 const SharedDeps = @import("SharedDeps.zig");
-const GhosttyFrameData = @import("GhosttyFrameData.zig");
+const NubbFrameData = @import("NubbFrameData.zig");
 
 /// The final source tarball.
 archive: std.Build.LazyPath,
@@ -17,9 +17,9 @@ archive_step: *std.Build.Step,
 /// The step to depend on for checking the dist
 check_step: *std.Build.Step,
 
-pub fn init(b: *std.Build, cfg: *const Config) !GhosttyDist {
+pub fn init(b: *std.Build, cfg: *const Config) !NubbDist {
     // The name prefix used for all paths in the archive.
-    const name = if (cfg.emit_lib_vt) "libghostty-vt" else "ghostty";
+    const name = if (cfg.emit_lib_vt) "libnubb-vt" else "ghostty";
 
     // Get the resources we're going to inject into the source tarball.
     // lib-vt doesn't need frame data.
@@ -27,7 +27,7 @@ pub fn init(b: *std.Build, cfg: *const Config) !GhosttyDist {
     var resources: std.ArrayListUnmanaged(Resource) = .empty;
     if (!cfg.emit_lib_vt) {
         {
-            const framedata = GhosttyFrameData.distResources(b);
+            const framedata = NubbFrameData.distResources(b);
             try resources.append(alloc, framedata.framedata);
         }
     }
@@ -88,7 +88,7 @@ pub fn init(b: *std.Build, cfg: *const Config) !GhosttyDist {
     git_archive.addArg("HEAD");
 
     // When building for lib-vt only, exclude large directories that
-    // are not needed to build libghostty-vt. This significantly reduces
+    // are not needed to build libnubb-vt. This significantly reduces
     // the size of the resulting archive.
     if (cfg.emit_lib_vt) {
         for (lib_vt_excludes) |exclude| {
@@ -158,7 +158,7 @@ pub fn init(b: *std.Build, cfg: *const Config) !GhosttyDist {
 
 /// Paths to exclude from the dist archive when building for lib-vt only.
 /// These are large files and directories that are not needed to build or
-/// test libghostty-vt, specified as git pathspec exclude patterns.
+/// test libnubb-vt, specified as git pathspec exclude patterns.
 const lib_vt_excludes = &[_][]const u8{
     // App and platform resources
     "images",

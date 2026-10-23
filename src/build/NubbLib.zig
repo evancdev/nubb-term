@@ -1,4 +1,4 @@
-const GhosttyLib = @This();
+const NubbLib = @This();
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -8,7 +8,7 @@ const Config = @import("Config.zig");
 const LibsystemOverrideStep = @import("LibsystemOverrideStep.zig");
 const SharedDeps = @import("SharedDeps.zig");
 const LipoStep = @import("LipoStep.zig");
-const GhosttyPkgConfig = @import("GhosttyPkgConfig.zig");
+const NubbPkgConfig = @import("NubbPkgConfig.zig");
 
 /// The step that generates the file.
 step: *std.Build.Step,
@@ -22,9 +22,9 @@ pkg_config_static: ?std.Build.LazyPath,
 pub fn initStatic(
     b: *std.Build,
     deps: *const SharedDeps,
-) !GhosttyLib {
+) !NubbLib {
     const lib = b.addLibrary(.{
-        .name = "ghostty",
+        .name = "nubb",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main_c.zig"),
             .target = deps.config.target,
@@ -51,7 +51,7 @@ pub fn initStatic(
 
     // Combine all archives into a single fat static library so
     // consumers only need to link one file.
-    const combined = CombineArchivesStep.create(b, deps.config.target, "ghostty-internal", lib_list.items);
+    const combined = CombineArchivesStep.create(b, deps.config.target, "nubb-internal", lib_list.items);
     combined.step.dependOn(&lib.step);
 
     // On Darwin, prefer libSystem's libc/libm over the bundled
@@ -61,7 +61,7 @@ pub fn initStatic(
         b,
         deps.config.target,
         combined.output,
-        "libghostty-internal.a",
+        "libnubb-internal.a",
     );
 
     return .{
@@ -78,9 +78,9 @@ pub fn initStatic(
 pub fn initShared(
     b: *std.Build,
     deps: *const SharedDeps,
-) !GhosttyLib {
+) !NubbLib {
     const lib = b.addLibrary(.{
-        .name = "ghostty",
+        .name = "nubb",
         .linkage = .dynamic,
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main_c.zig"),
@@ -106,7 +106,7 @@ pub fn initShared(
         dsymutil.addArgs(&.{"dsymutil"});
         dsymutil.addFileArg(lib.getEmittedBin());
         dsymutil.addArgs(&.{"-o"});
-        const output = dsymutil.addOutputFileArg("libghostty.dSYM");
+        const output = dsymutil.addOutputFileArg("libnubb.dSYM");
         break :dsymutil output;
     };
 
@@ -130,7 +130,7 @@ pub fn initShared(
 pub fn initMacOSUniversal(
     b: *std.Build,
     original_deps: *const SharedDeps,
-) !GhosttyLib {
+) !NubbLib {
     const aarch64 = try initStatic(b, &try original_deps.retarget(
         b,
         Config.genericMacOSTarget(b, .aarch64),
@@ -141,8 +141,8 @@ pub fn initMacOSUniversal(
     ));
 
     const universal = LipoStep.create(b, .{
-        .name = "ghostty",
-        .out_name = "ghostty-internal.a",
+        .name = "nubb",
+        .out_name = "nubb-internal.a",
         .input_a = aarch64.output,
         .input_b = x86_64.output,
     });
@@ -159,7 +159,7 @@ pub fn initMacOSUniversal(
     };
 }
 
-pub fn install(self: *const GhosttyLib, name: []const u8) void {
+pub fn install(self: *const NubbLib, name: []const u8) void {
     const b = self.step.owner;
     const step = b.getInstallStep();
     const lib_install = b.addInstallLibFile(self.output, name);
@@ -169,19 +169,19 @@ pub fn install(self: *const GhosttyLib, name: []const u8) void {
         step.dependOn(&b.addInstallFileWithDir(
             pc,
             .prefix,
-            "share/pkgconfig/ghostty-internal.pc",
+            "share/pkgconfig/nubb-internal.pc",
         ).step);
     }
     if (self.pkg_config_static) |pc| {
         step.dependOn(&b.addInstallFileWithDir(
             pc,
             .prefix,
-            "share/pkgconfig/ghostty-internal-static.pc",
+            "share/pkgconfig/nubb-internal-static.pc",
         ).step);
     }
 }
 
-pub fn installHeader(self: *const GhosttyLib) void {
+pub fn installHeader(self: *const NubbLib) void {
     const b = self.step.owner;
     const header_install = b.addInstallHeaderFile(
         b.path("include/ghostty.h"),
@@ -199,14 +199,14 @@ fn pkgConfigFiles(
     b: *std.Build,
     deps: *const SharedDeps,
 ) !PkgConfigFiles {
-    const pkg_config: GhosttyPkgConfig = try .init(b, .{
-        .name = "ghostty-internal",
-        .name_static = "ghostty-internal-static",
+    const pkg_config: NubbPkgConfig = try .init(b, .{
+        .name = "nubb-internal",
+        .name_static = "nubb-internal-static",
         .description = "Nubb internal library (not for external use)",
         .description_static = "Nubb internal library, static (not for external use)",
         .version = deps.config.version,
-        .libs = &.{"${libdir}/ghostty-internal.so"},
-        .libs_static = &.{"${libdir}/ghostty-internal.a"},
+        .libs = &.{"${libdir}/nubb-internal.so"},
+        .libs_static = &.{"${libdir}/nubb-internal.a"},
     });
 
     return .{

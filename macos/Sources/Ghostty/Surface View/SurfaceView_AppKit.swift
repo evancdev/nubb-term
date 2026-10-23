@@ -454,7 +454,7 @@ extension Ghostty {
                 suppressNextLeftMouseUp = false
             }
 
-            // Notify libghostty
+            // Notify libnubb
             ghostty_surface_set_focus(surface, focused)
 
             // Update our secure input state if we are a password input
@@ -810,7 +810,7 @@ extension Ghostty {
             guard let screen = window.screen else { return }
             guard let surface = self.surface else { return }
 
-            // When the window changes screens, we need to update libghostty with the screen
+            // When the window changes screens, we need to update libnubb with the screen
             // ID. If vsync is enabled, this will be used with the CVDisplayLink to ensure
             // the proper refresh rate is going.
             ghostty_surface_set_display_id(surface, screen.displayID ?? 0)
@@ -2137,7 +2137,7 @@ extension Ghostty.SurfaceView: NSTextInputClient {
         }
     }
 
-    /// Sync the preedit state based on the markedText value to libghostty
+    /// Sync the preedit state based on the markedText value to libnubb
     private func syncPreedit(clearIfNeeded: Bool = true) {
         guard let surface else { return }
 

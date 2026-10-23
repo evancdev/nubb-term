@@ -60,7 +60,7 @@ pub inline fn canReclaim(comptime mode: DecommitMode) bool {
             // Darwin provides the paired MADV_FREE_REUSABLE/FREE_REUSE
             // operations used below. Darwin requires libc independently of
             // this feature, so using its madvise entry point adds no new
-            // dependency to libghostty-vt.
+            // dependency to libnubb-vt.
             if (builtin.target.os.tag.isDarwin()) break :supported true;
 
             // Other targets have no retained-mapping reclamation contract in

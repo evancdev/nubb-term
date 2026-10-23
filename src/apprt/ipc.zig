@@ -57,7 +57,7 @@ pub const Action = union(enum) {
     // A GUIDE TO ADDING NEW ACTIONS:
     //
     // 1. Add the action to the `Key` enum. The order of the enum matters
-    //    because it maps directly to the libghostty C enum. For ABI
+    //    because it maps directly to the libnubb C enum. For ABI
     //    compatibility, new actions should be added to the end of the enum.
     //
     // 2. Add the action and optional value to the Action union.

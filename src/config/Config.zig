@@ -6132,7 +6132,7 @@ pub const Keybinds = struct {
                 );
 
                 // Important: this must be the LAST binding set so that the
-                // libghostty trigger API returns this one for the action,
+                // libnubb trigger API returns this one for the action,
                 // so that things like the macOS tab bar key equivalent label
                 // work properly.
                 try self.set.putFlags(

@@ -1,16 +1,16 @@
 //! Runs esctest (https://github.com/ThomasDickey/esctest2) against
-//! libghostty-vt, with no GUI in the way.
+//! libnubb-vt, with no GUI in the way.
 //!
 //! The build installs esctest in share/esctest beside the bin directory
 //! holding this executable. It runs under a pty. Everything it writes is
-//! fed through a libghostty-vt terminal, and the terminal's replies
+//! fed through a libnubb-vt terminal, and the terminal's replies
 //! (DECRQCRA checksums, device attributes, cursor position and size
 //! reports, and so on) are written back to it. When esctest exits, its
 //! log is copied to stdout.
 const std = @import("std");
-const ghostty_vt = @import("ghostty-vt");
+const nubb_vt = @import("nubb-vt");
 
-const Handler = @FieldType(ghostty_vt.TerminalStream, "handler");
+const Handler = @FieldType(nubb_vt.TerminalStream, "handler");
 
 /// The size esctest resets the terminal to before every test, and so the
 /// size it starts at.
@@ -19,7 +19,7 @@ const cols = 80;
 
 /// The xterm checksum calculation esctest expects with --xterm-checksum
 /// 334 and later, which is xterm's `checksumExtension: 23`.
-const xt_checksum: ghostty_vt.xt_checksum.Flags = .{
+const xt_checksum: nubb_vt.xt_checksum.Flags = .{
     .positive = true,
     .no_attributes = true,
     .no_trim = true,
@@ -28,7 +28,7 @@ const xt_checksum: ghostty_vt.xt_checksum.Flags = .{
 
 /// Arguments always passed to esctest, before the user's own so that
 /// theirs win. esctest only knows how to check a terminal that answers
-/// like some real one, and xterm is the closest to libghostty-vt.
+/// like some real one, and xterm is the closest to libnubb-vt.
 const esctest_args = [_][:0]const u8{
     "--expected-terminal=xterm",
     "--xterm-checksum=411",
@@ -42,14 +42,14 @@ const usage =
     \\Arguments are passed to esctest, for example --include=DECSTR.
     \\The log goes to stdout.
     \\
-    \\--verbose shows libghostty-vt's own log on stderr, which names each
+    \\--verbose shows libnubb-vt's own log on stderr, which names each
     \\sequence it ignores.
     \\
 ;
 
 pub const std_options: std.Options = .{ .logFn = logFn };
 
-/// Whether to show libghostty-vt's log. Without --verbose there is a
+/// Whether to show libnubb-vt's log. Without --verbose there is a
 /// warning for every sequence esctest sends that isn't implemented,
 /// which buries everything else.
 var verbose = false;
@@ -181,7 +181,7 @@ fn onPath(alloc: std.mem.Allocator, path: []const u8, name: []const u8) !bool {
 
 /// Feed esctest's output through the terminal until it exits.
 fn run(init: std.process.Init) !void {
-    var t: ghostty_vt.Terminal = try .init(init.io, init.gpa, .{
+    var t: nubb_vt.Terminal = try .init(init.io, init.gpa, .{
         .cols = cols,
         .rows = rows,
         .default_xt_checksum = xt_checksum,
@@ -229,7 +229,7 @@ fn writePty(_: *Handler, data: []const u8) void {
     }
 }
 
-fn size(h: *Handler) ?ghostty_vt.size_report.Size {
+fn size(h: *Handler) ?nubb_vt.size_report.Size {
     return .{
         .rows = h.terminal.rows,
         .columns = h.terminal.cols,
@@ -265,7 +265,7 @@ else
     std.c.T.IOCSWINSZ;
 
 /// Answer as a VT520, the terminal esctest's highest VT level tests.
-fn deviceAttributes(_: *Handler) ghostty_vt.device_attributes.Attributes {
+fn deviceAttributes(_: *Handler) nubb_vt.device_attributes.Attributes {
     return .{
         .primary = .{
             .conformance_level = .level_5,

@@ -2,14 +2,14 @@
 //!
 //! The formatter is the hot path for clipboard copy (plain/VT/HTML),
 //! `write_screen_file`, `selectionString`, terminal search window
-//! encoding, and the libghostty-vt formatter C API. This benchmark
+//! encoding, and the libnubb-vt formatter C API. This benchmark
 //! measures formatting terminal contents that were built during setup
 //! (outside the timed region) from a pre-generated VT stream.
 //!
 //! ## Input
 //!
 //! `--data` names a pre-generated VT byte stream (for example from
-//! `ghostty-gen styled`). The stream is fed to a terminal of the
+//! `nubb-gen styled`). The stream is fed to a terminal of the
 //! requested dimensions with unlimited scrollback during setup. The
 //! resulting screen contents (scrollback included) are what each step
 //! formats.
@@ -22,7 +22,7 @@
 //! * `terminal` formats the whole terminal with a TerminalFormatter and
 //!   every extra (palette, modes, scrolling region, tabstops, cursor,
 //!   style and so on), as `ghostty_formatter_terminal_new` in the
-//!   libghostty-vt C API does for a snapshot of a terminal. Extras only
+//!   libnubb-vt C API does for a snapshot of a terminal. Extras only
 //!   apply to `--emit=vt`.
 //!
 //! ## Modes
@@ -42,17 +42,17 @@
 //!
 //! Generate a deterministic corpus, then measure:
 //!
-//!     ghostty-gen styled --seed=42 | head -c 640000 > /tmp/plain.vt
+//!     nubb-gen styled --seed=42 | head -c 640000 > /tmp/plain.vt
 //!     hyperfine --warmup 3 \
-//!       'ghostty-bench +terminal-formatter --mode=noop --data=/tmp/plain.vt' \
-//!       'ghostty-bench +terminal-formatter --emit=plain --loops=50 --data=/tmp/plain.vt' \
-//!       'ghostty-bench +terminal-formatter --emit=vt --loops=50 --data=/tmp/plain.vt'
+//!       'nubb-bench +terminal-formatter --mode=noop --data=/tmp/plain.vt' \
+//!       'nubb-bench +terminal-formatter --emit=plain --loops=50 --data=/tmp/plain.vt' \
+//!       'nubb-bench +terminal-formatter --emit=vt --loops=50 --data=/tmp/plain.vt'
 //!
 //! Measure the terminal formatter with every extra, and check that its
 //! output reconstructs the terminal state as well as the contents:
 //!
-//!     ghostty-bench +terminal-formatter --formatter=terminal --loops=50 --data=/tmp/plain.vt
-//!     ghostty-bench +terminal-formatter --formatter=terminal --mode=roundtrip --data=/tmp/plain.vt
+//!     nubb-bench +terminal-formatter --formatter=terminal --loops=50 --data=/tmp/plain.vt
+//!     nubb-bench +terminal-formatter --formatter=terminal --mode=roundtrip --data=/tmp/plain.vt
 const TerminalFormatter = @This();
 
 const std = @import("std");
@@ -279,7 +279,7 @@ const AnyFormatter = union(Formatter) {
 /// Build the formatter matching our options for the terminal t. The
 /// screen formatter mirrors how Surface clipboard copy and
 /// write_screen_file construct formatters; the terminal formatter mirrors
-/// the libghostty-vt C API's ghostty_formatter_terminal_new.
+/// the libnubb-vt C API's ghostty_formatter_terminal_new.
 fn formatter(
     self: *TerminalFormatter,
     t: *const Terminal,

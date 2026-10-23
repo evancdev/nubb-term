@@ -1,6 +1,6 @@
-//! GhosttyWebdata generates all the Nubb website data that is
+//! NubbWebdata generates all the Nubb website data that is
 //! merged with the website for things like config references.
-const GhosttyWebdata = @This();
+const NubbWebdata = @This();
 
 const std = @import("std");
 const SharedDeps = @import("SharedDeps.zig");
@@ -10,7 +10,7 @@ steps: []*std.Build.Step,
 pub fn init(
     b: *std.Build,
     deps: *const SharedDeps,
-) !GhosttyWebdata {
+) !NubbWebdata {
     var steps: std.ArrayList(*std.Build.Step) = .empty;
     errdefer steps.deinit(b.allocator);
 
@@ -113,7 +113,7 @@ pub fn init(
     return .{ .steps = steps.items };
 }
 
-pub fn install(self: *const GhosttyWebdata) void {
+pub fn install(self: *const NubbWebdata) void {
     const b = self.steps[0].owner;
     for (self.steps) |step| b.getInstallStep().dependOn(step);
 }

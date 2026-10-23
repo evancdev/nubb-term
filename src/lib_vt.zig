@@ -27,7 +27,7 @@ const terminal = @import("terminal/main.zig");
 /// provide or override default behaviors. These must be set at startup
 /// before any terminal functionality is used.
 ///
-/// This lets libghostty-vt have no runtime dependencies on external
+/// This lets libnubb-vt have no runtime dependencies on external
 /// libraries, while still allowing rich functionality that may require
 /// external libraries (e.g. image decoding or regular expresssions).
 ///
@@ -106,7 +106,7 @@ pub const EraseLine = terminal.EraseLine;
 pub const TabClear = terminal.TabClear;
 pub const Attribute = terminal.Attribute;
 
-/// Terminal-specific input encoding is also part of libghostty-vt.
+/// Terminal-specific input encoding is also part of libnubb-vt.
 pub const input = struct {
     // We have to be careful to only import targeted files within
     // the input package because the full package brings in too many
@@ -211,7 +211,7 @@ pub const std_options_debug_io: std.Io = if (debug_machinery)
 else
     @compileError(
         \\The std debug Io machinery (std.debug.print, std.debug.lockStderr,
-        \\std.log's default handler, ...) is disabled in libghostty-vt release
+        \\std.log's default handler, ...) is disabled in libnubb-vt release
         \\builds because it costs ~110KB of binary size. Use std.log (routed
         \\through our logFn), os/stderr.zig for raw diagnostic writes, or
         \\gate the code on debug builds.

@@ -178,7 +178,7 @@ class TerminalWindowRestoration: NSObject, NSWindowRestoration {
         }
 
         // The window creation has to go through our terminalManager so that it
-        // can be found for events from libghostty. This uses the low-level
+        // can be found for events from libnubb. This uses the low-level
         // createWindow so that AppKit can place the window wherever it should
         // be.
         let c = TerminalController.init(

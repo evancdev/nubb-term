@@ -253,7 +253,7 @@ pub const Action = union(Key) {
     const c_union = lib.TaggedUnion(
         lib.target,
         @This(),
-        // TODO: Before shipping an ABI-compatible libghostty, verify this.
+        // TODO: Before shipping an ABI-compatible libnubb, verify this.
         // This was just arbitrarily chosen for now.
         .{ .padding = [16]u64 },
     );

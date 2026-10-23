@@ -63,13 +63,13 @@ extension Ghostty {
         }
     }
 
-    /// A one-shot clipboard confirmation originating from libghostty.
+    /// A one-shot clipboard confirmation originating from libnubb.
     ///
     /// This object owns the callback state until it is completed or cancelled.
     /// Dropping an unresolved request schedules its cancellation so raw
-    /// libghostty state cannot leak when no UI is available to handle the
+    /// libnubb state cannot leak when no UI is available to handle the
     /// notification. Cancellation is deferred because notification delivery
-    /// occurs from inside the libghostty callback that created the request.
+    /// occurs from inside the libnubb callback that created the request.
     final class ClipboardConfirmationRequest {
         private(set) weak var surface: SurfaceView?
 

@@ -34,7 +34,7 @@ extension Ghostty {
                 return
             }
             // deinit is not guaranteed to happen on the main actor and our API
-            // calls into libghostty must happen there so we capture the surface
+            // calls into libnubb must happen there so we capture the surface
             // value so we don't capture `self` and then we detach it in a task.
             // We can't wait for the task to succeed so this will happen sometime
             // but that's okay.

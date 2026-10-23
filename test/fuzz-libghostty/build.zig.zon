@@ -4,7 +4,7 @@
     .fingerprint = 0x2cb2c498237c5d43,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
-        .ghostty = .{ .path = "../../" },
+        .nubb = .{ .path = "../../" },
         .afl = .{ .path = "../../pkg/afl++" },
     },
     .paths = .{

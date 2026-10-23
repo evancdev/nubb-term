@@ -342,7 +342,7 @@ class BaseTerminalController: NSWindowController,
         syncSurfaceTreeOcclusionState()
     }
 
-    /// Update all surfaces with the focus state. This ensures that libghostty has an accurate view about
+    /// Update all surfaces with the focus state. This ensures that libnubb has an accurate view about
     /// what surface is focused. This must be called whenever a surface OR window changes focus.
     func syncFocusToSurfaceTree() {
         var newlyFocused: Ghostty.SurfaceView?
@@ -1527,7 +1527,7 @@ extension BaseTerminalController {
             // Cancelling the old MergeMany releases every subscription for
             // surfaces removed from the current tree.
             .switchToLatest()
-            // Published emits synchronously from the libghostty callback. Hop
+            // Published emits synchronously from the libnubb callback. Hop
             // to the main queue both for AppKit and so completing a request
             // cannot invalidate callback state while that callback is active.
             .receive(on: DispatchQueue.main)

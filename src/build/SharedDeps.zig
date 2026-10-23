@@ -7,8 +7,8 @@ const Config = @import("Config.zig");
 const HelpStrings = @import("HelpStrings.zig");
 const MetallibStep = @import("MetallibStep.zig");
 const UnicodeTables = @import("UnicodeTables.zig");
-const GhosttyFrameData = @import("GhosttyFrameData.zig");
-const DistResource = @import("GhosttyDist.zig").Resource;
+const NubbFrameData = @import("NubbFrameData.zig");
+const DistResource = @import("NubbDist.zig").Resource;
 const translate_c = @import("translate_c");
 
 config: *const Config,
@@ -17,7 +17,7 @@ options: *std.Build.Step.Options,
 help_strings: HelpStrings,
 metallib: ?*MetallibStep,
 unicode_tables: UnicodeTables,
-framedata: GhosttyFrameData,
+framedata: NubbFrameData,
 uucode_tables: std.Build.LazyPath,
 
 /// Singleton uucode module, instantiated once in `init` and reused
@@ -136,7 +136,7 @@ fn initTarget(
 ) !void {
     // Update our metallib
     self.metallib = .create(b, .{
-        .name = "Ghostty",
+        .name = "Nubb",
         .target = target,
         .sources = &.{b.path("src/renderer/shaders/shaders.metal")},
     });
@@ -185,7 +185,7 @@ pub fn add(
     step.root_module.addOptions("build_options", self.options);
 
     // Every exe needs the terminal options
-    self.config.terminalOptions(.ghostty, optimize).add(b, step.root_module);
+    self.config.terminalOptions(.nubb, optimize).add(b, step.root_module);
 
     // Every exe needs the uucode module
     step.root_module.addImport("uucode", self.uucode_mod);
@@ -378,7 +378,7 @@ pub fn add(
 
         const metallib = self.metallib.?;
         metallib.output.addStepDependencies(&step.step);
-        step.root_module.addAnonymousImport("ghostty_metallib", .{
+        step.root_module.addAnonymousImport("nubb_metallib", .{
             .root_source_file = metallib.output,
         });
     }

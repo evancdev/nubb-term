@@ -110,7 +110,7 @@ pub const App = struct {
         unshifted_codepoint: u32,
         composing: bool,
 
-        /// Convert a libghostty key event into a core key event.
+        /// Convert a libnubb key event into a core key event.
         fn core(self: KeyEvent) ?input.KeyEvent {
             const text: []const u8 = if (self.text) |v| v else "";
             const unshifted_codepoint: u21 = std.math.cast(
@@ -365,12 +365,12 @@ pub const App = struct {
     }
 };
 
-/// Platform-specific configuration for libghostty.
+/// Platform-specific configuration for libnubb.
 pub const Platform = union(PlatformTag) {
     macos: MacOS,
     ios: IOS,
 
-    // If our build target for libghostty is not darwin then we do
+    // If our build target for libnubb is not darwin then we do
     // not include macos support at all.
     pub const MacOS = if (builtin.target.os.tag.isDarwin()) struct {
         /// The view to render the surface on.

@@ -571,7 +571,7 @@ extension Ghostty {
     }
 
     /// The configuration for a surface. For any configuration not set, defaults will be chosen from
-    /// libghostty, usually from the Nubb configuration.
+    /// libnubb, usually from the Nubb configuration.
     struct SurfaceConfiguration {
         /// Explicit font size to use in points
         var fontSize: Float32?

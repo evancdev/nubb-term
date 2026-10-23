@@ -27,7 +27,7 @@ been removed. Do not add them back.
   same commands as above plus `typos`, `shellcheck`, and `pinact run --check`
   (every `uses:` pinned to a commit SHA). There is no Nix in CI.
 
-## ghostty-vt (terminal core as a Zig module)
+## nubb-vt (terminal core as a Zig module)
 
 - Test: `zig build test-lib-vt -Dtest-filter=<filter>`
   - Prefer this when the change is in `src/terminal/`, it builds faster.

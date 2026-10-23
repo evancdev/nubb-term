@@ -15,9 +15,9 @@ const freeTmpDir = @import("os/file.zig").freeTmpDir;
 // This file should only be imported for certain platforms.
 comptime {
     switch (@import("terminal_options").artifact) {
-        .ghostty => {},
-        // This file is not allowed to be included in libghostty-vt
-        .lib => @compileError("global state cannot be used in libghostty-vt"),
+        .nubb => {},
+        // This file is not allowed to be included in libnubb-vt
+        .lib => @compileError("global state cannot be used in libnubb-vt"),
     }
 }
 
@@ -34,8 +34,8 @@ var state: ?GlobalState = null;
 pub const InitOpts = union(enum) {
     main: std.process.Init.Minimal,
 
-    /// Same as `main` but for auxiliary tool binaries (e.g. ghostty-bench
-    /// and ghostty-gen) that have their own CLI action namespace. This
+    /// Same as `main` but for auxiliary tool binaries (e.g. nubb-bench
+    /// and nubb-gen) that have their own CLI action namespace. This
     /// skips detection of ghostty app CLI actions, since tool actions
     /// (e.g. `+terminal-stream`) are not valid app actions and would
     /// otherwise cause init to fail with InvalidAction.
@@ -112,11 +112,11 @@ pub fn init(opts: InitOpts) !void {
     self.tmp_dir_path = try allocTmpDir(self.alloc, self.environ);
 
     // We first try to parse any action that we may be executing.
-    // Tool binaries (ghostty-bench, ghostty-gen) have their own action
+    // Tool binaries (nubb-bench, nubb-gen) have their own action
     // namespace and detect their own actions, so we skip detection here.
     self.action = switch (opts) {
         .main, .c => try cli.action.detectArgs(
-            cli.ghostty.Action,
+            cli.nubb.Action,
             self.alloc,
             self.args,
         ),
@@ -315,7 +315,7 @@ pub fn logging() GlobalState.Logging {
 /// Returns the global state action.
 ///
 /// Asserts that the global state is initialized.
-pub fn action() ?cli.ghostty.Action {
+pub fn action() ?cli.nubb.Action {
     return state.?.action;
 }
 
@@ -331,7 +331,7 @@ pub const GlobalState = struct {
     environ: std.process.Environ,
     args: std.process.Args,
     tmp_dir_path: ?[]const u8,
-    action: ?cli.ghostty.Action,
+    action: ?cli.nubb.Action,
     logging: Logging,
     rlimits: ResourceLimits = .{},
 

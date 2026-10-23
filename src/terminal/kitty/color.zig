@@ -55,7 +55,7 @@ pub const Kind = union(enum) {
     /// Returns true when a terminal has built-in state for this key.
     ///
     /// Unsupported special colors may still be valid Kitty protocol keys, but
-    /// libghostty-vt cannot report them because Terminal does not store them.
+    /// libnubb-vt cannot report them because Terminal does not store them.
     pub fn hasTerminalQueryColor(self: Kind) bool {
         return switch (self) {
             .palette => true,

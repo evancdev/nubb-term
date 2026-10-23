@@ -1,5 +1,5 @@
-//! GhosttyBench generates all the Nubb benchmark helper binaries.
-const GhosttyBench = @This();
+//! NubbBench generates all the Nubb benchmark helper binaries.
+const NubbBench = @This();
 
 const std = @import("std");
 const SharedDeps = @import("SharedDeps.zig");
@@ -9,14 +9,14 @@ steps: []*std.Build.Step.Compile,
 pub fn init(
     b: *std.Build,
     deps: *const SharedDeps,
-) !GhosttyBench {
+) !NubbBench {
     var steps: std.ArrayList(*std.Build.Step.Compile) = .empty;
     errdefer steps.deinit(b.allocator);
 
     // Our synthetic data generator
     {
         const exe = b.addExecutable(.{
-            .name = "ghostty-gen",
+            .name = "nubb-gen",
             .root_module = b.createModule(.{
                 .root_source_file = b.path("src/main_gen.zig"),
                 .target = deps.config.target,
@@ -33,7 +33,7 @@ pub fn init(
     // Our benchmarking application.
     {
         const exe = b.addExecutable(.{
-            .name = "ghostty-bench",
+            .name = "nubb-bench",
             .root_module = b.createModule(.{
                 .root_source_file = b.path("src/main_bench.zig"),
                 .target = deps.config.target,
@@ -49,7 +49,7 @@ pub fn init(
     return .{ .steps = steps.items };
 }
 
-pub fn install(self: *const GhosttyBench) void {
+pub fn install(self: *const NubbBench) void {
     const b = self.steps[0].step.owner;
     for (self.steps) |step| b.installArtifact(step);
 }

@@ -1802,6 +1802,8 @@ pub const Handler = struct {
     }
 
     fn reportXtversion(self: *Handler) void {
+        // The "libghostty" fallback is an XTVERSION reply that applications
+        // match on, like the "ghostty" reply in termio. Do not rename it.
         const version = if (self.effects.xtversion) |func| func(self) else "";
         var buf: [288]u8 = undefined;
         const resp = std.mem.printSentinel(

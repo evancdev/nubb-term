@@ -2,7 +2,7 @@
 const std = @import("std");
 
 const Config = @import("../config/Config.zig");
-const Action = @import("../cli.zig").ghostty.Action;
+const Action = @import("../cli.zig").nubb.Action;
 const help_strings = @import("help_strings");
 
 /// A fish completions configuration that contains all the available commands

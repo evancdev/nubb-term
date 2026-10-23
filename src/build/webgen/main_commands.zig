@@ -1,5 +1,5 @@
 const std = @import("std");
-const Action = @import("../../cli/ghostty.zig").Action;
+const Action = @import("../../cli/nubb.zig").Action;
 const help_strings = @import("help_strings");
 
 pub fn main(init: std.process.Init) !void {

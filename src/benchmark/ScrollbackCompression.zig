@@ -53,7 +53,7 @@
 //!
 //! Inspect the memory reduction for a saved VT corpus:
 //!
-//!     ghostty-bench +scrollback-compression --mode=report \
+//!     nubb-bench +scrollback-compression --mode=report \
 //!       --data=/tmp/scrollback.vt --terminal-cols=120 --terminal-rows=80
 //!
 //! Compare PageList compression and restoration cost. Setup still contributes
@@ -61,10 +61,10 @@
 //! `noop` with identical arguments:
 //!
 //!     hyperfine --warmup 3 \
-//!       'ghostty-bench +scrollback-compression --mode=noop --data=/tmp/scrollback.vt' \
-//!       'ghostty-bench +scrollback-compression --mode=compress --data=/tmp/scrollback.vt' \
-//!       'ghostty-bench +scrollback-compression --mode=incremental --data=/tmp/scrollback.vt' \
-//!       'ghostty-bench +scrollback-compression --mode=restore --data=/tmp/scrollback.vt'
+//!       'nubb-bench +scrollback-compression --mode=noop --data=/tmp/scrollback.vt' \
+//!       'nubb-bench +scrollback-compression --mode=compress --data=/tmp/scrollback.vt' \
+//!       'nubb-bench +scrollback-compression --mode=incremental --data=/tmp/scrollback.vt' \
+//!       'nubb-bench +scrollback-compression --mode=restore --data=/tmp/scrollback.vt'
 const ScrollbackCompression = @This();
 
 const std = @import("std");

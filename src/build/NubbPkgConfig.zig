@@ -1,5 +1,5 @@
 //! Generate pkg-config files.
-const GhosttyPkgConfig = @This();
+const NubbPkgConfig = @This();
 
 const std = @import("std");
 const Build = std.Build;
@@ -23,7 +23,7 @@ pub const Options = struct {
     reqs_private: []const []const u8 = &.{},
 };
 
-pub fn init(b: *Build, opts: Options) !GhosttyPkgConfig {
+pub fn init(b: *Build, opts: Options) !NubbPkgConfig {
     const generator = b.addExecutable(.{
         .name = "pkg-config-generator",
         .root_module = b.createModule(.{
@@ -55,7 +55,7 @@ pub fn init(b: *Build, opts: Options) !GhosttyPkgConfig {
     };
 }
 
-pub fn getSharedFile(self: *const GhosttyPkgConfig) LazyPath {
+pub fn getSharedFile(self: *const NubbPkgConfig) LazyPath {
     const run = self.owner.addRunArtifact(self.generator);
     run.addDirectoryArg2(self.owner.graph.path(.install_prefix, ""), .{
         .make_absolute = true,
@@ -63,7 +63,7 @@ pub fn getSharedFile(self: *const GhosttyPkgConfig) LazyPath {
     return run.captureStdOut(.{});
 }
 
-pub fn getStaticFile(self: *const GhosttyPkgConfig) LazyPath {
+pub fn getStaticFile(self: *const NubbPkgConfig) LazyPath {
     const run = self.owner.addRunArtifact(self.generator);
     run.setEnvironmentVariable("IS_STATIC", "1");
     run.addDirectoryArg2(self.owner.graph.path(.install_prefix, ""), .{

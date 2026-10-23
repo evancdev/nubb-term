@@ -43,7 +43,7 @@ When making tradeoffs, in order:
 
 ## Benchmarking
 
-- Use `ghostty-bench +page-compression` (see `src/benchmark/AGENTS.md`
+- Use `nubb-bench +page-compression` (see `src/benchmark/AGENTS.md`
   for the general workflow). Modes: `compress`, `decompress`, `store`,
   and `report` for ratio.
 - Build: `zig build -Demit-bench -Doptimize=ReleaseFast -Demit-macos-app=false`
@@ -52,7 +52,7 @@ When making tradeoffs, in order:
   Supplement with a text corpus and random bytes for worst cases, but
   weigh page corpora highest per the priorities above. Keep corpora
   outside the repository and reuse identical files across comparisons.
-- `ghostty-bench +scrollback-compression` measures the PageList
+- `nubb-bench +scrollback-compression` measures the PageList
   transitions around the codec rather than the codec itself.
 - For fast iteration, keep codecs dependent only on `std` so a standalone
   harness can build them directly with `zig build-exe -O ReleaseFast` and

@@ -4,9 +4,9 @@ const std = @import("std");
 pub const Options = struct {
     pub const Artifact = enum {
         /// Nubb application
-        ghostty,
+        nubb,
 
-        /// libghostty-vt, Zig module
+        /// libnubb-vt, Zig module
         lib,
     };
 

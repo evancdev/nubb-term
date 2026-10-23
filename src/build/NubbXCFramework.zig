@@ -1,9 +1,9 @@
-const GhosttyXCFramework = @This();
+const NubbXCFramework = @This();
 
 const std = @import("std");
 const Config = @import("Config.zig");
 const SharedDeps = @import("SharedDeps.zig");
-const GhosttyLib = @import("GhosttyLib.zig");
+const NubbLib = @import("NubbLib.zig");
 const XCFrameworkStep = @import("XCFrameworkStep.zig");
 const Target = @import("xcframework.zig").Target;
 
@@ -14,12 +14,12 @@ pub fn init(
     b: *std.Build,
     deps: *const SharedDeps,
     target: Target,
-) !GhosttyXCFramework {
+) !NubbXCFramework {
     // Universal macOS build
-    const macos_universal = try GhosttyLib.initMacOSUniversal(b, deps);
+    const macos_universal = try NubbLib.initMacOSUniversal(b, deps);
 
     // Native macOS build
-    const macos_native = try GhosttyLib.initStatic(b, &try deps.retarget(
+    const macos_native = try NubbLib.initStatic(b, &try deps.retarget(
         b,
         Config.genericMacOSTarget(b, null),
     ));
@@ -59,13 +59,13 @@ pub fn init(
     };
 }
 
-pub fn install(self: *const GhosttyXCFramework) void {
+pub fn install(self: *const NubbXCFramework) void {
     const b = self.xcframework.step.owner;
     self.addStepDependencies(b.getInstallStep());
 }
 
 pub fn addStepDependencies(
-    self: *const GhosttyXCFramework,
+    self: *const NubbXCFramework,
     other_step: *std.Build.Step,
 ) void {
     other_step.dependOn(self.xcframework.step);

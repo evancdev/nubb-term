@@ -73,7 +73,7 @@ pub const LoadingImage = struct {
     ///
     /// This can be used to restrict the type of images and other
     /// parameters for resource or security reasons. Note that depending
-    /// on how libghostty is compiled, some of these may be fully unsupported
+    /// on how libnubb is compiled, some of these may be fully unsupported
     /// and ignored (e.g. "file" on wasm32-freestanding).
     pub const Limits = struct {
         file: bool,

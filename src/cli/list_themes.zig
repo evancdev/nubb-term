@@ -1,6 +1,6 @@
 const std = @import("std");
 const args = @import("args.zig");
-const Action = @import("ghostty.zig").Action;
+const Action = @import("nubb.zig").Action;
 const Config = @import("../config/Config.zig");
 const configpkg = @import("../config.zig");
 const themepkg = @import("../config/theme.zig");

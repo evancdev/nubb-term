@@ -50,7 +50,7 @@ pub const Options = struct {
     /// callback.
     @"osc-unknown-max-bytes": usize = 0,
 
-    /// Pre-generated data from ghostty-gen. If this is "-" then
+    /// Pre-generated data from nubb-gen. If this is "-" then
     /// we will read stdin. If this is unset, then we will
     /// do nothing (benchmark is a noop). It'd be more unixy to
     /// use stdin by default but I find that a hanging CLI command

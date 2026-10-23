@@ -1,5 +1,5 @@
 //! The main entrypoint for the `ghostty` application. This also serves
-//! as the process initialization code for the `libghostty` library.
+//! as the process initialization code for the `libnubb` library.
 
 const std = @import("std");
 const builtin = @import("builtin");

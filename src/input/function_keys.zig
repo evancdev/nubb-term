@@ -316,8 +316,8 @@ fn pcStyle(comptime fmt: []const u8) []Entry {
 test "keys" {
     const testing = std.testing;
     switch (@import("terminal_options").artifact) {
-        .ghostty => {},
-        // Don't want to bring in termio into libghostty-vt
+        .nubb => {},
+        // Don't want to bring in termio into libnubb-vt
         .lib => return error.SkipZigTest,
     }
 

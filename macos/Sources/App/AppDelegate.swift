@@ -280,7 +280,7 @@ class AppDelegate: NSObject,
         ])
         center.delegate = self
 
-        // Observe our appearance so we can report the correct value to libghostty.
+        // Observe our appearance so we can report the correct value to libnubb.
         self.appearanceObserver = NSApplication.shared.observe(
             \.effectiveAppearance,
              options: [.new, .initial]

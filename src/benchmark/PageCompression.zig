@@ -50,13 +50,13 @@
 //!
 //! Inspect the compression ratio of a page corpus:
 //!
-//!     ghostty-bench +page-compression --mode=report --data=/tmp/pages.raw
+//!     nubb-bench +page-compression --mode=report --data=/tmp/pages.raw
 //!
 //! Measure the cost of exact encoded storage relative to the codec alone:
 //!
 //!     hyperfine --warmup 3 \
-//!       'ghostty-bench +page-compression --mode=compress --loops=100 --data=/tmp/pages.raw' \
-//!       'ghostty-bench +page-compression --mode=store --loops=100 --data=/tmp/pages.raw'
+//!       'nubb-bench +page-compression --mode=compress --loops=100 --data=/tmp/pages.raw' \
+//!       'nubb-bench +page-compression --mode=store --loops=100 --data=/tmp/pages.raw'
 const PageCompression = @This();
 
 const std = @import("std");

@@ -28,7 +28,7 @@ font_backend: FontBackend = .coretext,
 simd: bool = true,
 
 /// Nubb exe properties
-exe_entrypoint: ExeEntrypoint = .ghostty,
+exe_entrypoint: ExeEntrypoint = .nubb,
 version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
 lib_version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
 
@@ -52,7 +52,7 @@ emit_xcframework: bool = false,
 emit_webdata: bool = false,
 emit_unicode_table_gen: bool = false,
 
-/// Feature gates for libghostty-vt artifacts (-Dvt-features). The full
+/// Feature gates for libnubb-vt artifacts (-Dvt-features). The full
 /// Nubb application ignores this and always enables everything.
 vt_features: TerminalBuildOptions.Features = .{},
 
@@ -68,13 +68,13 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
     // `-Doptimize` and `-Dtarget`.
     const optimize = b.standardOptimizeOption(.{});
 
-    // Default dependency builds to libghostty-vt-only mode. Consumers can
+    // Default dependency builds to libnubb-vt-only mode. Consumers can
     // still explicitly disable this to request the full Nubb build.
     const is_dep = b.dep_prefix.len > 0;
     const emit_lib_vt = b.option(
         bool,
         "emit-lib-vt",
-        "Set defaults for a libghostty-vt-only build (disables xcframework, macOS app, and docs).",
+        "Set defaults for a libnubb-vt-only build (disables xcframework, macOS app, and docs).",
     ) orelse is_dep;
     const target = target: {
         var result = b.standardTargetOptions(.{});
@@ -92,7 +92,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         if (result.result.os.tag == .ios and !emit_lib_vt) {
             std.log.err(
                 "iOS is not a supported target for the full Nubb build; " ++
-                    "only libghostty-vt supports iOS (-Demit-lib-vt)",
+                    "only libnubb-vt supports iOS (-Demit-lib-vt)",
                 .{},
             );
             return error.UnsupportedTarget;
@@ -231,12 +231,12 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         };
     };
 
-    // libghostty-vt properties
+    // libnubb-vt properties
 
     const lib_version_string = b.option(
         []const u8,
         "lib-version-string",
-        "A specific version string to use for the build of libghostty-vt. " ++
+        "A specific version string to use for the build of libnubb-vt. " ++
             "If not specified, git will be used. This must be a semantic version.",
     );
 
@@ -323,7 +323,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         const list = b.option(
             []const u8,
             "vt-features",
-            "Comma-separated libghostty-vt feature modifications applied " ++
+            "Comma-separated libnubb-vt feature modifications applied " ++
                 "to the default all-enabled set, -Dcpu style: `+feature` " ++
                 "or `feature` enables, `-feature` disables, and `all` " ++
                 "means every feature (e.g. `-all,+render-state` for a " ++
@@ -588,11 +588,11 @@ pub fn terminalOptions(
         // The application requires every feature; only lib artifacts
         // may trim them.
         .features = switch (artifact) {
-            .ghostty => .{},
+            .nubb => .{},
             .lib => self.vt_features,
         },
         .version = switch (artifact) {
-            .ghostty => self.version,
+            .nubb => self.version,
             .lib => self.lib_version,
         },
         .slow_runtime_safety = switch (optimize) {
@@ -705,7 +705,7 @@ pub fn genericMacOSTarget(
 ///
 /// Therefore, main.zig uses this to switch between the different entrypoints.
 pub const ExeEntrypoint = enum {
-    ghostty,
+    nubb,
     helpgen,
     mdgen_ghostty_1,
     mdgen_ghostty_5,

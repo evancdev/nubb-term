@@ -13,7 +13,7 @@
 //! A terminal keeps one record per id, and each report replaces its
 //! record completely. This parser only reads and validates one report at
 //! a time. Keeping records is up to the code that handles the command.
-//! In libghostty-vt, that is the `program_status` effect of
+//! In libnubb-vt, that is the `program_status` effect of
 //! `stream_terminal.Handler`.
 //!
 //! A program can check whether the terminal supports the protocol by

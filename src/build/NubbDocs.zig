@@ -1,6 +1,6 @@
-//! GhosttyDocs generates all the on-disk documentation that Nubb is
+//! NubbDocs generates all the on-disk documentation that Nubb is
 //! installed with (man pages, html, markdown, etc.)
-const GhosttyDocs = @This();
+const NubbDocs = @This();
 
 const std = @import("std");
 const Config = @import("Config.zig");
@@ -11,7 +11,7 @@ steps: []*std.Build.Step,
 pub fn init(
     b: *std.Build,
     deps: *const SharedDeps,
-) !GhosttyDocs {
+) !NubbDocs {
     var steps: std.ArrayList(*std.Build.Step) = .empty;
     errdefer steps.deinit(b.allocator);
 
@@ -91,13 +91,13 @@ pub fn init(
     return .{ .steps = steps.items };
 }
 
-pub fn install(self: *const GhosttyDocs) void {
+pub fn install(self: *const NubbDocs) void {
     const b = self.steps[0].owner;
     self.addStepDependencies(b.getInstallStep());
 }
 
 pub fn addStepDependencies(
-    self: *const GhosttyDocs,
+    self: *const NubbDocs,
     other_step: *std.Build.Step,
 ) void {
     for (self.steps) |step| other_step.dependOn(step);
@@ -108,7 +108,7 @@ pub fn addStepDependencies(
 /// when the `emit-docs` option is not set to true, but we still
 /// need the rough directory structure to exist, such as for the macOS
 /// app.
-pub fn installDummy(self: *const GhosttyDocs, step: *std.Build.Step) void {
+pub fn installDummy(self: *const NubbDocs, step: *std.Build.Step) void {
     _ = self;
 
     const b = step.owner;

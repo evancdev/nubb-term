@@ -4,7 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const run_step = b.step("run", "Run esctest against libghostty-vt");
+    const run_step = b.step("run", "Run esctest against libnubb-vt");
 
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -13,10 +13,10 @@ pub fn build(b: *std.Build) void {
         // forkpty and execvp come from libc.
         .link_libc = true,
     });
-    if (b.lazyDependency("ghostty", .{})) |dep| {
+    if (b.lazyDependency("nubb", .{})) |dep| {
         exe_mod.addImport(
-            "ghostty-vt",
-            dep.module("ghostty-vt"),
+            "nubb-vt",
+            dep.module("nubb-vt"),
         );
     }
 

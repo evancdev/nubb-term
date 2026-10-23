@@ -1,4 +1,4 @@
-const GhosttyResources = @This();
+const NubbResources = @This();
 
 const std = @import("std");
 const assert = std.debug.assert;
@@ -8,13 +8,13 @@ const SharedDeps = @import("SharedDeps.zig");
 
 steps: []*std.Build.Step,
 
-pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !GhosttyResources {
+pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbResources {
     var steps: std.ArrayList(*std.Build.Step) = .empty;
     errdefer steps.deinit(b.allocator);
 
     // This is the exe used to generate some build data.
     const build_data_exe = b.addExecutable(.{
-        .name = "ghostty-build-data",
+        .name = "nubb-build-data",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main_build_data.zig"),
             .target = b.graph.host,
@@ -167,13 +167,13 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !Ghostty
     return .{ .steps = steps.items };
 }
 
-pub fn install(self: *const GhosttyResources) void {
+pub fn install(self: *const NubbResources) void {
     const b = self.steps[0].owner;
     self.addStepDependencies(b.getInstallStep());
 }
 
 pub fn addStepDependencies(
-    self: *const GhosttyResources,
+    self: *const NubbResources,
     other_step: *std.Build.Step,
 ) void {
     for (self.steps) |step| other_step.dependOn(step);

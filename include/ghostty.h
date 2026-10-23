@@ -1,4 +1,4 @@
-// Nubb's internal embedder API, a.k.a. "libghostty-internal".
+// Nubb's internal embedder API, a.k.a. "libnubb-internal".
 //
 // The only consumer of this API is the macOS app, and while it is fairly
 // comprehensive, it is tailored to the needs of the macOS app and not designed

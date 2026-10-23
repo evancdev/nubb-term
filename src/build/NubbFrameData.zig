@@ -1,14 +1,14 @@
-//! GhosttyFrameData generates a compressed file and zig module which contains (and exposes) the
+//! NubbFrameData generates a compressed file and zig module which contains (and exposes) the
 //! Nubb animation frames for use in `ghostty +boo`
-const GhosttyFrameData = @This();
+const NubbFrameData = @This();
 
 const std = @import("std");
-const DistResource = @import("GhosttyDist.zig").Resource;
+const DistResource = @import("NubbDist.zig").Resource;
 
 /// The output path for the compressed framedata zig file
 output: std.Build.LazyPath,
 
-pub fn init(b: *std.Build) !GhosttyFrameData {
+pub fn init(b: *std.Build) !NubbFrameData {
     const dist = distResources(b);
 
     // Generate the Zig source file that embeds the compressed data
@@ -25,7 +25,7 @@ pub fn init(b: *std.Build) !GhosttyFrameData {
 }
 
 /// Add the "framedata" import.
-pub fn addImport(self: *const GhosttyFrameData, step: *std.Build.Step.Compile) void {
+pub fn addImport(self: *const NubbFrameData, step: *std.Build.Step.Compile) void {
     self.output.addStepDependencies(&step.step);
     step.root_module.addAnonymousImport("framedata", .{
         .root_source_file = self.output,

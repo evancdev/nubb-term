@@ -4,9 +4,9 @@ const std = @import("std");
 const builtin = @import("builtin");
 const RunStep = std.Build.Step.Run;
 const Config = @import("Config.zig");
-const Docs = @import("GhosttyDocs.zig");
-const Resources = @import("GhosttyResources.zig");
-const XCFramework = @import("GhosttyXCFramework.zig");
+const Docs = @import("NubbDocs.zig");
+const Resources = @import("NubbResources.zig");
+const XCFramework = @import("NubbXCFramework.zig");
 
 build: *std.Build.Step.Run,
 open: *std.Build.Step.Run,

@@ -70,7 +70,7 @@ pub fn encode(self: Source, writer: *std.Io.Writer) !void {
 /// Important: the value is the FULL response included the escape sequences.
 ///
 /// The responses are null-terminated so that they can be handed directly
-/// to APIs that require a sentinel (e.g. the libghostty-vt write_pty
+/// to APIs that require a sentinel (e.g. the libnubb-vt write_pty
 /// callback) without copying.
 pub fn xtgettcapMap(comptime self: Source) std.StaticStringMap([:0]const u8) {
     const KV = struct { []const u8, [:0]const u8 };

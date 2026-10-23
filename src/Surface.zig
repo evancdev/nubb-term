@@ -3398,7 +3398,7 @@ fn encodeKeyOpts(self: *const Surface) input.key_encode.Options {
         if (!self.mouse.mods.alt) break :detect .false;
 
         // Alt is pressed, we're on macOS. We break some encapsulation
-        // here and assume libghostty for ease...
+        // here and assume libnubb for ease...
         break :detect self.rt_app.keyboardLayout().detectOptionAsAlt();
     };
 

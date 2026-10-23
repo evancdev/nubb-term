@@ -5,7 +5,7 @@ extension Ghostty {
 
         var localizedStringResource: LocalizedStringResource {
             switch self {
-            case .apiFailed: return "libghostty API call failed"
+            case .apiFailed: return "libnubb API call failed"
             }
         }
     }

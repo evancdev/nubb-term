@@ -11,17 +11,17 @@
 //! Examples:
 //!
 //!   # Plain ASCII lines (equivalent to `ascii` with lines)
-//!   ghostty-gen styled --seed=42
+//!   nubb-gen styled --seed=42
 //!
 //!   # Heavily styled ASCII
-//!   ghostty-gen styled --seed=42 --style-rate=0.8
+//!   nubb-gen styled --seed=42 --style-rate=0.8
 //!
 //!   # Unicode-heavy, no styling
-//!   ghostty-gen styled --seed=42 --weight-two=1 --weight-three=1 \
+//!   nubb-gen styled --seed=42 --weight-two=1 --weight-three=1 \
 //!     --weight-four=0.5 --grapheme-rate=0.1
 //!
 //!   # Mixed: styles, Unicode, and hyperlinks
-//!   ghostty-gen styled --seed=42 --style-rate=0.3 --weight-two=0.5 \
+//!   nubb-gen styled --seed=42 --style-rate=0.3 --weight-two=0.5 \
 //!     --weight-three=0.25 --weight-four=0.1 --grapheme-rate=0.05 \
 //!     --osc8-rate=0.1
 const Styled = @This();

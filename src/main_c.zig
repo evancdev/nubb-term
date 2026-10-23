@@ -12,7 +12,7 @@ const assert = @import("quirks.zig").inlineAssert;
 const posix = std.posix;
 const builtin = @import("builtin");
 const build_config = @import("build_config.zig");
-const main = @import("main_ghostty.zig");
+const main = @import("main_nubb.zig");
 const global = @import("global.zig");
 const apprt = @import("apprt.zig");
 const internal_os = @import("os/main.zig");
@@ -21,7 +21,7 @@ const internal_os = @import("os/main.zig");
 comptime {
     // We allow tests to reference this file because we unit test
     // some of the C API. At runtime though we should never get these
-    // functions unless we are building libghostty.
+    // functions unless we are building libnubb.
     if (!builtin.is_test) {
         assert(apprt.runtime == apprt.embedded);
     }
@@ -37,7 +37,7 @@ comptime {
     // Our config API
     _ = @import("config.zig").CApi;
 
-    // Any apprt-specific C API, mainly libghostty for apprt.embedded.
+    // Any apprt-specific C API, mainly libnubb for apprt.embedded.
     if (@hasDecl(apprt.runtime, "CAPI")) _ = apprt.runtime.CAPI;
 
     // Our benchmark API. We probably want to gate this on a build

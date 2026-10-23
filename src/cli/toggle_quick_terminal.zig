@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const Action = @import("../cli.zig").ghostty.Action;
+const Action = @import("../cli.zig").nubb.Action;
 const apprt = @import("../apprt.zig");
 const global = @import("../global.zig");
 

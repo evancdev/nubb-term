@@ -16,7 +16,7 @@
 //! so it now compiles to a scalar loop roughly 24x slower than what
 //! Zig 0.15 produced.
 //!
-//! In benchmarks this made `ghostty-bench +terminal-stream` 2.8x slower on
+//! In benchmarks this made `nubb-bench +terminal-stream` 2.8x slower on
 //! ASCII input (memset was 63% of all executed instructions!).
 //!
 //! Because compiler_rt's symbol is weak, exporting a strong `memset`
@@ -76,8 +76,8 @@ comptime {
         .name = "memset",
         .linkage = linkage,
 
-        // Hidden so that shared library builds (libghostty,
-        // libghostty-vt) resolve this internally without exporting
+        // Hidden so that shared library builds (libnubb,
+        // libnubb-vt) resolve this internally without exporting
         // it to their host applications.
         .visibility = .hidden,
     });

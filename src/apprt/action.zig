@@ -63,7 +63,7 @@ pub const Action = union(Key) {
     // A GUIDE TO ADDING NEW ACTIONS:
     //
     // 1. Add the action to the `Key` enum. The order of the enum matters
-    //    because it maps directly to the libghostty C enum. For ABI
+    //    because it maps directly to the libnubb C enum. For ABI
     //    compatibility, new actions should be added to the end of the enum.
     //
     // 2. Add the action and optional value to the Action union.
@@ -238,7 +238,7 @@ pub const Action = union(Key) {
     /// Called when there are no more surfaces and the app should quit
     /// after the configured delay.
     ///
-    /// Despite the name, this is the notification that libghostty sends
+    /// Despite the name, this is the notification that libnubb sends
     /// when there are no more surfaces regardless of if the configuration
     /// wants to quit after close, has any delay set, etc. It's up to the
     /// apprt to implement the proper logic based on the config.
@@ -905,7 +905,7 @@ pub const ColorKind = enum(c_int) {
 
 pub const ReloadConfig = extern struct {
     /// A soft reload means that the configuration doesn't need to be
-    /// read off disk, but libghostty needs the full config again so call
+    /// read off disk, but libnubb needs the full config again so call
     /// updateConfig with it.
     soft: bool = false,
 };

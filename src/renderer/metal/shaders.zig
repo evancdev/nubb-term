@@ -337,7 +337,7 @@ fn initLibrary(device: objc.Object) !objc.Object {
     const start: std.Io.Timestamp = .now(global.io(), .awake);
 
     const data = try macos.dispatch.Data.create(
-        @embedFile("ghostty_metallib"),
+        @embedFile("nubb_metallib"),
         macos.dispatch.queue.getMain(),
         macos.dispatch.Data.DESTRUCTOR_DEFAULT,
     );
