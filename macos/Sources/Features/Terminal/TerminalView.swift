@@ -7,7 +7,7 @@ import os
 /// titles being set, cell sizes being changed, etc.
 protocol TerminalViewDelegate: AnyObject {
     /// Called when the currently focused surface changed. This can be nil.
-    func focusedSurfaceDidChange(to: Ghostty.SurfaceView?)
+    func focusedSurfaceDidChange(to: Nubb.SurfaceView?)
 
     /// The URL of the pwd should change.
     func pwdDidChange(to: URL?)
@@ -16,7 +16,7 @@ protocol TerminalViewDelegate: AnyObject {
     func cellSizeDidChange(to: NSSize)
 
     /// Perform an action. At the time of writing this is only triggered by the command palette.
-    func performAction(_ action: String, on: Ghostty.SurfaceView)
+    func performAction(_ action: String, on: Nubb.SurfaceView)
 
     /// A split tree operation
     func performSplitAction(_ action: TerminalSplitOperation)
@@ -28,7 +28,7 @@ protocol TerminalViewDelegate: AnyObject {
 protocol TerminalViewModel: ObservableObject {
     /// The tree of terminal surfaces (splits) within the view. This is mutated by TerminalView
     /// and children. This should be @Published.
-    var surfaceTree: SplitTree<Ghostty.SurfaceView> { get set }
+    var surfaceTree: SplitTree<Nubb.SurfaceView> { get set }
 
     /// The command palette state.
     var commandPaletteIsShowing: Bool { get set }
@@ -36,7 +36,7 @@ protocol TerminalViewModel: ObservableObject {
 
 /// The main terminal view. This terminal view supports splits.
 struct TerminalView<ViewModel: TerminalViewModel>: View {
-    @ObservedObject var ghostty: Ghostty.App
+    @ObservedObject var nubb: Nubb.App
 
     // The required view model
     @ObservedObject var viewModel: ViewModel
@@ -45,15 +45,15 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
     weak var delegate: (any TerminalViewDelegate)?
 
     /// The most recently focused surface, equal to `focusedSurface` when it is non-nil.
-    @State private var lastFocusedSurface: Weak<Ghostty.SurfaceView>?
+    @State private var lastFocusedSurface: Weak<Nubb.SurfaceView>?
 
     // This seems like a crutch after switching from SwiftUI to AppKit lifecycle.
     @FocusState private var focused: Bool
 
     // Various state values sent back up from the currently focused terminals.
-    @FocusedValue(\.ghosttySurfaceView) private var focusedSurface
-    @FocusedValue(\.ghosttySurfacePwd) private var surfacePwd
-    @FocusedValue(\.ghosttySurfaceCellSize) private var cellSize
+    @FocusedValue(\.nubbSurfaceView) private var focusedSurface
+    @FocusedValue(\.nubbSurfacePwd) private var surfacePwd
+    @FocusedValue(\.nubbSurfaceCellSize) private var cellSize
 
     // The pwd of the focused surface as a URL
     private var pwdURL: URL? {
@@ -62,7 +62,7 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
     }
 
     var body: some View {
-        switch ghostty.readiness {
+        switch nubb.readiness {
         case .loading:
             Text("Loading")
         case .error:
@@ -72,15 +72,15 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
                 VStack(spacing: 0) {
                     // If we're running in debug mode we show a warning so that users
                     // know that performance will be degraded.
-                    if Ghostty.info.mode == NUBB_BUILD_MODE_DEBUG || Ghostty.info.mode == NUBB_BUILD_MODE_RELEASE_SAFE {
+                    if Nubb.info.mode == NUBB_BUILD_MODE_DEBUG || Nubb.info.mode == NUBB_BUILD_MODE_RELEASE_SAFE {
                         DebugBuildWarningView()
                     }
 
                     TerminalSplitTreeView(
                         tree: viewModel.surfaceTree,
                         action: { delegate?.performSplitAction($0) })
-                        .environmentObject(ghostty)
-                        .ghosttyLastFocusedSurface(lastFocusedSurface)
+                        .environmentObject(nubb)
+                        .nubbLastFocusedSurface(lastFocusedSurface)
                         .focused($focused)
                         .onAppear { self.focused = true }
                         .onChange(of: focusedSurface) { newValue in
@@ -102,13 +102,13 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
                                idealHeight: lastFocusedSurface?.value?.initialSize?.height)
                 }
                 // Ignore safe area to extend up in to the titlebar region if we have the "hidden" titlebar style
-                .ignoresSafeArea(.container, edges: ghostty.config.macosTitlebarStyle == .hidden ? .top : [])
+                .ignoresSafeArea(.container, edges: nubb.config.macosTitlebarStyle == .hidden ? .top : [])
 
                 if let surfaceView = lastFocusedSurface?.value {
                     TerminalCommandPaletteView(
                         surfaceView: surfaceView,
                         isPresented: $viewModel.commandPaletteIsShowing,
-                        ghosttyConfig: ghostty.config) { action in
+                        nubbConfig: nubb.config) { action in
                         self.delegate?.performAction(action, on: surfaceView)
                     }
                 }

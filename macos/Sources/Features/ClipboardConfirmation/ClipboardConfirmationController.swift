@@ -8,11 +8,11 @@ import SwiftUI
 class ClipboardConfirmationController: NSWindowController {
     override var windowNibName: NSNib.Name? { "ClipboardConfirmation" }
 
-    private(set) var confirmation: Ghostty.ClipboardConfirmationRequest
+    private(set) var confirmation: Nubb.ClipboardConfirmationRequest
     weak private var delegate: ClipboardConfirmationViewDelegate?
 
     init(
-        confirmation: Ghostty.ClipboardConfirmationRequest,
+        confirmation: Nubb.ClipboardConfirmationRequest,
         delegate: ClipboardConfirmationViewDelegate
     ) {
         self.confirmation = confirmation
@@ -27,7 +27,7 @@ class ClipboardConfirmationController: NSWindowController {
     /// Replace the request represented by the visible sheet without changing
     /// the sheet's focus state. The previous request is cancelled by its
     /// SurfaceView before this method is called.
-    func replaceConfirmation(with confirmation: Ghostty.ClipboardConfirmationRequest) {
+    func replaceConfirmation(with confirmation: Nubb.ClipboardConfirmationRequest) {
         guard self.confirmation !== confirmation else { return }
         self.confirmation = confirmation
 

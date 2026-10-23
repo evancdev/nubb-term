@@ -20,19 +20,19 @@ class MockTerminalViewContainer: TerminalViewContainer {
     }
 }
 
-class MockConfig: Ghostty.Config {
-    internal init(backgroundBlur: Ghostty.Config.BackgroundBlur, backgroundColor: Color, backgroundOpacity: Double) {
+class MockConfig: Nubb.Config {
+    internal init(backgroundBlur: Nubb.Config.BackgroundBlur, backgroundColor: Color, backgroundOpacity: Double) {
         self._backgroundBlur = backgroundBlur
         self._backgroundColor = backgroundColor
         self._backgroundOpacity = backgroundOpacity
         super.init(config: nil)
     }
 
-    var _backgroundBlur: Ghostty.Config.BackgroundBlur
+    var _backgroundBlur: Nubb.Config.BackgroundBlur
     var _backgroundColor: Color
     var _backgroundOpacity: Double
 
-    override var backgroundBlur: Ghostty.Config.BackgroundBlur {
+    override var backgroundBlur: Nubb.Config.BackgroundBlur {
         _backgroundBlur
     }
 
@@ -52,7 +52,7 @@ struct TerminalViewContainerTests {
         }
 
         let config = MockConfig(backgroundBlur: .macosGlassRegular, backgroundColor: .clear, backgroundOpacity: 1)
-        await view.ghosttyConfigDidChange(config, preferredBackgroundColor: nil)
+        await view.nubbConfigDidChange(config, preferredBackgroundColor: nil)
         try await Task.sleep(nanoseconds: UInt64(1e8)) // wait for the view to be setup if needed
         if #available(macOS 26.0, *) {
             #expect(view.glassEffectView != nil)

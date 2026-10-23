@@ -19,7 +19,7 @@ final class GhosttyWindowPositionUITests: GhosttyCustomConfigCase {
             """
         )
 
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         // Suppress Restoration
         app.launchArguments += ["-NSQuitAlwaysKeepsWindows", "NO"]
         // Clean run
@@ -81,7 +81,7 @@ final class GhosttyWindowPositionUITests: GhosttyCustomConfigCase {
             """
         )
 
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         // Suppress Restoration
         app.launchArguments += ["-NSQuitAlwaysKeepsWindows", "NO"]
         // Clean run
@@ -136,7 +136,7 @@ final class GhosttyWindowPositionUITests: GhosttyCustomConfigCase {
             """
         )
 
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         // Suppress Restoration
         app.launchArguments += ["-NSQuitAlwaysKeepsWindows", "NO"]
         // Clean run
@@ -193,7 +193,7 @@ final class GhosttyWindowPositionUITests: GhosttyCustomConfigCase {
             """
         )
 
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
 
         let window = app.windows.firstMatch
@@ -241,7 +241,7 @@ final class GhosttyWindowPositionUITests: GhosttyCustomConfigCase {
             """
         )
 
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
 
         let window = app.windows.firstMatch
@@ -291,7 +291,7 @@ final class GhosttyWindowPositionUITests: GhosttyCustomConfigCase {
             """
         )
 
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         // Suppress Restoration
         app.launchArguments += ["-NSQuitAlwaysKeepsWindows", "NO"]
         // Clean run

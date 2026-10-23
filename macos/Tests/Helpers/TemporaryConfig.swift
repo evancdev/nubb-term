@@ -3,7 +3,7 @@ import Foundation
 @testable import NubbKit
 
 /// Create a temporary config file and delete it when this is deallocated
-class TemporaryConfig: Ghostty.Config {
+class TemporaryConfig: Nubb.Config {
     enum Error: Swift.Error {
         case failedToLoad
     }

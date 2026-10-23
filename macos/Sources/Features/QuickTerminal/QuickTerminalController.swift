@@ -38,13 +38,13 @@ class QuickTerminalController: BaseTerminalController {
     let restorable: Bool
     private var restorationState: QuickTerminalRestorableState?
 
-    init(_ ghostty: Ghostty.App,
+    init(_ nubb: Nubb.App,
          position: QuickTerminalPosition = .top,
-         baseConfig base: Ghostty.SurfaceConfiguration? = nil,
+         baseConfig base: Nubb.SurfaceConfiguration? = nil,
          restorationState: QuickTerminalRestorableState? = nil,
     ) {
         self.position = position
-        self.derivedConfig = DerivedConfig(ghostty.config)
+        self.derivedConfig = DerivedConfig(nubb.config)
         // The window we manage is not restorable if we've specified a command
         // to execute. We do this because the restored window is meaningless at the
         // time of writing this: it'd just restore to a shell in the same directory
@@ -56,7 +56,7 @@ class QuickTerminalController: BaseTerminalController {
         // Important detail here: we initialize with an empty surface tree so
         // that we don't start a terminal process. This gets started when the
         // first terminal is shown in `animateIn`.
-        super.init(ghostty, baseConfig: base, surfaceTree: .init())
+        super.init(nubb, baseConfig: base, surfaceTree: .init())
 
         // Setup our notifications for behaviors
         let center = NotificationCenter.default
@@ -68,23 +68,23 @@ class QuickTerminalController: BaseTerminalController {
         center.addObserver(
             self,
             selector: #selector(onToggleFullscreen(notification:)),
-            name: Ghostty.Notification.ghosttyToggleFullscreen,
+            name: Nubb.Notification.nubbToggleFullscreen,
             object: nil)
         center.addObserver(
             self,
-            selector: #selector(ghosttyConfigDidChange(_:)),
-            name: .ghosttyConfigDidChange,
+            selector: #selector(nubbConfigDidChange(_:)),
+            name: .nubbConfigDidChange,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(closeWindow(_:)),
-            name: .ghosttyCloseWindow,
+            name: .nubbCloseWindow,
             object: nil
         )
         center.addObserver(
             self,
             selector: #selector(onNewTab),
-            name: Ghostty.Notification.ghosttyNewTab,
+            name: Nubb.Notification.nubbNewTab,
             object: nil)
         center.addObserver(
             self,
@@ -138,7 +138,7 @@ class QuickTerminalController: BaseTerminalController {
 
         // Setup our content
         window.contentView = TerminalViewContainer {
-            TerminalView(ghostty: ghostty, viewModel: self, delegate: self)
+            TerminalView(nubb: nubb, viewModel: self, delegate: self)
         }
 
         // Clear out our frame at this point, the fixup from above is complete.
@@ -248,7 +248,7 @@ class QuickTerminalController: BaseTerminalController {
 
     // MARK: Base Controller Overrides
 
-    override func focusSurface(_ view: Ghostty.SurfaceView) {
+    override func focusSurface(_ view: Nubb.SurfaceView) {
         if visible {
             // If we're visible, we just focus the surface as normal.
             super.focusSurface(view)
@@ -258,13 +258,13 @@ class QuickTerminalController: BaseTerminalController {
         guard surfaceTree.contains(view) else { return }
         // Set the target surface as focused
         DispatchQueue.main.async {
-            Ghostty.moveFocus(to: view)
+            Nubb.moveFocus(to: view)
         }
         // Animation completion handler will handle window/app activation
         animateIn()
     }
 
-    override func surfaceTreeDidChange(from: SplitTree<Ghostty.SurfaceView>, to: SplitTree<Ghostty.SurfaceView>) {
+    override func surfaceTreeDidChange(from: SplitTree<Nubb.SurfaceView>, to: SplitTree<Nubb.SurfaceView>) {
         super.surfaceTreeDidChange(from: from, to: to)
 
         // If our surface tree is nil then we animate the window out. We
@@ -284,7 +284,7 @@ class QuickTerminalController: BaseTerminalController {
     }
 
     override func closeSurface(
-        _ node: SplitTree<Ghostty.SurfaceView>.Node,
+        _ node: SplitTree<Nubb.SurfaceView>.Node,
         withConfirmation: Bool = true
     ) {
         // If this isn't the root then we're dealing with a split closure.
@@ -312,11 +312,11 @@ class QuickTerminalController: BaseTerminalController {
     }
 
     override func newSplit(
-        at oldView: Ghostty.SurfaceView,
-        direction: SplitTree<Ghostty.SurfaceView>.NewDirection,
-        baseConfig config: Ghostty.SurfaceConfiguration? = nil
-    ) -> Ghostty.SurfaceView? {
-        var config = config ?? Ghostty.SurfaceConfiguration()
+        at oldView: Nubb.SurfaceView,
+        direction: SplitTree<Nubb.SurfaceView>.NewDirection,
+        baseConfig config: Nubb.SurfaceConfiguration? = nil
+    ) -> Nubb.SurfaceView? {
+        var config = config ?? Nubb.SurfaceConfiguration()
         config.environmentVariables["NUBB_QUICK_TERMINAL"] = "1"
         return super.newSplit(at: oldView, direction: direction, baseConfig: config)
     }
@@ -360,7 +360,7 @@ class QuickTerminalController: BaseTerminalController {
         // tree can be empty if for example we run "exit" in the terminal and force
         // animate out.
         if surfaceTree.isEmpty,
-           let nubb_app = ghostty.app {
+           let nubb_app = nubb.app {
             if let tree = restorationState?.surfaceTree, !tree.isEmpty {
                 surfaceTree = tree
                 let view = tree.first(where: { $0.id.uuidString == restorationState?.focusedSurface }) ?? tree.first!
@@ -375,10 +375,10 @@ class QuickTerminalController: BaseTerminalController {
                     }
                 }
             } else {
-                var config = Ghostty.SurfaceConfiguration()
+                var config = Nubb.SurfaceConfiguration()
                 config.environmentVariables["NUBB_QUICK_TERMINAL"] = "1"
 
-                let view = Ghostty.SurfaceView(nubb_app, baseConfig: config)
+                let view = Nubb.SurfaceView(nubb_app, baseConfig: config)
                 surfaceTree = SplitTree(view: view)
                 focusedSurface = view
             }
@@ -625,14 +625,14 @@ class QuickTerminalController: BaseTerminalController {
             window.backgroundColor = .white.withAlphaComponent(0.001)
 
             if !derivedConfig.backgroundBlur.isGlassStyle {
-                nubb_set_window_background_blur(ghostty.app, Unmanaged.passUnretained(window).toOpaque())
+                nubb_set_window_background_blur(nubb.app, Unmanaged.passUnretained(window).toOpaque())
             }
         } else {
             window.isOpaque = true
             window.backgroundColor = .windowBackgroundColor
         }
 
-        terminalViewContainer?.ghosttyConfigDidChange(ghostty.config, preferredBackgroundColor: nil)
+        terminalViewContainer?.nubbConfigDidChange(nubb.config, preferredBackgroundColor: nil)
     }
 
     override func confirmCloseAsync(messageText: String, informativeText: String, confirmButtonTitle: String = "Close") async -> NSApplication.ModalResponse? {
@@ -665,14 +665,14 @@ class QuickTerminalController: BaseTerminalController {
         showNoNewTabAlert()
     }
 
-    @IBAction func toggleGhosttyFullScreen(_ sender: Any) {
+    @IBAction func toggleNubbFullScreen(_ sender: Any) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.toggleFullscreen(surface: surface)
+        nubb.toggleFullscreen(surface: surface)
     }
 
     @IBAction func toggleTerminalInspector(_ sender: Any?) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.toggleTerminalInspector(surface: surface)
+        nubb.toggleTerminalInspector(surface: surface)
     }
 
     // MARK: Notifications
@@ -685,7 +685,7 @@ class QuickTerminalController: BaseTerminalController {
     }
 
     @objc private func onToggleFullscreen(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard target == self.focusedSurface else { return }
         onToggleFullscreen()
     }
@@ -712,26 +712,26 @@ class QuickTerminalController: BaseTerminalController {
         toggleFullscreen(mode: mode)
     }
 
-    @objc private func ghosttyConfigDidChange(_ notification: Notification) {
+    @objc private func nubbConfigDidChange(_ notification: Notification) {
         // We only care if the configuration is a global configuration, not a
         // surface-specific one.
         guard notification.object == nil else { return }
 
         // Get our managed configuration object out
         guard let config = notification.userInfo?[
-            Notification.Name.GhosttyConfigChangeKey
-        ] as? Ghostty.Config else { return }
+            Notification.Name.NubbConfigChangeKey
+        ] as? Nubb.Config else { return }
 
         // Update our derived config
         self.derivedConfig = DerivedConfig(config)
 
         syncAppearance()
 
-        terminalViewContainer?.ghosttyConfigDidChange(config, preferredBackgroundColor: nil)
+        terminalViewContainer?.nubbConfigDidChange(config, preferredBackgroundColor: nil)
     }
 
     @objc private func onNewTab(notification: SwiftUI.Notification) {
-        guard let surfaceView = notification.object as? Ghostty.SurfaceView else { return }
+        guard let surfaceView = notification.object as? Nubb.SurfaceView else { return }
         guard let window = surfaceView.window else { return }
         guard window.windowController is QuickTerminalController else { return }
         // Tabs aren't supported with Quick Terminals or derivatives
@@ -745,7 +745,7 @@ class QuickTerminalController: BaseTerminalController {
         let quickTerminalSpaceBehavior: QuickTerminalSpaceBehavior
         let quickTerminalSize: QuickTerminalSize
         let backgroundOpacity: Double
-        let backgroundBlur: Ghostty.Config.BackgroundBlur
+        let backgroundBlur: Nubb.Config.BackgroundBlur
 
         init() {
             self.quickTerminalScreen = .main
@@ -757,7 +757,7 @@ class QuickTerminalController: BaseTerminalController {
             self.backgroundBlur = .disabled
         }
 
-        init(_ config: Ghostty.Config) {
+        init(_ config: Nubb.Config) {
             self.quickTerminalScreen = config.quickTerminalScreen
             self.quickTerminalAnimationDuration = config.quickTerminalAnimationDuration
             self.quickTerminalAutoHide = config.quickTerminalAutoHide

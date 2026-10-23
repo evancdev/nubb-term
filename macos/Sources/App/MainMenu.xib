@@ -380,7 +380,7 @@
                             <menuItem title="Toggle Full Screen" keyEquivalent="f" id="8kY-Pi-KaY">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
-                                    <action selector="toggleGhosttyFullScreen:" target="-1" id="QB9-7R-xyc"/>
+                                    <action selector="toggleNubbFullScreen:" target="-1" id="QB9-7R-xyc"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Show/Hide All Terminals" id="DOX-wA-ilh">

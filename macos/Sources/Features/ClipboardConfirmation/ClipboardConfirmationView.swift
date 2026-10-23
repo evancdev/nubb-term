@@ -11,7 +11,7 @@ struct ClipboardConfirmationView: View {
         case cancel
         case confirm
 
-        static func text(_ action: Action, _ reason: Ghostty.ClipboardRequest) -> String {
+        static func text(_ action: Action, _ reason: Nubb.ClipboardRequest) -> String {
             switch (action, reason) {
             case (.cancel, .paste):
                 return "Cancel"
@@ -31,7 +31,7 @@ struct ClipboardConfirmationView: View {
     let contents: String
 
     /// The type of the clipboard request
-    let request: Ghostty.ClipboardRequest
+    let request: Nubb.ClipboardRequest
 
     /// True when the user's decision may be remembered as a session
     /// grant, showing the remember toggle.

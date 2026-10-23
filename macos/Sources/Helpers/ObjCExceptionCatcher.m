@@ -2,9 +2,9 @@
 
 #import <AppKit/AppKit.h>
 
-static NSError *GhosttyErrorFromException(NSException *exception, NSInteger code) {
+static NSError *NubbErrorFromException(NSException *exception, NSInteger code) {
     NSString *reason = exception.reason ?: @"Unknown Objective-C exception";
-    return [NSError errorWithDomain:@"Ghostty.ObjCException"
+    return [NSError errorWithDomain:@"Nubb.ObjCException"
                                code:code
                            userInfo:@{
                                NSLocalizedDescriptionKey: reason,
@@ -12,7 +12,7 @@ static NSError *GhosttyErrorFromException(NSException *exception, NSInteger code
                            }];
 }
 
-BOOL GhosttyAddTabbedWindowSafely(
+BOOL NubbAddTabbedWindowSafely(
     id parent,
     id child,
     NSInteger ordered,
@@ -28,14 +28,14 @@ BOOL GhosttyAddTabbedWindowSafely(
         return YES;
     } @catch (NSException *exception) {
         if (error != NULL) {
-            *error = GhosttyErrorFromException(exception, 1);
+            *error = NubbErrorFromException(exception, 1);
         }
 
         return NO;
     }
 }
 
-BOOL GhosttyShowWindowSafely(
+BOOL NubbShowWindowSafely(
     id controller,
     id _Nullable sender,
     NSError * _Nullable * _Nullable error
@@ -48,7 +48,7 @@ BOOL GhosttyShowWindowSafely(
         return YES;
     } @catch (NSException *exception) {
         if (error != NULL) {
-            *error = GhosttyErrorFromException(exception, 2);
+            *error = NubbErrorFromException(exception, 2);
         }
 
         return NO;

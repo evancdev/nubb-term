@@ -49,9 +49,9 @@ extension NSWindow {
         ordered: NSWindow.OrderingMode
     ) -> Bool {
         var error: NSError?
-        let success = GhosttyAddTabbedWindowSafely(self, child, ordered.rawValue, &error)
+        let success = NubbAddTabbedWindowSafely(self, child, ordered.rawValue, &error)
         if let error {
-            Ghostty.logger.error("addTabbedWindow failed: \(error.localizedDescription, privacy: .public)")
+            Nubb.logger.error("addTabbedWindow failed: \(error.localizedDescription, privacy: .public)")
         }
 
         return success
@@ -64,9 +64,9 @@ extension NSWindowController {
     @discardableResult
     func showWindowSafely(_ sender: Any?) -> Bool {
         var error: NSError?
-        let success = GhosttyShowWindowSafely(self, sender, &error)
+        let success = NubbShowWindowSafely(self, sender, &error)
         if let error {
-            Ghostty.logger.error("showWindow failed: \(error.localizedDescription, privacy: .public)")
+            Nubb.logger.error("showWindow failed: \(error.localizedDescription, privacy: .public)")
         }
 
         return success

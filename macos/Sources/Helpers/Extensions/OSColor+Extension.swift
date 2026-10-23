@@ -73,10 +73,10 @@ extension NSColor {
 // MARK: Nubb Types
 extension NSColor {
     /// Create a color from a Nubb color.
-    convenience init(ghostty: nubb_config_color_s) {
-        let red = Double(ghostty.r) / 255
-        let green = Double(ghostty.g) / 255
-        let blue = Double(ghostty.b) / 255
+    convenience init(nubb: nubb_config_color_s) {
+        let red = Double(nubb.r) / 255
+        let green = Double(nubb.g) / 255
+        let blue = Double(nubb.b) / 255
         self.init(red: red, green: green, blue: blue, alpha: 1)
     }
 }

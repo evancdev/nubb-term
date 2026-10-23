@@ -6,7 +6,7 @@ class TransparentTitlebarTerminalWindow: TerminalWindow {
     /// Stores the last surface configuration to reapply appearance when needed.
     /// This is necessary because various macOS operations (tab switching, tab bar
     /// visibility changes) can reset the titlebar appearance.
-    private var lastSurfaceConfig: Ghostty.SurfaceView.DerivedConfig?
+    private var lastSurfaceConfig: Nubb.SurfaceView.DerivedConfig?
 
     /// KVO observation for tab group window changes.
     private weak var observedTabGroup: NSWindowTabGroup?
@@ -58,7 +58,7 @@ class TransparentTitlebarTerminalWindow: TerminalWindow {
 
     // MARK: Appearance
 
-    override func syncAppearance(_ surfaceConfig: Ghostty.SurfaceView.DerivedConfig) {
+    override func syncAppearance(_ surfaceConfig: Nubb.SurfaceView.DerivedConfig) {
         super.syncAppearance(surfaceConfig)
         // override appearance based on the terminal's background color
         if let preferredBackgroundColor {
@@ -80,7 +80,7 @@ class TransparentTitlebarTerminalWindow: TerminalWindow {
     }
 
     @available(macOS 26.0, *)
-    private func syncAppearanceTahoe(_ surfaceConfig: Ghostty.SurfaceView.DerivedConfig) {
+    private func syncAppearanceTahoe(_ surfaceConfig: Nubb.SurfaceView.DerivedConfig) {
         // When we have transparency, we need to set the titlebar background to match the
         // window background but with opacity. The window background is set using the
         // "preferred background color" property.
@@ -117,7 +117,7 @@ class TransparentTitlebarTerminalWindow: TerminalWindow {
     }
 
     @available(macOS 13.0, *)
-    private func syncAppearanceVentura(_ surfaceConfig: Ghostty.SurfaceView.DerivedConfig) {
+    private func syncAppearanceVentura(_ surfaceConfig: Nubb.SurfaceView.DerivedConfig) {
         guard let titlebarContainer else { return }
 
         // Setup the titlebar background color to match ours

@@ -21,7 +21,7 @@ final class GhosttyTitlebarTabsUITests: GhosttyCustomConfigCase {
 
     @MainActor
     func testCustomTitlebar() throws {
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
         // create a split
         app.groups["Terminal pane"].typeKey("d", modifierFlags: .command)
@@ -35,7 +35,7 @@ final class GhosttyTitlebarTabsUITests: GhosttyCustomConfigCase {
 
     @MainActor
     func testTabsGeometryInNormalWindow() throws {
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
         app.groups["Terminal pane"].typeKey("t", modifierFlags: .command)
         XCTAssertEqual(app.tabs.count, 2, "There should be 2 tabs")
@@ -44,7 +44,7 @@ final class GhosttyTitlebarTabsUITests: GhosttyCustomConfigCase {
 
     @MainActor
     func testTabsGeometryInFullscreen() throws {
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
         app.typeKey("f", modifierFlags: [.command, .control])
         // using app to type ⌘+t might not be able to create tabs
@@ -55,7 +55,7 @@ final class GhosttyTitlebarTabsUITests: GhosttyCustomConfigCase {
 
     @MainActor
     func testTabsGeometryAfterMovingTabs() throws {
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
         XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 1), "Main window should exist")
         // create another 2 tabs
@@ -93,7 +93,7 @@ final class GhosttyTitlebarTabsUITests: GhosttyCustomConfigCase {
 
     @MainActor
     func testTabsGeometryAfterMergingAllWindows() throws {
-        let app = try ghosttyApplication()
+        let app = try nubbApplication()
         app.launch()
         XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 1), "Main window should exist")
 

@@ -8,7 +8,7 @@ class AppDelegate: NSObject,
                     ObservableObject,
                     NSApplicationDelegate,
                     UNUserNotificationCenterDelegate,
-                    GhosttyAppDelegate {
+                    NubbAppDelegate {
     // The application logger. We should probably move this at some point to a dedicated
     // class/struct but for now it lives here! 🤷‍♂️
     static let logger = Logger(
@@ -97,8 +97,8 @@ class AppDelegate: NSObject,
     /// This is the current configuration from the Nubb configuration that we need.
     private var derivedConfig: DerivedConfig = DerivedConfig()
 
-    /// The ghostty global state. Only one per process.
-    let ghostty: Ghostty.App
+    /// The nubb global state. Only one per process.
+    let nubb: Nubb.App
 
     /// The global undo manager for app-level state such as window restoration.
     lazy var undoManager = ExpiringUndoManager()
@@ -122,7 +122,7 @@ class AppDelegate: NSObject,
 
         case .pendingRestore(let state):
             let controller = QuickTerminalController(
-                ghostty,
+                nubb,
                 position: derivedConfig.quickTerminalPosition,
                 baseConfig: state.baseConfig,
                 restorationState: state
@@ -132,7 +132,7 @@ class AppDelegate: NSObject,
 
         case .uninitialized:
             let controller = QuickTerminalController(
-                ghostty,
+                nubb,
                 position: derivedConfig.quickTerminalPosition,
                 restorationState: nil
             )
@@ -150,17 +150,17 @@ class AppDelegate: NSObject,
     /// Signals
     private var signals: [DispatchSourceSignal] = []
 
-    @MainActor private lazy var menuShortcutManager = Ghostty.MenuShortcutManager()
+    @MainActor private lazy var menuShortcutManager = Nubb.MenuShortcutManager()
 
     override init() {
 #if DEBUG
-        ghostty = Ghostty.App(configPath: ProcessInfo.processInfo.environment["NUBB_CONFIG_PATH"])
+        nubb = Nubb.App(configPath: ProcessInfo.processInfo.environment["NUBB_CONFIG_PATH"])
 #else
-        ghostty = Ghostty.App()
+        nubb = Nubb.App()
 #endif
         super.init()
 
-        ghostty.delegate = self
+        nubb.delegate = self
     }
 
     // MARK: - NSApplicationDelegate
@@ -168,13 +168,13 @@ class AppDelegate: NSObject,
     func applicationWillFinishLaunching(_ notification: Notification) {
         #if DEBUG
         if
-            let suite = UserDefaults.ghosttySuite,
+            let suite = UserDefaults.nubbSuite,
             let clear = ProcessInfo.processInfo.environment["NUBB_CLEAR_USER_DEFAULTS"],
             (clear as NSString).boolValue {
-            UserDefaults.ghostty.removePersistentDomain(forName: suite)
+            UserDefaults.nubb.removePersistentDomain(forName: suite)
         }
         #endif
-        UserDefaults.ghostty.register(defaults: [
+        UserDefaults.nubb.register(defaults: [
             // Disable the automatic full screen menu item because we handle
             // it manually.
             "NSFullScreenMenuItemEverywhere": false,
@@ -193,18 +193,18 @@ class AppDelegate: NSObject,
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // System settings overrides
-        UserDefaults.ghostty.register(defaults: [
+        UserDefaults.nubb.register(defaults: [
             // Disable this so that repeated key events make it through to our terminal views.
             "ApplePressAndHoldEnabled": false,
         ])
 
         // Check if secure input was enabled when we last quit.
-        if UserDefaults.ghostty.bool(forKey: "SecureInput") != SecureInput.shared.enabled {
+        if UserDefaults.nubb.bool(forKey: "SecureInput") != SecureInput.shared.enabled {
             toggleSecureInput(self)
         }
 
         // Initial config loading
-        ghosttyConfigDidChange(config: ghostty.config)
+        nubbConfigDidChange(config: nubb.config)
 
         // This registers the Nubb => Services menu to exist.
         NSApp.servicesMenu = menuServices
@@ -230,8 +230,8 @@ class AppDelegate: NSObject,
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyConfigDidChange(_:)),
-            name: .ghosttyConfigDidChange,
+            selector: #selector(nubbConfigDidChange(_:)),
+            name: .nubbConfigDidChange,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -242,8 +242,8 @@ class AppDelegate: NSObject,
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyBellDidRing(_:)),
-            name: .ghosttyBellDidRing,
+            selector: #selector(nubbBellDidRing(_:)),
+            name: .nubbBellDidRing,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -254,25 +254,25 @@ class AppDelegate: NSObject,
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyNewWindow(_:)),
-            name: Ghostty.Notification.ghosttyNewWindow,
+            selector: #selector(nubbNewWindow(_:)),
+            name: Nubb.Notification.nubbNewWindow,
             object: nil)
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ghosttyNewTab(_:)),
-            name: Ghostty.Notification.ghosttyNewTab,
+            selector: #selector(nubbNewTab(_:)),
+            name: Nubb.Notification.nubbNewTab,
             object: nil)
 
         // Configure user notifications
         let actions = [
-            UNNotificationAction(identifier: Ghostty.userNotificationActionShow, title: "Show")
+            UNNotificationAction(identifier: Nubb.userNotificationActionShow, title: "Show")
         ]
 
         let center = UNUserNotificationCenter.current()
 
         center.setNotificationCategories([
             UNNotificationCategory(
-                identifier: Ghostty.userNotificationCategory,
+                identifier: Nubb.userNotificationCategory,
                 actions: actions,
                 intentIdentifiers: [],
                 options: [.customDismissAction]
@@ -286,7 +286,7 @@ class AppDelegate: NSObject,
              options: [.new, .initial]
         ) { _, change in
             guard let appearance = change.newValue else { return }
-            guard let app = self.ghostty.app else { return }
+            guard let app = self.nubb.app else { return }
             let scheme: nubb_color_scheme_e
             if appearance.isDark {
                 scheme = NUBB_COLOR_SCHEME_DARK
@@ -305,12 +305,12 @@ class AppDelegate: NSObject,
 
         // The unit test host stays in the background so tests never steal
         // focus or open a window.
-        if Ghostty.isUnitTestHost {
+        if Nubb.isUnitTestHost {
             NSApp.setActivationPolicy(.prohibited)
             return
         }
 
-        switch Ghostty.launchSource {
+        switch Nubb.launchSource {
         case .app:
             // Don't have to do anything.
             break
@@ -351,9 +351,9 @@ class AppDelegate: NSObject,
             // is possible to have other windows in a few scenarios:
             //   - if we're opening a URL since `application(_:openFile:)` is called before this.
             //   - if we're restoring from persisted state
-            if TerminalController.all.isEmpty && derivedConfig.initialWindow && !Ghostty.isUnitTestHost {
+            if TerminalController.all.isEmpty && derivedConfig.initialWindow && !Nubb.isUnitTestHost {
                 undoManager.disableUndoRegistration()
-                _ = TerminalController.newWindow(ghostty)
+                _ = TerminalController.newWindow(nubb)
                 undoManager.enableUndoRegistration()
             }
         }
@@ -386,7 +386,7 @@ class AppDelegate: NSObject,
         }
 
         // If our app says we don't need to confirm, we can exit now.
-        if !ghostty.needsConfirmQuit { return .terminateNow }
+        if !nubb.needsConfirmQuit { return .terminateNow }
 
         return terminate()
     }
@@ -417,7 +417,7 @@ class AppDelegate: NSObject,
         guard applicationHasBecomeActive else { return true }
 
         // No visible windows, open a new one.
-        _ = TerminalController.newWindow(ghostty)
+        _ = TerminalController.newWindow(nubb)
         return false
     }
 
@@ -442,7 +442,7 @@ class AppDelegate: NSObject,
         var requiresConfirm: Bool = false
 
         // Initialize the surface config which will be used to create the tab or window for the opened file.
-        var config = Ghostty.SurfaceConfiguration()
+        var config = Nubb.SurfaceConfiguration()
 
         if isDirectory.boolValue {
             // When opening a directory, check the configuration to decide
@@ -466,8 +466,8 @@ class AppDelegate: NSObject,
             // in the confirmation dialog, so the user would be approving a
             // command they can't see. No legitimate file needs them, so we
             // reject the file outright. See
-            // `Ghostty.Shell.containsControlCharacters` for more detail.
-            guard !Ghostty.Shell.containsControlCharacters(filename) else {
+            // `Nubb.Shell.containsControlCharacters` for more detail.
+            guard !Nubb.Shell.containsControlCharacters(filename) else {
                 // `debugDescription` makes the hidden characters visible in the log.
                 Self.logger.warning("refusing to execute file with control characters path=\(filename.debugDescription, privacy: .public)")
                 let alert = NSAlert()
@@ -484,7 +484,7 @@ class AppDelegate: NSObject,
             // profile/rc files for the shell, which is super important on macOS
             // due to things like Homebrew. Instead, we set the command to
             // `<filename>; exit` which is what Terminal and iTerm2 do.
-            config.initialInput = "\(Ghostty.Shell.quote(filename)); exit\n"
+            config.initialInput = "\(Nubb.Shell.quote(filename)); exit\n"
 
             // For commands executed directly, we want to ensure we wait after exit
             // because in most cases scripts don't block on exit and we don't want
@@ -514,14 +514,14 @@ class AppDelegate: NSObject,
             }
         }
 
-        switch ghostty.config.macosDockDropBehavior {
+        switch nubb.config.macosDockDropBehavior {
         case .new_tab:
             _ = TerminalController.newTab(
-                ghostty,
+                nubb,
                 from: TerminalController.preferredParent?.window,
                 withBaseConfig: config
             )
-        case .new_window: _ = TerminalController.newWindow(ghostty, withBaseConfig: config)
+        case .new_window: _ = TerminalController.newWindow(nubb, withBaseConfig: config)
         }
 
         return true
@@ -543,8 +543,8 @@ class AppDelegate: NSObject,
         let sigusr2 = DispatchSource.makeSignalSource(signal: SIGUSR2, queue: .main)
         sigusr2.setEventHandler { [weak self] in
             guard let self else { return }
-            Ghostty.logger.info("reloading configuration in response to SIGUSR2")
-            self.ghostty.reloadConfig()
+            Nubb.logger.info("reloading configuration in response to SIGUSR2")
+            self.nubb.reloadConfig()
         }
 
         // The signal source starts unactivated, so we have to resume it once
@@ -587,15 +587,15 @@ class AppDelegate: NSObject,
         guard NSApp.mainWindow == nil else { return event }
 
         // If this event as-is would result in a key binding then we send it.
-        if let app = ghostty.app, let config = ghostty.config.config {
-            var ghosttyEvent = event.ghosttyKeyEvent(NUBB_ACTION_PRESS)
+        if let app = nubb.app, let config = nubb.config.config {
+            var nubbEvent = event.nubbKeyEvent(NUBB_ACTION_PRESS)
             let match = (event.characters ?? "").withCString { ptr in
-                ghosttyEvent.text = ptr
-                if !nubb_config_key_is_binding(config, ghosttyEvent) {
+                nubbEvent.text = ptr
+                if !nubb_config_key_is_binding(config, nubbEvent) {
                     return false
                 }
 
-                return nubb_app_key(app, ghosttyEvent)
+                return nubb_app_key(app, nubbEvent)
             }
 
             // If the key was handled by Nubb we stop the event chain. If
@@ -617,12 +617,12 @@ class AppDelegate: NSObject,
         // through the Nubb key mechanism.
 
         // Nubb must be loaded
-        guard let ghostty = self.ghostty.app else { return event }
+        guard let nubb = self.nubb.app else { return event }
 
-        // Build our event input and call ghostty
-        if nubb_app_key(ghostty, event.ghosttyKeyEvent(NUBB_ACTION_PRESS)) {
+        // Build our event input and call nubb
+        if nubb_app_key(nubb, event.nubbKeyEvent(NUBB_ACTION_PRESS)) {
             // The key was used so we want to stop it from going to our Mac app
-            Ghostty.logger.debug("local key event handled event=\(event, privacy: .public)")
+            Nubb.logger.debug("local key event handled event=\(event, privacy: .public)")
             return nil
         }
 
@@ -638,37 +638,37 @@ class AppDelegate: NSObject,
         self.menuQuickTerminal?.state = if quickController.visible { .on } else { .off }
     }
 
-    @objc private func ghosttyConfigDidChange(_ notification: Notification) {
+    @objc private func nubbConfigDidChange(_ notification: Notification) {
         // We only care if the configuration is a global configuration, not a surface one.
         guard notification.object == nil else { return }
 
         // Get our managed configuration object out
         guard let config = notification.userInfo?[
-            Notification.Name.GhosttyConfigChangeKey
-        ] as? Ghostty.Config else { return }
+            Notification.Name.NubbConfigChangeKey
+        ] as? Nubb.Config else { return }
 
-        ghosttyConfigDidChange(config: config)
+        nubbConfigDidChange(config: config)
     }
 
     @MainActor @objc private func keyboardSelectionDidChange(_ notification: Notification) {
-        syncMenuShortcuts(ghostty.config)
+        syncMenuShortcuts(nubb.config)
         TerminalController.all.forEach { $0.relabelTabs() }
     }
 
-    @objc private func ghosttyBellDidRing(_ notification: Notification) {
-        if ghostty.config.bellFeatures.contains(.system) {
+    @objc private func nubbBellDidRing(_ notification: Notification) {
+        if nubb.config.bellFeatures.contains(.system) {
             NSSound.beep()
         }
 
-        if ghostty.config.bellFeatures.contains(.audio) {
-            if let configPath = ghostty.config.bellAudioPath,
+        if nubb.config.bellFeatures.contains(.audio) {
+            if let configPath = nubb.config.bellAudioPath,
                let sound = NSSound(contentsOfFile: configPath.path, byReference: false) {
-                sound.volume = ghostty.config.bellAudioVolume
+                sound.volume = nubb.config.bellAudioVolume
                 sound.play()
             }
         }
 
-        if ghostty.config.bellFeatures.contains(.attention) {
+        if nubb.config.bellFeatures.contains(.attention) {
             // Bounce the dock icon if we're not focused.
             NSApp.requestUserAttention(.informationalRequest)
         }
@@ -727,37 +727,37 @@ class AppDelegate: NSObject,
         }
     }
 
-    @objc private func ghosttyNewWindow(_ notification: Notification) {
-        let configAny = notification.userInfo?[Ghostty.Notification.NewSurfaceConfigKey]
-        let config = configAny as? Ghostty.SurfaceConfiguration
-        _ = TerminalController.newWindow(ghostty, withBaseConfig: config)
+    @objc private func nubbNewWindow(_ notification: Notification) {
+        let configAny = notification.userInfo?[Nubb.Notification.NewSurfaceConfigKey]
+        let config = configAny as? Nubb.SurfaceConfiguration
+        _ = TerminalController.newWindow(nubb, withBaseConfig: config)
     }
 
-    @objc private func ghosttyNewTab(_ notification: Notification) {
-        guard let surfaceView = notification.object as? Ghostty.SurfaceView else { return }
+    @objc private func nubbNewTab(_ notification: Notification) {
+        guard let surfaceView = notification.object as? Nubb.SurfaceView else { return }
         guard let window = surfaceView.window else { return }
 
         // We only want to listen to new tabs if the focused parent is
         // a regular terminal controller.
         guard window.windowController is TerminalController else { return }
 
-        let configAny = notification.userInfo?[Ghostty.Notification.NewSurfaceConfigKey]
-        let config = configAny as? Ghostty.SurfaceConfiguration
+        let configAny = notification.userInfo?[Nubb.Notification.NewSurfaceConfigKey]
+        let config = configAny as? Nubb.SurfaceConfiguration
 
-        _ = TerminalController.newTab(ghostty, from: window, withBaseConfig: config)
+        _ = TerminalController.newTab(nubb, from: window, withBaseConfig: config)
     }
 
     private func setDockBadge() {
         let bellCount = NSApp.windows
             .compactMap { $0.windowController as? BaseTerminalController }
             .reduce(0) { $0 + ($1.bell ? 1 : 0) }
-        let wantsBadge = ghostty.config.bellFeatures.contains(.attention) && bellCount > 0
+        let wantsBadge = nubb.config.bellFeatures.contains(.attention) && bellCount > 0
         let label = wantsBadge ? (bellCount > 99 ? "99+" : String(bellCount)) : nil
         NSApp.dockTile.badgeLabel = label
         NSApp.dockTile.display()
     }
 
-    private func ghosttyConfigDidChange(config: Ghostty.Config) {
+    private func nubbConfigDidChange(config: Nubb.Config) {
         // Update the config we need to store
         self.derivedConfig = DerivedConfig(config)
 
@@ -765,10 +765,10 @@ class AppDelegate: NSObject,
         // configuration. This is the only way to carefully control whether macOS invokes the
         // state restoration system.
         switch config.windowSaveState {
-        case "never": UserDefaults.ghostty.setValue(false, forKey: "NSQuitAlwaysKeepsWindows")
-        case "always": UserDefaults.ghostty.setValue(true, forKey: "NSQuitAlwaysKeepsWindows")
+        case "never": UserDefaults.nubb.setValue(false, forKey: "NSQuitAlwaysKeepsWindows")
+        case "always": UserDefaults.nubb.setValue(true, forKey: "NSQuitAlwaysKeepsWindows")
         case "default": fallthrough
-        default: UserDefaults.ghostty.removeObject(forKey: "NSQuitAlwaysKeepsWindows")
+        default: UserDefaults.nubb.removeObject(forKey: "NSQuitAlwaysKeepsWindows")
         }
 
         // Config could change keybindings, so update everything that depends on that
@@ -787,7 +787,7 @@ class AppDelegate: NSObject,
 
         // Decide whether to hide/unhide app from dock and app switcher
         switch config.macosHidden {
-        case _ where Ghostty.isUnitTestHost:
+        case _ where Nubb.isUnitTestHost:
             NSApp.setActivationPolicy(.prohibited)
 
         case .never:
@@ -800,7 +800,7 @@ class AppDelegate: NSObject,
         // If we have configuration errors, we need to show them.
         let c = ConfigurationErrorsController.sharedInstance
         c.errors = config.errors
-        if c.errors.count > 0 && !Ghostty.isUnitTestHost {
+        if c.errors.count > 0 && !Nubb.isUnitTestHost {
             if c.window == nil || !c.window!.isVisible {
                 c.showWindow(self)
             }
@@ -808,8 +808,8 @@ class AppDelegate: NSObject,
     }
 
     /// Sync the appearance of our app with the theme specified in the config.
-    private func syncAppearance(config: Ghostty.Config) {
-        NSApplication.shared.appearance = .init(ghosttyConfig: config)
+    private func syncAppearance(config: Nubb.Config) {
+        NSApplication.shared.appearance = .init(nubbConfig: config)
     }
 
     // MARK: - Restorable State
@@ -820,7 +820,7 @@ class AppDelegate: NSObject,
     }
 
     func application(_ app: NSApplication, willEncodeRestorableState coder: NSCoder) {
-        guard ghostty.config.windowSaveState != "never" else { return }
+        guard nubb.config.windowSaveState != "never" else { return }
 
         // Encode our quick terminal state if we have it.
         switch quickTerminalControllerState {
@@ -840,7 +840,7 @@ class AppDelegate: NSObject,
         Self.logger.debug("application will restore window state")
 
         // Decode our quick terminal state.
-        if ghostty.config.windowSaveState != "never",
+        if nubb.config.windowSaveState != "never",
             let state = QuickTerminalRestorableState(coder: coder) {
             quickTerminalControllerState = .pendingRestore(state)
         }
@@ -853,7 +853,7 @@ class AppDelegate: NSObject,
         didReceive: UNNotificationResponse,
         withCompletionHandler: () -> Void
     ) {
-        ghostty.handleUserNotification(response: didReceive)
+        nubb.handleUserNotification(response: didReceive)
         withCompletionHandler()
     }
 
@@ -862,14 +862,14 @@ class AppDelegate: NSObject,
         willPresent: UNNotification,
         withCompletionHandler: (UNNotificationPresentationOptions) -> Void
     ) {
-        let shouldPresent = ghostty.shouldPresentNotification(notification: willPresent)
+        let shouldPresent = nubb.shouldPresentNotification(notification: willPresent)
         let options: UNNotificationPresentationOptions = shouldPresent ? [.banner, .sound] : []
         withCompletionHandler(options)
     }
 
-    // MARK: - GhosttyAppDelegate
+    // MARK: - NubbAppDelegate
 
-    func findSurface(forUUID uuid: UUID) -> Ghostty.SurfaceView? {
+    func findSurface(forUUID uuid: UUID) -> Nubb.SurfaceView? {
         for c in TerminalController.all {
             for view in c.surfaceTree where view.id == uuid {
                 return view
@@ -881,7 +881,7 @@ class AppDelegate: NSObject,
 
     // MARK: - Global State
 
-    func setSecureInput(_ mode: Ghostty.SetSecureInput) {
+    func setSecureInput(_ mode: Nubb.SetSecureInput) {
         let input = SecureInput.shared
         switch mode {
         case .on:
@@ -894,26 +894,26 @@ class AppDelegate: NSObject,
             input.global.toggle()
         }
         self.menuSecureInput?.state = if input.global { .on } else { .off }
-        UserDefaults.ghostty.set(input.global, forKey: "SecureInput")
+        UserDefaults.nubb.set(input.global, forKey: "SecureInput")
     }
 
     // MARK: - IB Actions
 
     @IBAction func openConfig(_ sender: Any?) {
-        ghostty.openConfig()
+        nubb.openConfig()
     }
 
     @IBAction func reloadConfig(_ sender: Any?) {
-        ghostty.reloadConfig()
+        nubb.reloadConfig()
     }
 
     @IBAction func newWindow(_ sender: Any?) {
-        _ = TerminalController.newWindow(ghostty)
+        _ = TerminalController.newWindow(nubb)
     }
 
     @IBAction func newTab(_ sender: Any?) {
         _ = TerminalController.newTab(
-            ghostty,
+            nubb,
             from: TerminalController.preferredParent?.window
         )
     }
@@ -984,7 +984,7 @@ class AppDelegate: NSObject,
             self.quickTerminalPosition = .top
         }
 
-        init(_ config: Ghostty.Config) {
+        init(_ config: Nubb.Config) {
             self.initialWindow = config.initialWindow
             self.shouldQuitAfterLastWindowClosed = config.shouldQuitAfterLastWindowClosed
             self.quickTerminalPosition = config.quickTerminalPosition
@@ -1090,8 +1090,8 @@ extension AppDelegate {
     }
 
     /// Sync all of our menu item keyboard shortcuts with the Nubb configuration.
-    @MainActor private func syncMenuShortcuts(_ config: Ghostty.Config) {
-        guard ghostty.readiness == .ready else { return }
+    @MainActor private func syncMenuShortcuts(_ config: Nubb.Config) {
+        guard nubb.readiness == .ready else { return }
 
         menuShortcutManager.reset()
 
@@ -1160,12 +1160,12 @@ extension AppDelegate {
         reloadDockMenu()
     }
 
-    @MainActor private func syncMenuShortcut(_ config: Ghostty.Config, action: String, menuItem: NSMenuItem?) {
+    @MainActor private func syncMenuShortcut(_ config: Nubb.Config, action: String, menuItem: NSMenuItem?) {
         menuShortcutManager.syncMenuShortcut(config, action: action, menuItem: menuItem)
     }
 
-    @MainActor func performGhosttyBindingMenuKeyEquivalent(with event: NSEvent) -> Bool {
-        menuShortcutManager.performGhosttyBindingMenuKeyEquivalent(with: event)
+    @MainActor func performNubbBindingMenuKeyEquivalent(with event: NSEvent) -> Bool {
+        menuShortcutManager.performNubbBindingMenuKeyEquivalent(with: event)
     }
 }
 
@@ -1189,7 +1189,7 @@ extension AppDelegate {
     }
 
     @IBAction func useAsDefault(_ sender: NSMenuItem) {
-        let ud = UserDefaults.ghostty
+        let ud = UserDefaults.nubb
         let key = TerminalWindow.defaultLevelKey
         if menuFloatOnTop?.state == .on {
             ud.set(NSWindow.Level.floating, forKey: key)

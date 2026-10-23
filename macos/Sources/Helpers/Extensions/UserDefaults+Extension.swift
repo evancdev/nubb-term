@@ -1,7 +1,7 @@
 import Foundation
 
 extension UserDefaults {
-    static var ghosttySuite: String? {
+    static var nubbSuite: String? {
         #if DEBUG
         ProcessInfo.processInfo.environment["NUBB_USER_DEFAULTS_SUITE"]
         #else
@@ -9,7 +9,7 @@ extension UserDefaults {
         #endif
     }
 
-    static var ghostty: UserDefaults {
-        ghosttySuite.flatMap(UserDefaults.init(suiteName:)) ?? .standard
+    static var nubb: UserDefaults {
+        nubbSuite.flatMap(UserDefaults.init(suiteName:)) ?? .standard
     }
 }

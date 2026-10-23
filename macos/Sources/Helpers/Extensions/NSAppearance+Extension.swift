@@ -7,7 +7,7 @@ extension NSAppearance {
     }
 
     /// Initialize a desired NSAppearance for the Nubb configuration.
-    convenience init?(ghosttyConfig config: Ghostty.Config) {
+    convenience init?(nubbConfig config: Nubb.Config) {
         guard let theme = config.windowTheme else { return nil }
         switch theme {
         case "dark":

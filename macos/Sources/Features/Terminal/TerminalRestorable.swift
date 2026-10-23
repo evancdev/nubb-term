@@ -17,7 +17,7 @@ protocol TerminalRestorable: Codable {
 
     /// Returns a base configuration to use when restoring terminal surfaces.
     /// Override this to provide custom environment variables or other configuration.
-    var baseConfig: Ghostty.SurfaceConfiguration? { get }
+    var baseConfig: Nubb.SurfaceConfiguration? { get }
 }
 
 extension TerminalRestorable {
@@ -44,7 +44,7 @@ extension TerminalRestorable {
     }
 
     /// Default implementation returns nil (no custom base config).
-    var baseConfig: Ghostty.SurfaceConfiguration? { nil }
+    var baseConfig: Nubb.SurfaceConfiguration? { nil }
 
     init?(coder aDecoder: NSCoder) {
         // If the version doesn't match then we can't decode. In the future we can perform
@@ -85,7 +85,7 @@ final class TerminalRestorableState: TerminalRestorable {
     var focusedSurface: String? {
         internalState.focusedSurface
     }
-    var surfaceTree: SplitTree<Ghostty.SurfaceView> {
+    var surfaceTree: SplitTree<Nubb.SurfaceView> {
         internalState.surfaceTree
     }
     var effectiveFullscreenMode: FullscreenMode? {
@@ -103,7 +103,7 @@ final class TerminalRestorableState: TerminalRestorable {
     /// Since we can't really change the type of `TerminalRestorableState`
     /// due to `CodableBridge<TerminalRestorableState>` supporting secure coding,
     /// we use an internal type to perform migration and tests
-    private let internalState: InternalState<Ghostty.SurfaceView>
+    private let internalState: InternalState<Nubb.SurfaceView>
 
     init(from controller: TerminalController) {
         internalState = .init(from: controller)
@@ -117,7 +117,7 @@ final class TerminalRestorableState: TerminalRestorable {
     ///
     /// - Important: If you intend to add more things, go to `InternalState`.
     init(from decoder: any Decoder) throws {
-        self.internalState = try InternalState<Ghostty.SurfaceView>(from: decoder)
+        self.internalState = try InternalState<Nubb.SurfaceView>(from: decoder)
     }
 
     /// This is just wrapper around internalState
@@ -162,10 +162,10 @@ class TerminalWindowRestoration: NSObject, NSWindowRestoration {
         }
 
         // If our configuration is "never" then we never restore the state
-        // no matter what. Note its safe to use "ghostty.config" directly here
+        // no matter what. Note its safe to use "nubb.config" directly here
         // because window restoration is only ever invoked on app start so we
         // don't have to deal with config reloads.
-        if appDelegate.ghostty.config.windowSaveState == "never" {
+        if appDelegate.nubb.config.windowSaveState == "never" {
             AppDelegate.logger.warning("skip restoration: window-save-state=never")
             completionHandler(nil, nil)
             return
@@ -182,7 +182,7 @@ class TerminalWindowRestoration: NSObject, NSWindowRestoration {
         // createWindow so that AppKit can place the window wherever it should
         // be.
         let c = TerminalController.init(
-            appDelegate.ghostty,
+            appDelegate.nubb,
             withSurfaceTree: state.surfaceTree)
         guard let window = c.window else {
             completionHandler(nil, TerminalRestoreError.windowDidNotLoad)
@@ -200,7 +200,7 @@ class TerminalWindowRestoration: NSObject, NSWindowRestoration {
         // Setup our restored state on the controller
         // Find the focused surface in surfaceTree
         if let focusedStr = state.focusedSurface {
-            var foundView: Ghostty.SurfaceView?
+            var foundView: Nubb.SurfaceView?
             for view in c.surfaceTree where view.id.uuidString == focusedStr {
                 foundView = view
                 break
@@ -225,7 +225,7 @@ class TerminalWindowRestoration: NSObject, NSWindowRestoration {
     /// This restores the focus state of the surfaceview within the given window. When restoring,
     /// the view isn't immediately attached to the window since we have to wait for SwiftUI to
     /// catch up. Therefore, we sit in an async loop waiting for the attachment to happen.
-    private static func restoreFocus(to: Ghostty.SurfaceView, inWindow: NSWindow, attempts: Int = 0) {
+    private static func restoreFocus(to: Nubb.SurfaceView, inWindow: NSWindow, attempts: Int = 0) {
         // For the first attempt, we schedule it immediately. Subsequent events wait a bit
         // so we don't just spin the CPU at 100%. Give up after some period of time.
         let after: DispatchTime

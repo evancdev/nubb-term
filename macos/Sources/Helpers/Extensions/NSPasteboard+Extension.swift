@@ -28,8 +28,8 @@ extension NSPasteboard.PasteboardType {
 
 extension NSPasteboard {
     /// The pasteboard to used for Nubb selection.
-    static var ghosttySelection: NSPasteboard = {
-        NSPasteboard(name: .init("com.mitchellh.ghostty.selection"))
+    static var nubbSelection: NSPasteboard = {
+        NSPasteboard(name: .init("com.evancdev.nubb.selection"))
     }()
 
     /// Gets the contents of the pasteboard as a string following a specific set of semantics.
@@ -42,7 +42,7 @@ extension NSPasteboard {
             if let plist = item.propertyList(forType: .fileURL),
                let fileURL = NSURL(pasteboardPropertyList: plist, ofType: .fileURL) as URL?,
                fileURL.isFileURL {
-                return Ghostty.Shell.escape(fileURL.path)
+                return Nubb.Shell.escape(fileURL.path)
             } else {
                 return item.string(forType: .string)
             }
@@ -55,7 +55,7 @@ extension NSPasteboard {
     }
 
     /// The file URLs on the pasteboard, e.g. files copied in Finder.
-    private var ghosttyFileURLs: [URL] {
+    private var nubbFileURLs: [URL] {
         (pasteboardItems ?? []).compactMap { item in
             guard let plist = item.propertyList(forType: .fileURL),
                   let url = NSURL(pasteboardPropertyList: plist, ofType: .fileURL) as URL?,
@@ -72,14 +72,14 @@ extension NSPasteboard {
     /// files are additionally served as "text/uri-list" (RFC 2483, the
     /// type X11/Wayland clipboards carry file copies under). All other
     /// types are mapped through UTType.
-    func ghosttyData(forMime mime: String) -> Data? {
+    func nubbData(forMime mime: String) -> Data? {
         switch mime {
         case "text/plain":
             guard let str = getOpinionatedStringContents() else { return nil }
             return Data(str.utf8)
 
         case "text/uri-list":
-            let urls = ghosttyFileURLs
+            let urls = nubbFileURLs
             guard !urls.isEmpty else { return nil }
             return Data(urls.map { $0.absoluteString + "\r\n" }.joined().utf8)
 
@@ -93,7 +93,7 @@ extension NSPasteboard {
     /// from the pasteboard types. Types without a MIME mapping are not
     /// reported. This only inspects declared types and never reads data,
     /// since mode 5522 paste events must remain metadata-only.
-    func ghosttyAvailableMimes() -> [String] {
+    func nubbAvailableMimes() -> [String] {
         var result: [String] = []
         var seen = Set<String>()
         let availableTypes = types ?? []
@@ -134,13 +134,13 @@ extension NSPasteboard {
 
     /// The pasteboard for the Nubb enum type. Returns nil for locations
     /// macOS can't serve; callers report those as unsupported.
-    static func ghostty(_ clipboard: nubb_clipboard_e) -> NSPasteboard? {
+    static func nubb(_ clipboard: nubb_clipboard_e) -> NSPasteboard? {
         switch clipboard {
         case NUBB_CLIPBOARD_STANDARD:
             return Self.general
 
         case NUBB_CLIPBOARD_SELECTION:
-            return Self.ghosttySelection
+            return Self.nubbSelection
 
         case NUBB_CLIPBOARD_PRIMARY:
             // macOS has no primary selection.

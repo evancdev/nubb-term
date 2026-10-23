@@ -61,7 +61,7 @@
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>com.mitchellh.ghosttySurfaceId</string>
+			<string>com.evancdev.nubbSurfaceId</string>
 			<key>UTTypeDescription</key>
 			<string>Nubb Surface Identifier</string>
 			<key>UTTypeConformsTo</key>

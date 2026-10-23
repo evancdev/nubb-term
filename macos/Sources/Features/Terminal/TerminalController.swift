@@ -10,7 +10,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         let defaultValue = "Terminal"
 
         guard let appDelegate = NSApp.delegate as? AppDelegate else { return defaultValue }
-        let config = appDelegate.ghostty.config
+        let config = appDelegate.nubb.config
 
         // If we have no window decorations, there's no reason to do anything but
         // the default titlebar (because there will be no titlebar).
@@ -59,9 +59,9 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// The notification cancellable for focused surface property changes.
     private var surfaceAppearanceCancellables: Set<AnyCancellable> = []
 
-    init(_ ghostty: Ghostty.App,
-         withBaseConfig base: Ghostty.SurfaceConfiguration? = nil,
-         withSurfaceTree tree: SplitTree<Ghostty.SurfaceView>? = nil,
+    init(_ nubb: Nubb.App,
+         withBaseConfig base: Nubb.SurfaceConfiguration? = nil,
+         withSurfaceTree tree: SplitTree<Nubb.SurfaceView>? = nil,
          parent: NSWindow? = nil
     ) {
         // The window we manage is not restorable if we've specified a command
@@ -72,52 +72,52 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         self.restorable = (base?.command ?? "") == ""
 
         // Setup our initial derived config based on the current app config
-        self.derivedConfig = DerivedConfig(ghostty.config)
+        self.derivedConfig = DerivedConfig(nubb.config)
 
-        super.init(ghostty, baseConfig: base, surfaceTree: tree)
+        super.init(nubb, baseConfig: base, surfaceTree: tree)
 
         // Setup our notifications for behaviors
         let center = NotificationCenter.default
         center.addObserver(
             self,
             selector: #selector(onToggleFullscreen),
-            name: Ghostty.Notification.ghosttyToggleFullscreen,
+            name: Nubb.Notification.nubbToggleFullscreen,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(onMoveTab),
-            name: .ghosttyMoveTab,
+            name: .nubbMoveTab,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(onGotoTab),
-            name: Ghostty.Notification.ghosttyGotoTab,
+            name: Nubb.Notification.nubbGotoTab,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(onCloseTab),
-            name: .ghosttyCloseTab,
+            name: .nubbCloseTab,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(onCloseOtherTabs),
-            name: .ghosttyCloseOtherTabs,
+            name: .nubbCloseOtherTabs,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(onCloseTabsOnTheRight),
-            name: .ghosttyCloseTabsOnTheRight,
+            name: .nubbCloseTabsOnTheRight,
             object: nil)
         center.addObserver(
             self,
             selector: #selector(onResetWindowSize),
-            name: .ghosttyResetWindowSize,
+            name: .nubbResetWindowSize,
             object: nil
         )
         center.addObserver(
             self,
-            selector: #selector(ghosttyConfigDidChange(_:)),
-            name: .ghosttyConfigDidChange,
+            selector: #selector(nubbConfigDidChange(_:)),
+            name: .nubbConfigDidChange,
             object: nil
         )
         center.addObserver(
@@ -128,7 +128,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         center.addObserver(
             self,
             selector: #selector(onCloseWindow),
-            name: .ghosttyCloseWindow,
+            name: .nubbCloseWindow,
             object: nil
         )
     }
@@ -166,7 +166,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     // MARK: Base Controller Overrides
 
-    override func surfaceTreeDidChange(from: SplitTree<Ghostty.SurfaceView>, to: SplitTree<Ghostty.SurfaceView>) {
+    override func surfaceTreeDidChange(from: SplitTree<Nubb.SurfaceView>, to: SplitTree<Nubb.SurfaceView>) {
         super.surfaceTreeDidChange(from: from, to: to)
 
         // Whenever our surface tree changes in any way (new split, close split, etc.)
@@ -185,9 +185,9 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     }
 
     override func replaceSurfaceTree(
-        _ newTree: SplitTree<Ghostty.SurfaceView>,
-        moveFocusTo newView: Ghostty.SurfaceView? = nil,
-        moveFocusFrom oldView: Ghostty.SurfaceView? = nil,
+        _ newTree: SplitTree<Nubb.SurfaceView>,
+        moveFocusTo newView: Nubb.SurfaceView? = nil,
+        moveFocusFrom oldView: Nubb.SurfaceView? = nil,
         undoAction: String? = nil
     ) {
         // We have a special case if our tree is empty to close our tab immediately.
@@ -245,11 +245,11 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     /// The "new window" action.
     static func newWindow(
-        _ ghostty: Ghostty.App,
-        withBaseConfig baseConfig: Ghostty.SurfaceConfiguration? = nil,
+        _ nubb: Nubb.App,
+        withBaseConfig baseConfig: Nubb.SurfaceConfiguration? = nil,
         withParent explicitParent: NSWindow? = nil
     ) -> TerminalController {
-        let c = TerminalController.init(ghostty, withBaseConfig: baseConfig)
+        let c = TerminalController.init(nubb, withBaseConfig: baseConfig)
 
         // Get our parent. Our parent is the one explicitly given to us,
         // otherwise the focused terminal, otherwise an arbitrary one.
@@ -265,7 +265,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             // fullscreen but this is how we've always done it. This matches iTerm2
             // behavior.
             c.toggleFullscreen(mode: .native)
-        } else if let fullscreenMode = ghostty.config.windowFullscreen {
+        } else if let fullscreenMode = nubb.config.windowFullscreen {
             switch fullscreenMode {
             case .native:
                 // Native has to be done immediately so that our stylemask contains
@@ -322,11 +322,11 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
                 // Register redo action
                 undoManager.registerUndo(
-                    withTarget: ghostty,
+                    withTarget: nubb,
                     expiresAfter: target.undoExpiration
-                ) { ghostty in
+                ) { nubb in
                     _ = TerminalController.newWindow(
-                        ghostty,
+                        nubb,
                         withBaseConfig: baseConfig,
                         withParent: explicitParent)
                 }
@@ -339,13 +339,13 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// Create a new window with an existing split tree.
     /// The window will be sized to match the tree's current view bounds if available.
     /// - Parameters:
-    ///   - ghostty: The Nubb app instance.
+    ///   - nubb: The Nubb app instance.
     ///   - tree: The split tree to use for the new window.
     ///   - position: Optional screen position (top-left corner) for the new window.
     ///               If nil, the window will cascade from the last cascade point.
     static func newWindow(
-        _ ghostty: Ghostty.App,
-        tree: SplitTree<Ghostty.SurfaceView>,
+        _ nubb: Nubb.App,
+        tree: SplitTree<Nubb.SurfaceView>,
         position: NSPoint? = nil,
         confirmUndo: Bool = true,
         inheritBackgroundOpacity: Bool? = nil
@@ -354,7 +354,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         // before moving into the new window
         let treeSize: CGSize? = tree.root?.viewBounds()
 
-        let c = TerminalController.init(ghostty, withSurfaceTree: tree)
+        let c = TerminalController.init(nubb, withSurfaceTree: tree)
         if let inheritBackgroundOpacity {
             c.isBackgroundOpaque = inheritBackgroundOpacity
         }
@@ -399,11 +399,11 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
                 }
 
                 undoManager.registerUndo(
-                    withTarget: ghostty,
+                    withTarget: nubb,
                     expiresAfter: target.undoExpiration
-                ) { ghostty in
+                ) { nubb in
                     _ = TerminalController.newWindow(
-                        ghostty,
+                        nubb,
                         tree: tree,
                         inheritBackgroundOpacity: inheritBackgroundOpacity
                     )
@@ -415,15 +415,15 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     }
 
     static func newTab(
-        _ ghostty: Ghostty.App,
+        _ nubb: Nubb.App,
         from parent: NSWindow? = nil,
-        withBaseConfig baseConfig: Ghostty.SurfaceConfiguration? = nil
+        withBaseConfig baseConfig: Nubb.SurfaceConfiguration? = nil
     ) -> TerminalController? {
         // Making sure that we're dealing with a TerminalController. If not,
         // then we just create a new window.
         guard let parent,
               let parentController = parent.windowController as? TerminalController else {
-            return newWindow(ghostty, withBaseConfig: baseConfig, withParent: parent)
+            return newWindow(nubb, withBaseConfig: baseConfig, withParent: parent)
         }
 
         // If our parent is in non-native fullscreen, then new tabs do not work.
@@ -440,7 +440,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         }
 
         // Create a new window and add it to the parent
-        let controller = TerminalController.init(ghostty, withBaseConfig: baseConfig)
+        let controller = TerminalController.init(nubb, withBaseConfig: baseConfig)
         controller.isBackgroundOpaque = parentController.isBackgroundOpaque
         guard let window = controller.window else { return controller }
 
@@ -464,7 +464,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         if window.tabbingMode != .disallowed {
             let tabCreated: Bool
             // Add the window to the tab group and show it.
-            switch ghostty.config.windowNewTabPosition {
+            switch nubb.config.windowNewTabPosition {
             case "end":
                 // If we already have a tab group and we want the new tab to open at the end,
                 // then we use the last window in the tab group as the parent.
@@ -535,11 +535,11 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
                 // Register redo action
                 undoManager.registerUndo(
-                    withTarget: ghostty,
+                    withTarget: nubb,
                     expiresAfter: target.undoExpiration
-                ) { ghostty in
+                ) { nubb in
                     _ = TerminalController.newTab(
-                        ghostty,
+                        nubb,
                         from: parent,
                         withBaseConfig: baseConfig)
                 }
@@ -551,11 +551,11 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     // MARK: - Methods
 
-    @objc private func ghosttyConfigDidChange(_ notification: Notification) {
+    @objc private func nubbConfigDidChange(_ notification: Notification) {
         // Get our managed configuration object out
         guard let config = notification.userInfo?[
-            Notification.Name.GhosttyConfigChangeKey
-        ] as? Ghostty.Config else { return }
+            Notification.Name.NubbConfigChangeKey
+        ] as? Nubb.Config else { return }
 
         // If this is an app-level config update then we update some things.
         if notification.object == nil {
@@ -573,12 +573,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             return
         }
         /// Surface-level config will be updated in
-        /// ``Ghostty/Ghostty/SurfaceView/derivedConfig`` then
+        /// ``Ghostty/Nubb/SurfaceView/derivedConfig`` then
         /// ``TerminalController/focusedSurfaceDidChange(to:)``
     }
 
     /// Updates the loaded window's restoration policy from the app configuration.
-    private func syncRestoration(_ config: Ghostty.Config) {
+    private func syncRestoration(_ config: Nubb.Config) {
         guard isWindowLoaded, let window else { return }
         // Setting all three of these is required for restoration to work.
         window.isRestorable = restorable && config.windowSaveState != "never"
@@ -604,7 +604,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
                     continue
                 }
 
-                if let equiv = ghostty.config.keyboardShortcut(for: "goto_tab:\(tab)") {
+                if let equiv = nubb.config.keyboardShortcut(for: "goto_tab:\(tab)") {
                     window.keyEquivalent = "\(equiv)"
                 } else {
                     window.keyEquivalent = ""
@@ -647,7 +647,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         syncAppearance(focusedSurface.derivedConfig)
     }
 
-    private func syncAppearance(_ surfaceConfig: Ghostty.SurfaceView.DerivedConfig) {
+    private func syncAppearance(_ surfaceConfig: Nubb.SurfaceView.DerivedConfig) {
         // Let our window handle its own appearance
         guard let window = window as? TerminalWindow else { return }
 
@@ -663,7 +663,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
         // Call this last in case it uses any of the properties above.
         window.syncAppearance(surfaceConfig)
-        terminalViewContainer?.ghosttyConfigDidChange(ghostty.config, preferredBackgroundColor: window.preferredBackgroundColor)
+        terminalViewContainer?.nubbConfigDidChange(nubb.config, preferredBackgroundColor: window.preferredBackgroundColor)
     }
 
     /// Adjusts the given frame for the configured window position.
@@ -691,7 +691,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     /// This is called anytime a node in the surface tree is being removed.
     override func closeSurface(
-        _ node: SplitTree<Ghostty.SurfaceView>.Node,
+        _ node: SplitTree<Nubb.SurfaceView>.Node,
         withConfirmation: Bool = true
     ) {
         // If this isn't the root then we're dealing with a split closure.
@@ -733,10 +733,10 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             // Register undo action to restore the tab
             undoManager.setActionName("Close Tab")
             undoManager.registerUndo(
-                withTarget: ghostty,
+                withTarget: nubb,
                 expiresAfter: undoExpiration
-            ) { ghostty in
-                let newController = TerminalController(ghostty, with: undoState)
+            ) { nubb in
+                let newController = TerminalController(nubb, with: undoState)
 
                 if registerRedo {
                     undoManager.registerUndo(
@@ -881,10 +881,10 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
                 // Register undo action to restore the window
                 undoManager.setActionName("Close Window")
                 undoManager.registerUndo(
-                    withTarget: ghostty,
-                    expiresAfter: undoExpiration) { ghostty in
+                    withTarget: nubb,
+                    expiresAfter: undoExpiration) { nubb in
                         // Restore the undo state
-                        let newController = TerminalController(ghostty, with: undoState)
+                        let newController = TerminalController(nubb, with: undoState)
 
                         // Register redo action
                         undoManager.registerUndo(
@@ -937,12 +937,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
         undoManager.setActionName("Close Window")
         undoManager.registerUndo(
-            withTarget: ghostty,
+            withTarget: nubb,
             expiresAfter: undoExpiration
-        ) { ghostty in
+        ) { nubb in
             // Restore all windows in the tab group
             let controllers = undoStates.map { undoState in
-                TerminalController(ghostty, with: undoState)
+                TerminalController(nubb, with: undoState)
             }
 
             // The first controller becomes the parent window for all tabs.
@@ -1020,15 +1020,15 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// The state that we require to recreate a TerminalController from an undo.
     struct UndoState {
         let frame: NSRect
-        let surfaceTree: SplitTree<Ghostty.SurfaceView>
+        let surfaceTree: SplitTree<Nubb.SurfaceView>
         let focusedSurface: UUID?
         let tabIndex: Int?
         weak var tabGroup: NSWindowTabGroup?
         let tabColor: TerminalTabColor
     }
 
-    convenience init(_ ghostty: Ghostty.App, with undoState: UndoState) {
-        self.init(ghostty, withSurfaceTree: undoState.surfaceTree)
+    convenience init(_ nubb: Nubb.App, with undoState: UndoState) {
+        self.init(nubb, withSurfaceTree: undoState.surfaceTree)
 
         // Show the window and restore its frame
         showWindow(nil)
@@ -1057,14 +1057,14 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             if let focusedUUID = undoState.focusedSurface,
                let focusTarget = surfaceTree.first(where: { $0.id == focusedUUID }) {
                 DispatchQueue.main.async {
-                    Ghostty.moveFocus(to: focusTarget, from: nil)
+                    Nubb.moveFocus(to: focusTarget, from: nil)
                 }
             } else if let focusedSurface = surfaceTree.first {
                 // No prior focused surface or we can't find it, let's focus
                 // the first.
                 self.focusedSurface = focusedSurface
                 DispatchQueue.main.async {
-                    Ghostty.moveFocus(to: focusedSurface, from: nil)
+                    Nubb.moveFocus(to: focusedSurface, from: nil)
                 }
             }
         }
@@ -1095,10 +1095,10 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         guard let window else { return }
 
         // I copy this because we may change the source in the future but also because
-        // I regularly audit our codebase for "ghostty.config" access because generally
+        // I regularly audit our codebase for "nubb.config" access because generally
         // you shouldn't use it. Its safe in this case because for a new window we should
         // use whatever the latest app-level config is.
-        let config = ghostty.config
+        let config = nubb.config
 
         syncRestoration(config)
 
@@ -1112,7 +1112,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
         // Initialize our content view to the SwiftUI root
         let container = TerminalViewContainer {
-            TerminalView(ghostty: ghostty, viewModel: self, delegate: self)
+            TerminalView(nubb: nubb, viewModel: self, delegate: self)
         }
 
         // Set the initial content size on the container so that
@@ -1202,9 +1202,9 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     // Shows the "+" button in the tab bar, responds to that click.
     override func newWindowForTab(_ sender: Any?) {
-        // Trigger the ghostty core event logic for a new tab.
+        // Trigger the nubb core event logic for a new tab.
         guard let surface = self.focusedSurface?.surface else { return }
-        ghostty.newTab(surface: surface)
+        nubb.newTab(surface: surface)
     }
 
     // MARK: NSWindowDelegate
@@ -1311,12 +1311,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     @IBAction func newWindow(_ sender: Any?) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.newWindow(surface: surface)
+        nubb.newWindow(surface: surface)
     }
 
     @IBAction func newTab(_ sender: Any?) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.newTab(surface: surface)
+        nubb.newTab(surface: surface)
     }
 
     @IBAction func closeTab(_ sender: Any?) {
@@ -1409,7 +1409,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// any zero dimension as is. This is only done if the surface is the only
     /// terminal in the window, since otherwise it would resize other terminals
     /// (including other tabs, which share the window frame).
-    func resizeWindow(_ surfaceView: Ghostty.SurfaceView, to size: NSSize) -> Bool {
+    func resizeWindow(_ surfaceView: Nubb.SurfaceView, to size: NSSize) -> Bool {
         guard let window,
               let screen = window.screen ?? NSScreen.main,
               case .leaf(let view) = surfaceTree.root, view == surfaceView,
@@ -1496,19 +1496,19 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         }
     }
 
-    @IBAction func toggleGhosttyFullScreen(_ sender: Any?) {
+    @IBAction func toggleNubbFullScreen(_ sender: Any?) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.toggleFullscreen(surface: surface)
+        nubb.toggleFullscreen(surface: surface)
     }
 
     @IBAction func toggleTerminalInspector(_ sender: Any?) {
         guard let surface = focusedSurface?.surface else { return }
-        ghostty.toggleTerminalInspector(surface: surface)
+        nubb.toggleTerminalInspector(surface: surface)
     }
 
     // MARK: - TerminalViewDelegate
 
-    override func focusedSurfaceDidChange(to: Ghostty.SurfaceView?) {
+    override func focusedSurfaceDidChange(to: Nubb.SurfaceView?) {
         super.focusedSurfaceDidChange(to: to)
 
         // We always cancel our event listener
@@ -1530,7 +1530,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             .store(in: &surfaceAppearanceCancellables)
     }
 
-    private func syncAppearanceOnPropertyChange(_ surface: Ghostty.SurfaceView?) {
+    private func syncAppearanceOnPropertyChange(_ surface: Nubb.SurfaceView?) {
         guard let surface else { return }
         DispatchQueue.main.async { [weak self, weak surface] in
             guard let surface else { return }
@@ -1543,12 +1543,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     // MARK: - Notifications
 
     @objc private func onMoveTab(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard target == self.focusedSurface else { return }
         guard let window = self.window else { return }
 
         // Get the move action
-        guard let action = notification.userInfo?[Notification.Name.GhosttyMoveTabKey] as? Ghostty.Action.MoveTab else { return }
+        guard let action = notification.userInfo?[Notification.Name.NubbMoveTabKey] as? Nubb.Action.MoveTab else { return }
         guard action.amount != 0 else { return }
 
         // Determine our current selected index
@@ -1606,12 +1606,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     }
 
     @objc private func onGotoTab(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard target == self.focusedSurface else { return }
         guard let window = self.window else { return }
 
         // Get the tab index from the notification
-        guard let tabEnumAny = notification.userInfo?[Ghostty.Notification.GotoTabKey] else { return }
+        guard let tabEnumAny = notification.userInfo?[Nubb.Notification.GotoTabKey] else { return }
         guard let tabEnum = tabEnumAny as? nubb_action_goto_tab_e else { return }
         let tabIndex: Int32 = tabEnum.rawValue
 
@@ -1658,46 +1658,46 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     }
 
     @objc private func onCloseTab(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard surfaceTree.contains(target) else { return }
         closeTab(self)
     }
 
     @objc private func onCloseOtherTabs(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard surfaceTree.contains(target) else { return }
         closeOtherTabs(self)
     }
 
     @objc private func onCloseTabsOnTheRight(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard surfaceTree.contains(target) else { return }
         closeTabsOnTheRight(self)
     }
 
     @objc private func onCloseWindow(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard surfaceTree.contains(target) else { return }
         closeWindow(self)
     }
 
     @objc private func onResetWindowSize(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard surfaceTree.contains(target) else { return }
         returnToDefaultSize(nil)
     }
 
     @objc private func onToggleFullscreen(notification: SwiftUI.Notification) {
-        guard let target = notification.object as? Ghostty.SurfaceView else { return }
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard target == self.focusedSurface else { return }
 
         // Get the fullscreen mode we want to toggle
         let fullscreenMode: FullscreenMode
-        if let any = notification.userInfo?[Ghostty.Notification.FullscreenModeKey],
+        if let any = notification.userInfo?[Nubb.Notification.FullscreenModeKey],
            let mode = any as? FullscreenMode {
             fullscreenMode = mode
         } else {
-            Ghostty.logger.warning("no fullscreen mode specified or invalid mode, doing nothing")
+            Nubb.logger.warning("no fullscreen mode specified or invalid mode, doing nothing")
             return
         }
 
@@ -1706,8 +1706,8 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
     struct DerivedConfig {
         let backgroundColor: Color
-        let macosWindowButtons: Ghostty.MacOSWindowButtons
-        let macosTitlebarStyle: Ghostty.Config.MacOSTitlebarStyle
+        let macosWindowButtons: Nubb.MacOSWindowButtons
+        let macosTitlebarStyle: Nubb.Config.MacOSTitlebarStyle
         let maximize: Bool
         let windowPositionX: Int16?
         let windowPositionY: Int16?
@@ -1721,7 +1721,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             self.windowPositionY = nil
         }
 
-        init(_ config: Ghostty.Config) {
+        init(_ config: Nubb.Config) {
             self.backgroundColor = config.backgroundColor
             self.macosWindowButtons = config.macosWindowButtons
             self.macosTitlebarStyle = config.macosTitlebarStyle

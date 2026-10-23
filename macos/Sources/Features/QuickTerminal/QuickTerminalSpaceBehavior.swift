@@ -5,7 +5,7 @@ enum QuickTerminalSpaceBehavior {
     case remain
     case move
 
-    init?(fromGhosttyConfig string: String) {
+    init?(fromNubbConfig string: String) {
         switch string {
         case "move":
             self = .move

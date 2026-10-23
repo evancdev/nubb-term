@@ -6,10 +6,10 @@ import NubbKit
 // CLI APIs require it and it lets us ensure it is done immediately for the
 // rest of the app.
 if nubb_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != NUBB_SUCCESS {
-    Ghostty.logger.critical("nubb_init failed")
+    Nubb.logger.critical("nubb_init failed")
 
     // We also write to stderr if this is executed from the CLI or zig run
-    switch Ghostty.launchSource {
+    switch Nubb.launchSource {
     case .cli, .zig_run:
         let stderrHandle = FileHandle.standardError
         stderrHandle.write(

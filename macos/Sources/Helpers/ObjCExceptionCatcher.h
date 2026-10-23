@@ -5,7 +5,7 @@
 /// (at least at the time of writing this comment).
 
 /// NSWindow.addTabbedWindow wrapper
-FOUNDATION_EXPORT BOOL GhosttyAddTabbedWindowSafely(
+FOUNDATION_EXPORT BOOL NubbAddTabbedWindowSafely(
     id _Nonnull parent,
     id _Nonnull child,
     NSInteger ordered,
@@ -13,7 +13,7 @@ FOUNDATION_EXPORT BOOL GhosttyAddTabbedWindowSafely(
 );
 
 /// NSWindowController.showWindow wrapper
-FOUNDATION_EXPORT BOOL GhosttyShowWindowSafely(
+FOUNDATION_EXPORT BOOL NubbShowWindowSafely(
     id _Nonnull controller,
     id _Nullable sender,
     NSError * _Nullable * _Nullable error

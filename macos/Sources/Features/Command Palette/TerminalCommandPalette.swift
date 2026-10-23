@@ -18,14 +18,14 @@ func sortedTerminalPaletteOptions(_ options: [CommandOption]) -> [CommandOption]
 
 struct TerminalCommandPaletteView: View {
     /// The surface that this command palette represents.
-    let surfaceView: Ghostty.SurfaceView
+    let surfaceView: Nubb.SurfaceView
 
     /// Set this to true to show the view, this will be set to false if any actions
     /// result in the view disappearing.
     @Binding var isPresented: Bool
 
     /// The configuration so we can lookup keyboard shortcuts.
-    @ObservedObject var ghosttyConfig: Ghostty.Config
+    @ObservedObject var nubbConfig: Nubb.Config
 
     /// The callback when an action is submitted.
     var onAction: ((String) -> Void)
@@ -42,7 +42,7 @@ struct TerminalCommandPaletteView: View {
 
                         CommandPaletteView(
                             isPresented: $isPresented,
-                            backgroundColor: ghosttyConfig.backgroundColor,
+                            backgroundColor: nubbConfig.backgroundColor,
                             options: commandOptions
                         )
                         .zIndex(1) // Ensure it's on top
@@ -78,10 +78,10 @@ struct TerminalCommandPaletteView: View {
     /// Custom commands from the command-palette-entry configuration.
     private var terminalOptions: [CommandOption] {
         guard let appDelegate = NSApp.delegate as? AppDelegate else { return [] }
-        return appDelegate.ghostty.config.commandPaletteEntries
+        return appDelegate.nubb.config.commandPaletteEntries
             .filter(\.isSupported)
             .map { c in
-                let symbols = appDelegate.ghostty.config.keyboardShortcut(for: c.action)?.keyList
+                let symbols = appDelegate.nubb.config.keyboardShortcut(for: c.action)?.keyList
                 return CommandOption(
                     title: c.title,
                     description: c.description,
@@ -125,7 +125,7 @@ struct TerminalCommandPaletteView: View {
                     sortKey: ObjectIdentifier(surface)
                 ) {
                     NotificationCenter.default.post(
-                        name: Ghostty.Notification.ghosttyPresentTerminal,
+                        name: Nubb.Notification.nubbPresentTerminal,
                         object: surface
                     )
                 }
