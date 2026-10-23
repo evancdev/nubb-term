@@ -82,7 +82,9 @@ been removed. Do not add them back.
 - One coherent change per commit. Stage explicit paths, never
   `git add -A`. Scan the staged diff for secrets before committing.
 - Removals: one feature per commit, and the build and tests must pass at
-  every commit.
+  every commit. Each removal of upstream Ghostty code adds its entry to
+  `REMOVED.md` in the same commit: a short reason, any removed config
+  options, CLI actions, or dependencies, and the upstream paths.
 
 ## Issue and PR Guidelines
 

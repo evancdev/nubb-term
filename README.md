@@ -23,3 +23,5 @@ open zig-out/Nubb.app
 
 For everything about the terminal itself, see
 [Ghostty's README](https://github.com/ghostty-org/ghostty#readme).
+[REMOVED.md](REMOVED.md) lists every Ghostty feature and file Nubb removed,
+and how to get each one back.
