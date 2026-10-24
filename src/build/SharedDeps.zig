@@ -7,8 +7,6 @@ const Config = @import("Config.zig");
 const HelpStrings = @import("HelpStrings.zig");
 const MetallibStep = @import("MetallibStep.zig");
 const UnicodeTables = @import("UnicodeTables.zig");
-const NubbFrameData = @import("NubbFrameData.zig");
-const DistResource = @import("NubbDist.zig").Resource;
 const translate_c = @import("translate_c");
 
 config: *const Config,
@@ -17,7 +15,6 @@ options: *std.Build.Step.Options,
 help_strings: HelpStrings,
 metallib: ?*MetallibStep,
 unicode_tables: UnicodeTables,
-framedata: NubbFrameData,
 uucode_tables: std.Build.LazyPath,
 
 /// Singleton uucode module, instantiated once in `init` and reused
@@ -86,7 +83,6 @@ pub fn init(b: *std.Build, cfg: *const Config) !SharedDeps {
         .config = cfg,
         .help_strings = try .init(b, cfg),
         .unicode_tables = try .init(b, uucode_tables),
-        .framedata = try .init(b),
         .uucode_tables = uucode_tables,
         .uucode_mod = uucode_mod,
 
@@ -504,7 +500,6 @@ pub fn add(
 
     self.help_strings.addImport(step);
     self.unicode_tables.addImport(step);
-    self.framedata.addImport(step);
 
     return static_libs;
 }

@@ -27,7 +27,7 @@ if nubb_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != NUBB_SUCCESS {
 }
 
 // This will run the CLI action and exit if one was specified. A CLI
-// action is a command starting with a `+`, such as `nubb +boo`.
+// action is a command starting with a `+`, such as `nubb +version`.
 nubb_cli_try_action()
 
 _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)

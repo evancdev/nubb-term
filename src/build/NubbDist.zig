@@ -2,8 +2,6 @@ const NubbDist = @This();
 
 const std = @import("std");
 const Config = @import("Config.zig");
-const SharedDeps = @import("SharedDeps.zig");
-const NubbFrameData = @import("NubbFrameData.zig");
 
 /// The final source tarball.
 archive: std.Build.LazyPath,
@@ -20,14 +18,6 @@ check_step: *std.Build.Step,
 pub fn init(b: *std.Build, cfg: *const Config) !NubbDist {
     // The name prefix used for all paths in the archive.
     const name = "nubb";
-
-    // Get the resources we're going to inject into the source tarball.
-    const alloc = b.allocator;
-    var resources: std.ArrayListUnmanaged(Resource) = .empty;
-    {
-        const framedata = NubbFrameData.distResources(b);
-        try resources.append(alloc, framedata.framedata);
-    }
 
     // git archive to create the final tarball. "git archive" is the
     // easiest way I can find to create a tarball that ignores stuff
@@ -48,26 +38,6 @@ pub fn init(b: *std.Build, cfg: *const Config) !NubbDist {
             name, cfg.version,
         }));
         git_archive.addPrefixedFileArg("--add-file=", version);
-    }
-
-    // Add all of our resources into the tarball.
-    for (resources.items) |resource| {
-        // Our dist path basename may not match our generated file basename,
-        // and git archive requires this. To be safe, we copy the file once
-        // to ensure the basename matches and then use that as the final
-        // generated file.
-        const copied = b.addWriteFiles().addCopyFile(
-            resource.generated,
-            std.fs.path.basename(resource.dist),
-        );
-
-        // --add-file uses the most recent --prefix to determine the path
-        // in the archive to copy the file (the directory only).
-        git_archive.addArg(b.fmt("--prefix={s}-{f}/{s}/", .{
-            name,                                 cfg.version,
-            std.fs.path.dirname(resource.dist).?,
-        }));
-        git_archive.addPrefixedFileArg("--add-file=", copied);
     }
 
     // Add our output
@@ -124,13 +94,6 @@ pub fn init(b: *std.Build, cfg: *const Config) !NubbDist {
         break :step step;
     };
 
-    // Check that all our dist resources are at the proper path.
-    for (resources.items) |resource| {
-        const path = extract_dir.path(b, resource.dist);
-        const check_path = b.addCheckFile(path, .{});
-        check_test.step.dependOn(&check_path.step);
-    }
-
     return .{
         .archive = output,
         .install_step = &install.step,
@@ -138,51 +101,3 @@ pub fn init(b: *std.Build, cfg: *const Config) !NubbDist {
         .check_step = &check_test.step,
     };
 }
-
-/// A dist resource is a resource that is built and distributed as part
-/// of the source tarball with Nubb. These aren't committed to the Git
-/// repository but are built as part of the `zig build dist` command.
-/// The purpose is to limit the number of build-time dependencies required
-/// for downstream users and packagers.
-pub const Resource = struct {
-    /// The relative path in the source tree where the resource will be
-    /// if it was pre-built. These are not checksummed or anything because the
-    /// assumption is that the source tarball itself is checksummed and signed.
-    dist: []const u8,
-
-    /// The path to the generated resource in the build system. By depending
-    /// on this you'll force it to regenerate. This does NOT point to the
-    /// "path" above.
-    generated: std.Build.LazyPath,
-
-    /// Returns the path to use for this resource.
-    pub fn path(self: *const Resource, b: *std.Build) std.Build.LazyPath {
-        // If the dist path exists at build compile time then we use it.
-        if (self.exists(b)) {
-            return b.path(self.dist);
-        }
-
-        // Otherwise we use the generated path.
-        return self.generated;
-    }
-
-    /// Returns true if the dist path exists at build time.
-    pub fn exists(self: *const Resource, b: *std.Build) bool {
-        if (b.root.access(b.graph.io, self.dist, .{})) {
-            // If we have a ".git" directory then we're a git checkout
-            // and we never want to use the dist path. This shouldn't happen
-            // so show a warning to the user.
-            if (b.root.access(b.graph.io, ".git", .{})) {
-                std.log.warn(
-                    "dist resource '{s}' should not be in a git checkout",
-                    .{self.dist},
-                );
-                return false;
-            } else |_| {}
-
-            return true;
-        } else |_| {
-            return false;
-        }
-    }
-};

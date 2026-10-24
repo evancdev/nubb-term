@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 800 files and about 237,000 lines of text.
+brought back later. So far that is 1,038 files and about 247,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -314,3 +314,14 @@ Kaitai format spec.
 Nubb keeps the bash, fish, and zsh integrations.
 
 - `src/shell-integration/elvish/`, `src/shell-integration/nushell/`
+
+### `+boo` animation
+
+A full-screen playback of the ghost animation from the Ghostty website. The
+235 text frames were compressed with zlib at build time and embedded in the
+binary. This was the only dist resource, so the dist tarball no longer
+injects generated files. CLI action removed: `+boo`.
+
+- `src/build/GhosttyFrameData.zig`
+- `src/build/framegen/`
+- `src/cli/boo.zig`

@@ -18,7 +18,6 @@ const show_config = @import("show_config.zig");
 const explain_config = @import("explain_config.zig");
 const validate_config = @import("validate_config.zig");
 const show_face = @import("show_face.zig");
-const boo = @import("boo.zig");
 const new_window = @import("new_window.zig");
 const new_tab = @import("new_tab.zig");
 const global = @import("../global.zig");
@@ -68,9 +67,6 @@ pub const Action = enum {
 
     // Show which font face Nubb loads a codepoint from.
     @"show-face",
-
-    // Boo!
-    boo,
 
     // Use IPC to tell the running Nubb to open a new window.
     @"new-window",
@@ -158,7 +154,6 @@ pub const Action = enum {
             .@"explain-config" => try explain_config.run(alloc),
             .@"validate-config" => try validate_config.run(alloc),
             .@"show-face" => try show_face.run(alloc),
-            .boo => try boo.run(alloc),
             .@"new-window" => try new_window.run(alloc),
             .@"new-tab" => try new_tab.run(alloc),
         };
@@ -199,7 +194,6 @@ pub const Action = enum {
                 .@"explain-config" => explain_config.Options,
                 .@"validate-config" => validate_config.Options,
                 .@"show-face" => show_face.Options,
-                .boo => boo.Options,
                 .@"new-window" => new_window.Options,
                 .@"new-tab" => new_tab.Options,
             };
