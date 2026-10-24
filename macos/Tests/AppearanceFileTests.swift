@@ -126,4 +126,164 @@ struct AppearanceFileTests {
         #expect(!themes[0].isDark)
         #expect(themes[1].isDark)
     }
+
+    @Test func themeFileSetsEveryColorAndRoundTrips() {
+        var colors = ThemeColors()
+        colors.values[.background] = ThemeRGB(hex: "#101820")
+        colors.palette[4] = ThemeRGB(hex: "#3366ff")
+        let text = ThemeFile.text(for: colors)
+        #expect(text.split(separator: "\n").count == 22)
+        #expect(text.contains("background = #101820\n"))
+        #expect(text.contains("palette = 4=#3366ff\n"))
+        let parsed = ThemeColors(parsing: text)
+        #expect(ResolvedColors(parsed) == ResolvedColors(colors))
+        #expect(parsed.values.count == ThemeColorKey.allCases.count)
+    }
+
+    @Test func validatesThemeNames() {
+        let existing: Set<String> = ["Nord"]
+        #expect(ThemeFile.validate(name: "  My Theme ", existing: existing) == .success("My Theme"))
+        #expect(ThemeFile.validate(name: "", existing: existing) == .failure(.empty))
+        #expect(ThemeFile.validate(name: "Nord", existing: existing) == .failure(.taken))
+        for bad in ["a/b", "a:b", "a,b", "a=b", ".hidden", "a\\b"] {
+            #expect(ThemeFile.validate(name: bad, existing: existing) == .failure(.invalidCharacter))
+        }
+    }
+
+    @Test func suggestsUnusedNames() {
+        #expect(ThemeFile.suggestedName(basedOn: "Nord", existing: []) == "Nord Custom")
+        #expect(ThemeFile.suggestedName(basedOn: "Nord", existing: ["Nord Custom"]) == "Nord Custom 2")
+        #expect(ThemeFile.suggestedName(basedOn: nil, existing: []) == "Nubb Custom")
+    }
+}
+
+/// Drives AppearanceModel against temporary folders.
+@MainActor
+struct AppearanceModelTests {
+    private final class Sandbox {
+        let root: URL
+        let config: URL
+        let user: URL
+        let bundled: URL
+        var reloads = 0
+
+        init() throws {
+            root = FileManager.default.temporaryDirectory
+                .appendingPathComponent("nubb-appearance-\(UUID().uuidString)", isDirectory: true)
+            config = root.appendingPathComponent("config/config.nubb")
+            user = root.appendingPathComponent("themes", isDirectory: true)
+            bundled = root.appendingPathComponent("bundled", isDirectory: true)
+            let fm = FileManager.default
+            try fm.createDirectory(at: config.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try fm.createDirectory(at: bundled, withIntermediateDirectories: true)
+            try "font-size = 13".write(to: config, atomically: true, encoding: .utf8)
+            try "background = #0e1019\nforeground = #fffaf4\npalette = 1=#ff000f\n"
+                .write(to: bundled.appendingPathComponent("Argonaut"), atomically: true, encoding: .utf8)
+        }
+
+        deinit { try? FileManager.default.removeItem(at: root) }
+
+        @MainActor
+        func model() -> AppearanceModel {
+            AppearanceModel(
+                configURL: config,
+                userThemesURL: user,
+                bundledThemesURL: bundled,
+                trash: { try FileManager.default.removeItem(at: $0) },
+                reload: { [weak self] in self?.reloads += 1 }
+            )
+        }
+
+        func read(_ url: URL) -> String { (try? String(contentsOf: url, encoding: .utf8)) ?? "" }
+
+        var appearance: String { read(config.deletingLastPathComponent().appendingPathComponent("appearance.nubb")) }
+    }
+
+    @Test func selectingWritesAppearanceAndInclude() throws {
+        let box = try Sandbox()
+        let model = box.model()
+        model.select("Argonaut")
+        model.saveNow()
+        #expect(box.appearance.contains("theme = Argonaut\n"))
+        #expect(box.read(box.config).hasPrefix("font-size = 13\n"))
+        #expect(AppearanceInclude.isPresent(in: box.read(box.config)))
+        #expect(box.reloads == 1)
+
+        // A second save doesn't add the include again.
+        model.saveNow()
+        #expect(box.read(box.config).components(separatedBy: AppearanceInclude.directive).count == 2)
+    }
+
+    @Test func createsThemeFromCurrentColors() throws {
+        let box = try Sandbox()
+        let model = box.model()
+        model.select("Argonaut")
+        model.setColor(.cursorColor, ThemeRGB(hex: "#ff9e64"))
+        #expect(model.isOverridden(.cursorColor))
+
+        model.beginCreate()
+        let prompt = try #require(model.namePrompt)
+        #expect(prompt.name == "Argonaut Custom")
+        model.commit(prompt)
+        model.saveNow()
+
+        #expect(model.namePrompt == nil)
+        #expect(model.selectedName == "Argonaut Custom")
+        #expect(model.editableTheme != nil)
+        #expect(!model.hasOverrides)
+        let file = box.read(box.user.appendingPathComponent("Argonaut Custom"))
+        #expect(file.contains("background = #0e1019\n"))
+        #expect(file.contains("cursor-color = #ff9e64\n"))
+        #expect(file.contains("palette = 1=#ff000f\n"))
+        #expect(box.appearance.contains("theme = Argonaut Custom\n"))
+        #expect(!box.appearance.contains("cursor-color"))
+    }
+
+    @Test func editsSaveIntoUserTheme() throws {
+        let box = try Sandbox()
+        let model = box.model()
+        model.select("Argonaut")
+        model.beginCreate()
+        model.commit(try #require(model.namePrompt))
+
+        model.setColor(.background, ThemeRGB(hex: "#000000"))
+        model.setColor(palette: 2, ThemeRGB(hex: "#00ff00"))
+        #expect(!model.hasOverrides)
+        #expect(model.previewColors.background == ThemeRGB(hex: "#000000"))
+        model.saveNow()
+
+        let file = box.read(box.user.appendingPathComponent("Argonaut Custom"))
+        #expect(file.contains("background = #000000\n"))
+        #expect(file.contains("palette = 2=#00ff00\n"))
+        #expect(!box.appearance.contains("background"))
+    }
+
+    @Test func renamesAndTrashesUserTheme() throws {
+        let box = try Sandbox()
+        let model = box.model()
+        model.select("Argonaut")
+        model.beginCreate()
+        model.commit(try #require(model.namePrompt))
+
+        model.beginRename()
+        var prompt = try #require(model.namePrompt)
+        prompt.name = "Argonaut"
+        #expect(model.nameProblem(prompt) == "A theme with this name already exists.")
+        prompt.name = "Deep Space"
+        #expect(model.nameProblem(prompt) == nil)
+        model.commit(prompt)
+        model.saveNow()
+
+        let fm = FileManager.default
+        #expect(fm.fileExists(atPath: box.user.appendingPathComponent("Deep Space").path))
+        #expect(!fm.fileExists(atPath: box.user.appendingPathComponent("Argonaut Custom").path))
+        #expect(model.selectedName == "Deep Space")
+        #expect(box.appearance.contains("theme = Deep Space\n"))
+
+        model.trashSelectedTheme()
+        model.saveNow()
+        #expect(!fm.fileExists(atPath: box.user.appendingPathComponent("Deep Space").path))
+        #expect(model.selectedName == nil)
+        #expect(!box.appearance.contains("theme ="))
+    }
 }

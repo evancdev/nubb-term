@@ -1,12 +1,15 @@
 import AppKit
 import SwiftUI
 
-/// The Appearance window: pick a theme, preview it, and override colors.
+/// The Appearance window: pick a theme, preview it, change colors, and
+/// make your own themes.
 struct AppearanceView: View {
     @ObservedObject var model: AppearanceModel
 
     /// List tag for the "Nubb Default" row. Theme names can't contain NUL.
     private static let defaultTag = "\u{0}default"
+
+    @State private var confirmTrash = false
 
     var body: some View {
         HSplitView {
@@ -16,40 +19,49 @@ struct AppearanceView: View {
                 .frame(minWidth: 440, maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(minWidth: 720, minHeight: 500)
+        .sheet(item: $model.namePrompt) { prompt in
+            NameSheet(
+                prompt: prompt,
+                problem: model.nameProblem,
+                onCancel: { model.namePrompt = nil },
+                onSave: { model.commit($0) }
+            )
+        }
+        .confirmationDialog(
+            "Move \u{201C}\(model.editableTheme?.name ?? "")\u{201D} to the Trash?",
+            isPresented: $confirmTrash
+        ) {
+            Button("Move to Trash", role: .destructive) { model.trashSelectedTheme() }
+        }
     }
 
     // MARK: Sidebar
 
     private var sidebar: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 8) {
-                TextField("Search themes", text: $model.search)
-                    .textFieldStyle(.roundedBorder)
-                Picker("Show", selection: $model.brightness) {
-                    ForEach(AppearanceModel.Brightness.allCases) { Text($0.label).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-            }
-            .padding(10)
+            TextField("Search themes", text: $model.search)
+                .textFieldStyle(.roundedBorder)
+                .padding(10)
 
             Divider()
 
             ScrollViewReader { proxy in
                 List(selection: selection) {
-                    if model.mode == .single && model.search.isEmpty && model.brightness == .all {
-                        ThemeRow(name: "Nubb Default", colors: ResolvedColors(ThemeColors()), badge: nil)
+                    if model.mode == .single && model.search.isEmpty {
+                        ThemeRow(name: "Nubb Default", colors: ResolvedColors(ThemeColors()))
                             .tag(Self.defaultTag)
                             .id(Self.defaultTag)
                     }
-                    ForEach(model.filteredThemes) { theme in
-                        ThemeRow(
-                            name: theme.name,
-                            colors: theme.resolved,
-                            badge: theme.location == .user ? "Yours" : nil
-                        )
-                        .tag(theme.name)
-                        .id(theme.name)
+
+                    let mine = model.userThemes
+                    if !mine.isEmpty {
+                        Section("My Themes") {
+                            ForEach(mine) { row($0) }
+                        }
+                    }
+
+                    Section("Bundled") {
+                        ForEach(model.bundledThemes) { row($0) }
                     }
                 }
                 .listStyle(.sidebar)
@@ -60,13 +72,20 @@ struct AppearanceView: View {
 
             Divider()
 
-            HStack {
-                Text("\(model.filteredThemes.count) themes")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Button {
+                    model.beginCreate()
+                } label: {
+                    Label("New Theme", systemImage: "plus")
+                }
+                .help("Save the current colors as a new theme you can edit")
                 Spacer()
-                Button("Themes Folder") { model.openUserThemesFolder() }
-                    .help("Add theme files here to use them in Nubb")
+                Button {
+                    model.openUserThemesFolder()
+                } label: {
+                    Image(systemName: "folder")
+                }
+                .help("Open your themes folder")
                 Button {
                     model.refresh()
                 } label: {
@@ -77,6 +96,12 @@ struct AppearanceView: View {
             .controlSize(.small)
             .padding(8)
         }
+    }
+
+    private func row(_ theme: ThemeEntry) -> some View {
+        ThemeRow(name: theme.name, colors: theme.resolved)
+            .tag(theme.name)
+            .id(theme.name)
     }
 
     private var selection: Binding<String?> {
@@ -94,17 +119,17 @@ struct AppearanceView: View {
     private var detail: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                modePicker
+                header
                 TerminalPreview(colors: model.previewColors)
-                customizeColors
-                customizePalette
+                colorsSection
+                paletteSection
                 footer
             }
             .padding(20)
         }
     }
 
-    private var modePicker: some View {
+    private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
             Picker("Theme", selection: modeBinding) {
                 Text("One Theme").tag(AppearanceModel.Mode.single)
@@ -123,10 +148,41 @@ struct AppearanceView: View {
                 Text("Pick a theme from the list for each mode. Nubb switches when macOS does.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            } else {
+            }
+
+            HStack(alignment: .firstTextBaseline) {
                 Text(model.selectedName ?? "Nubb Default")
                     .font(.title2.weight(.semibold))
+                    .lineLimit(1)
+                if model.editableTheme != nil {
+                    Text("Your theme")
+                        .font(.caption)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.accentColor.opacity(0.18)))
+                }
+                Spacer()
+                themeActions
             }
+        }
+    }
+
+    @ViewBuilder
+    private var themeActions: some View {
+        if model.editableTheme != nil {
+            Menu {
+                Button("Rename\u{2026}") { model.beginRename() }
+                Button("Duplicate\u{2026}") { model.beginCreate() }
+                Divider()
+                Button("Move to Trash\u{2026}", role: .destructive) { confirmTrash = true }
+            } label: {
+                Label("Theme", systemImage: "ellipsis.circle")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+        } else {
+            Button("Save as New Theme\u{2026}") { model.beginCreate() }
+                .help("Copy these colors into a theme of your own")
         }
     }
 
@@ -134,24 +190,30 @@ struct AppearanceView: View {
         Binding(get: { model.mode }, set: { model.setMode($0) })
     }
 
-    private var customizeColors: some View {
+    private var colorHelp: String {
+        model.editableTheme != nil
+            ? "Changes save into this theme."
+            : "Changes apply on top of the theme. Save as a new theme to keep them as your own."
+    }
+
+    private var colorsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("Colors", detail: "Changes apply on top of the theme.")
+            sectionHeader("Colors", detail: colorHelp)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), alignment: .leading)], alignment: .leading, spacing: 10) {
                 ForEach(ThemeColorKey.allCases) { key in
                     ColorWell(
                         label: key.label,
                         color: model.previewColors.value(for: key),
                         overridden: model.isOverridden(key),
-                        onChange: { model.setOverride(key, $0) },
-                        onReset: { model.setOverride(key, nil) }
+                        onChange: { model.setColor(key, $0) },
+                        onReset: { model.setColor(key, nil) }
                     )
                 }
             }
         }
     }
 
-    private var customizePalette: some View {
+    private var paletteSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader("Palette", detail: "The 16 colors programs use. Top row is normal, bottom row is bright.")
             ForEach(0..<2) { row in
@@ -162,8 +224,8 @@ struct AppearanceView: View {
                             index: index,
                             color: model.previewColors.palette[index],
                             overridden: model.isOverridden(palette: index),
-                            onChange: { model.setOverride(palette: index, $0) },
-                            onReset: { model.setOverride(palette: index, nil) }
+                            onChange: { model.setColor(palette: index, $0) },
+                            onReset: { model.setColor(palette: index, nil) }
                         )
                     }
                 }
@@ -201,12 +263,80 @@ struct AppearanceView: View {
     }
 }
 
+// MARK: - Name sheet
+
+private struct NameSheet: View {
+    let prompt: AppearanceModel.NamePrompt
+    let problem: (AppearanceModel.NamePrompt) -> String?
+    let onCancel: () -> Void
+    let onSave: (AppearanceModel.NamePrompt) -> Void
+
+    @State private var name: String
+    @FocusState private var focused: Bool
+
+    init(
+        prompt: AppearanceModel.NamePrompt,
+        problem: @escaping (AppearanceModel.NamePrompt) -> String?,
+        onCancel: @escaping () -> Void,
+        onSave: @escaping (AppearanceModel.NamePrompt) -> Void
+    ) {
+        self.prompt = prompt
+        self.problem = problem
+        self.onCancel = onCancel
+        self.onSave = onSave
+        _name = State(initialValue: prompt.name)
+    }
+
+    private var edited: AppearanceModel.NamePrompt {
+        var copy = prompt
+        copy.name = name
+        return copy
+    }
+
+    private var title: String {
+        switch prompt.kind {
+        case .create: "New Theme"
+        case .rename: "Rename Theme"
+        }
+    }
+
+    var body: some View {
+        let issue = problem(edited)
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title).font(.headline)
+            if prompt.kind == .create {
+                Text("Saves the colors you see now to your themes folder. Changes to it save automatically.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            TextField("Name", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .focused($focused)
+                .onSubmit { if issue == nil { onSave(edited) } }
+            Text(issue ?? " ")
+                .font(.caption)
+                .foregroundStyle(.red)
+            HStack {
+                Spacer()
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Button(prompt.kind == .create ? "Create" : "Rename") { onSave(edited) }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(issue != nil)
+            }
+        }
+        .padding(20)
+        .frame(width: 360)
+        .onAppear { focused = true }
+    }
+}
+
 // MARK: - Rows and wells
 
 private struct ThemeRow: View {
     let name: String
     let colors: ResolvedColors
-    let badge: String?
 
     var body: some View {
         HStack(spacing: 8) {
@@ -216,11 +346,6 @@ private struct ThemeRow: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 0)
-            if let badge {
-                Text(badge)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
         }
         .padding(.vertical, 2)
     }

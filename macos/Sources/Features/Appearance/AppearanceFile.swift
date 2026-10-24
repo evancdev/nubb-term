@@ -10,7 +10,7 @@ struct ThemeRGB: Hashable {
 extension ThemeRGB {
     /// Parses `#rrggbb`, `rrggbb`, `#rgb`, or `rgb`.
     init?(hex: String) {
-        var s = hex.trimmingCharacters(in: .whitespaces)
+        var s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         if s.hasPrefix("#") { s.removeFirst() }
         if s.count == 3 { s = s.map { "\($0)\($0)" }.joined() }
         guard s.count == 6, s.allSatisfy(\.isHexDigit), let v = UInt32(s, radix: 16) else { return nil }
@@ -150,7 +150,7 @@ enum NubbConfigLine {
     /// Splits a `key = value` line. Returns nil for blank lines, comments,
     /// and lines without a key.
     static func parse(_ line: String) -> (key: String, value: String)? {
-        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, !trimmed.hasPrefix("#"),
               let eq = trimmed.firstIndex(of: "=") else { return nil }
         let key = trimmed[..<eq].trimmingCharacters(in: .whitespaces)
@@ -254,6 +254,63 @@ struct AppearanceSettings: Equatable {
             lines.append("palette = \(index)=\(color.hex)")
         }
         return lines.joined(separator: "\n") + "\n"
+    }
+}
+
+/// A color theme as a file, in the same format as the bundled themes.
+enum ThemeFile {
+    /// Theme file text that sets every color, with Nubb's fallbacks filled
+    /// in for anything `colors` leaves unset.
+    static func text(for colors: ThemeColors) -> String {
+        let resolved = ResolvedColors(colors)
+        var lines: [String] = []
+        for index in 0..<16 {
+            lines.append("palette = \(index)=\(resolved.palette[index].hex)")
+        }
+        for (index, color) in colors.palette.sorted(by: { $0.key < $1.key }) where index >= 16 {
+            lines.append("palette = \(index)=\(color.hex)")
+        }
+        for key in ThemeColorKey.allCases {
+            lines.append("\(key.rawValue) = \(resolved.value(for: key).hex)")
+        }
+        return lines.joined(separator: "\n") + "\n"
+    }
+
+    enum NameError: Error, Equatable, LocalizedError {
+        case empty
+        case invalidCharacter
+        case taken
+
+        var errorDescription: String? {
+            switch self {
+            case .empty: "Enter a name."
+            case .invalidCharacter: "Names can't start with a dot or contain / \\ : , or =."
+            case .taken: "A theme with this name already exists."
+            }
+        }
+    }
+
+    /// Checks a name for a new theme file. Theme names become file names
+    /// and `theme =` values, so they can't hold path separators or the
+    /// characters that mark a light/dark pair.
+    static func validate(name raw: String, existing: Set<String>) -> Result<String, NameError> {
+        let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return .failure(.empty) }
+        let banned = CharacterSet(charactersIn: "/\\:,=").union(.newlines)
+        guard !name.hasPrefix("."), name.rangeOfCharacter(from: banned) == nil else {
+            return .failure(.invalidCharacter)
+        }
+        guard !existing.contains(name) else { return .failure(.taken) }
+        return .success(name)
+    }
+
+    /// A name like "Argonaut Custom" or "Argonaut Custom 2" that isn't taken.
+    static func suggestedName(basedOn base: String?, existing: Set<String>) -> String {
+        let stem = "\(base ?? "Nubb") Custom"
+        if !existing.contains(stem) { return stem }
+        var n = 2
+        while existing.contains("\(stem) \(n)") { n += 1 }
+        return "\(stem) \(n)"
     }
 }
 
