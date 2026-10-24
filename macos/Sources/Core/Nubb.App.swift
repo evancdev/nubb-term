@@ -128,7 +128,7 @@ extension Nubb {
         }
 
         func openConfig() {
-            let str = configPath ?? Nubb.AllocatedString(nubb_config_open_path()).string
+            let str = configFilePath
             guard !str.isEmpty else { return }
             let fileURL = URL(fileURLWithPath: str).absoluteString
             var action = nubb_action_open_url_s()
@@ -138,6 +138,12 @@ extension Nubb {
                 action.len = UInt(fileURL.count)
                 _ = App.openURL(action)
             }
+        }
+
+        /// The config file that `openConfig` opens and that `reloadConfig`
+        /// reads, or an empty string if Nubb couldn't determine one.
+        var configFilePath: String {
+            configPath ?? Nubb.AllocatedString(nubb_config_open_path()).string
         }
 
         /// Reload the configuration.

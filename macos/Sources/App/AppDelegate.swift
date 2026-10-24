@@ -20,6 +20,7 @@ class AppDelegate: NSObject,
     @IBOutlet private var menuAbout: NSMenuItem?
     @IBOutlet private var menuServices: NSMenu?
     @IBOutlet private var menuOpenConfig: NSMenuItem?
+    @IBOutlet private var menuAppearance: NSMenuItem?
     @IBOutlet private var menuReloadConfig: NSMenuItem?
     @IBOutlet private var menuSecureInput: NSMenuItem?
     @IBOutlet private var menuQuit: NSMenuItem?
@@ -832,6 +833,10 @@ class AppDelegate: NSObject,
         nubb.openConfig()
     }
 
+    @IBAction func showAppearance(_ sender: Any?) {
+        AppearanceController.show(app: nubb)
+    }
+
     @IBAction func reloadConfig(_ sender: Any?) {
         nubb.reloadConfig()
     }
@@ -975,6 +980,7 @@ extension AppDelegate {
         // modify this stuff as code.
         self.menuAbout?.setImageIfDesired(systemSymbolName: "info.circle")
         self.menuOpenConfig?.setImageIfDesired(systemSymbolName: "gear")
+        self.menuAppearance?.setImageIfDesired(systemSymbolName: "paintpalette")
         self.menuReloadConfig?.setImageIfDesired(systemSymbolName: "arrow.trianglehead.2.clockwise.rotate.90")
         self.menuSecureInput?.setImageIfDesired(systemSymbolName: "lock.display")
         self.menuNewWindow?.setImageIfDesired(systemSymbolName: "macwindow.badge.plus")
