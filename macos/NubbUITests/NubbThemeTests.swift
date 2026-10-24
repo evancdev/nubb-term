@@ -14,6 +14,24 @@ final class NubbThemeTests: NubbCustomConfigCase {
     }
 
     let windowTitle = "NubbThemeTests"
+
+    /// Nubb only bundles dark themes, so these tests write their own light
+    /// theme and refer to it by absolute path.
+    private let lightThemeFile: URL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("NubbThemeTests-light-\(UUID().uuidString)")
+    private var lightThemeName: String { lightThemeFile.path }
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try "background = #f7f7f7\nforeground = #4a4543\n"
+            .write(to: lightThemeFile, atomically: true, encoding: .utf8)
+    }
+
+    override func tearDown() async throws {
+        try? FileManager.default.removeItem(at: lightThemeFile)
+        try await super.tearDown()
+    }
+
     private func assertTitlebarAppearance(
         _ appearance: XCUIDevice.Appearance,
         for app: XCUIApplication,
@@ -42,7 +60,7 @@ final class NubbThemeTests: NubbCustomConfigCase {
     /// https://github.com/ghostty-org/ghostty/issues/8282
     @MainActor
     func testIssue8282() async throws {
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night")
         XCUIDevice.shared.appearance = .dark
 
         let app = try nubbApplication()
@@ -82,7 +100,7 @@ final class NubbThemeTests: NubbCustomConfigCase {
         app.launch()
         // default dark theme
         try assertTitlebarAppearance(.dark, for: app)
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night \n window-theme = light")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night \n window-theme = light")
         // reload config
         app.typeKey(",", modifierFlags: [.command, .shift])
         try await Task.sleep(for: .seconds(0.5))
@@ -91,7 +109,7 @@ final class NubbThemeTests: NubbCustomConfigCase {
 
     @MainActor
     func testSwitchingSystemTheme() async throws {
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night")
         XCUIDevice.shared.appearance = .dark
         let app = try nubbApplication()
         app.launch()
@@ -103,7 +121,7 @@ final class NubbThemeTests: NubbCustomConfigCase {
 
     @MainActor
     func testReloadFromLightWindowThemeToDefaultTheme() async throws {
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night")
         XCUIDevice.shared.appearance = .light
         let app = try nubbApplication()
         app.launch()
@@ -122,7 +140,7 @@ final class NubbThemeTests: NubbCustomConfigCase {
         let app = try nubbApplication()
         app.launch()
         try assertTitlebarAppearance(.dark, for: app)
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night \n window-theme=dark")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night \n window-theme=dark")
         // reload config
         app.typeKey(",", modifierFlags: [.command, .shift])
         try await Task.sleep(for: .seconds(0.5))
@@ -131,12 +149,12 @@ final class NubbThemeTests: NubbCustomConfigCase {
 
     @MainActor
     func testReloadingFromDarkThemeToSystemLightTheme() async throws {
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night \n window-theme=dark")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night \n window-theme=dark")
         XCUIDevice.shared.appearance = .light
         let app = try nubbApplication()
         app.launch()
         try assertTitlebarAppearance(.dark, for: app)
-        try updateConfig("title=\(windowTitle) \n theme=light:3024 Day,dark:3024 Night")
+        try updateConfig("title=\(windowTitle) \n theme=light:\(lightThemeName),dark:3024 Night")
         // reload config
         app.typeKey(",", modifierFlags: [.command, .shift])
         try await Task.sleep(for: .seconds(0.5))

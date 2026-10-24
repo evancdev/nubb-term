@@ -501,13 +501,13 @@ pub const compatibility = std.StaticStringMap(
 /// `~/.config/nubb/themes`.
 ///
 /// The second directory is the `themes` subdirectory of the Nubb resources
-/// directory. Nubb ships with a multitude of themes that will be installed
-/// into this directory. On macOS, this list is in the
-/// `Nubb.app/Contents/Resources/nubb/themes` directory. On Linux, this
-/// list is in the `share/nubb/themes` directory (wherever you installed the
-/// Nubb "share" directory.
+/// directory. Nubb ships about 500 dark themes from iTerm2-Color-Schemes in
+/// `Nubb.app/Contents/Resources/nubb/themes`. Other themes from
+/// <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/ghostty>
+/// work if you copy them into the user themes directory.
 ///
-/// To see a list of available themes, run `nubb +list-themes`.
+/// To browse and preview themes, open Nubb > Appearance. To list them, run
+/// `nubb +list-themes`.
 ///
 /// A theme file is simply another Nubb configuration file. They share
 /// the same syntax and same configuration options. A theme can set any valid
@@ -526,7 +526,7 @@ pub const compatibility = std.StaticStringMap(
 ///
 /// To specify a different theme for light and dark mode, use the following
 /// syntax: `light:theme-name,dark:theme-name`. For example:
-/// `light:Rose Pine Dawn,dark:Rose Pine`. Whitespace around all values are
+/// `light:Rose Pine Moon,dark:Rose Pine`. Whitespace around all values are
 /// trimmed and order of light and dark does not matter. Both light and dark
 /// must be specified in this form. In this form, the theme used will be
 /// based on the current desktop environment theme.

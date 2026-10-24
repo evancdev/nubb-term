@@ -106,17 +106,14 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
         try steps.append(b.allocator, &install_step.step);
     }
 
-    // Themes
+    // Themes. A dark-only subset of iTerm2-Color-Schemes lives in vendor/.
     if (cfg.emit_themes) {
-        if (b.lazyDependency("iterm2_themes", .{})) |upstream| {
-            const install_step = b.addInstallDirectory(.{
-                .source_dir = upstream.path(""),
-                .install_dir = .{ .custom = "share" },
-                .install_subdir = b.pathJoin(&.{ "nubb", "themes" }),
-                .exclude_extensions = &.{".md"},
-            });
-            try steps.append(b.allocator, &install_step.step);
-        }
+        const install_step = b.addInstallDirectory(.{
+            .source_dir = b.path("vendor/iterm2-color-schemes/ghostty"),
+            .install_dir = .{ .custom = "share" },
+            .install_subdir = b.pathJoin(&.{ "nubb", "themes" }),
+        });
+        try steps.append(b.allocator, &install_step.step);
     }
 
     // Fish shell completions

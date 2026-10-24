@@ -350,7 +350,7 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
     config.emit_themes = b.option(
         bool,
         "emit-themes",
-        "Install bundled iTerm2-Color-Schemes Nubb themes",
+        "Install the bundled dark themes",
     ) orelse true;
 
     config.emit_webdata = b.option(

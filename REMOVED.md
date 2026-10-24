@@ -25,7 +25,7 @@ Every removal adds its entry here in the same commit.
 
 - Zig packages: fontconfig, harfbuzz, libxml2, gtk4-layer-shell, gobject,
   wayland, wayland-protocols, plasma-wayland-protocols, zig-wayland, opengl,
-  libintl, sentry, breakpad, zig-js, android-ndk.
+  libintl, sentry, breakpad, zig-js, android-ndk, iterm2_themes.
 - Swift packages: Sparkle.
 
 ## Platforms and build
@@ -325,3 +325,15 @@ injects generated files. CLI action removed: `+boo`.
 - `src/build/GhosttyFrameData.zig`
 - `src/build/framegen/`
 - `src/cli/boo.zig`
+
+### Light and tinted themes
+
+Ghostty downloaded 771 themes from iTerm2-Color-Schemes at build time. Nubb
+now keeps the 506 with a black, gray, or dark blue background in
+`vendor/iterm2-color-schemes/` and drops the download. The other 265 are the
+light themes and the dark ones tinted red, brown, green, teal, or purple.
+They were never in this repo, so restore one by copying it from
+<https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/ghostty> into
+`~/.config/nubb/themes/`.
+
+- the `iterm2_themes` dependency in `build.zig.zon`
