@@ -3,70 +3,48 @@ import Combine
 import SwiftUI
 
 /// The Appearance window: pick a theme at the top, see it in a sample
-/// terminal, and change any color by clicking it in the sample or in the
-/// list on the right.
+/// terminal, and change any color by clicking it in the sample.
 struct AppearanceView: View {
     @ObservedObject var model: AppearanceModel
 
     /// Picker tag for Nubb's default colors. Theme names can't contain NUL.
     private static let defaultTag = "\u{0}default"
 
-    /// What the mouse is over, in the sample or the list. The id tells
-    /// apart neighbors that share a color, so leaving one doesn't clear
-    /// the other.
-    @State private var hover: (id: String, slot: ColorSlot)?
+    /// What the mouse is over in the sample. The id tells apart neighbors
+    /// that share a color, so leaving one doesn't clear the other.
+    @State private var hover: (id: String, slots: [ColorSlot])?
     @State private var hoverBackground = false
 
     /// The color the color panel is editing.
     @State private var editing: ColorSlot?
     @State private var confirmTrash = false
 
-    private var highlight: ColorSlot? {
-        hover?.slot ?? (hoverBackground ? .key(.background) : nil)
+    private var hoveredSlots: [ColorSlot] {
+        hover?.slots ?? (hoverBackground ? [.key(.background)] : [])
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Divider()
-            HStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(hint)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                    TerminalPreview(
-                        colors: model.previewColors,
-                        highlight: highlight,
-                        onHover: setHover,
-                        onHoverBackground: { hoverBackground = $0 },
-                        onPick: edit
-                    )
-                    status
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-
-                Divider()
-
-                ScrollView {
-                    VStack(spacing: 1) {
-                        ForEach(ColorSlot.all) { slot in
-                            ColorRow(
-                                slot: slot,
-                                colors: model.previewColors,
-                                highlighted: highlight == slot,
-                                editing: editing == slot,
-                                onHover: { setHover("row-\(slot.id)", slot, $0) },
-                                onPick: { edit(slot) }
-                            )
-                        }
-                    }
-                    .padding(8)
-                }
-                .frame(width: 320)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(hint)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                TerminalPreview(
+                    colors: model.previewColors,
+                    highlight: hoveredSlots.first,
+                    onHover: setHover,
+                    onHoverBackground: { hoverBackground = $0 },
+                    onPick: edit
+                )
+                status
+                    .frame(height: 16, alignment: .leading)
             }
+            .padding(16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .frame(minWidth: 820, minHeight: 560)
+        .frame(minWidth: 620, minHeight: 540)
         .sheet(item: $model.namePrompt) { prompt in
             NameSheet(
                 prompt: prompt,
@@ -159,28 +137,43 @@ struct AppearanceView: View {
         return "Click any word or the background to change its color. \(save)"
     }
 
+    /// One line under the sample: a save problem, else what the mouse is
+    /// over, else the color being edited, else the latest notice.
     @ViewBuilder
     private var status: some View {
         if let error = model.lastError {
             Text("Couldn't save: \(error)")
                 .font(.caption)
                 .foregroundStyle(.red)
+        } else if let slot = hoveredSlots.first {
+            if hoveredSlots.count > 1 {
+                caption(hoveredSlots.map(\.name).joined(separator: " and ") + ". Click to choose which to change.")
+            } else {
+                caption("\(slot.name): \(slot.usage.lowercased()). \(model.previewColors[slot].hex)")
+            }
+        } else if let slot = editing {
+            caption("Editing \(slot.name.lowercased()) in the color panel.")
         } else if let notice = model.notice {
             Label(notice, systemImage: "checkmark.circle")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else if model.hasLightDarkPair {
-            Text("Your config uses separate light and dark themes. Picking a theme here uses it for both.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            caption("Your config uses separate light and dark themes. Picking a theme here uses it for both.")
         }
+    }
+
+    private func caption(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
     }
 
     // MARK: Editing
 
-    private func setHover(_ id: String, _ slot: ColorSlot, _ inside: Bool) {
+    private func setHover(_ id: String, _ slots: [ColorSlot], _ inside: Bool) {
         if inside {
-            hover = (id, slot)
+            hover = (id, slots)
         } else if hover?.id == id {
             hover = nil
         }
@@ -248,92 +241,10 @@ final class AppearanceColorPanel: NSObject {
     }
 }
 
-// MARK: - Color list
-
-private struct ColorRow: View {
-    let slot: ColorSlot
-    let colors: ResolvedColors
-    let highlighted: Bool
-    let editing: Bool
-    let onHover: (Bool) -> Void
-    let onPick: () -> Void
-
-    var body: some View {
-        Button(action: onPick) {
-            HStack(spacing: 10) {
-                SampleChip(slot: slot, colors: colors)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(slot.name)
-                    Text(slot.usage)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.vertical, 5)
-            .padding(.horizontal, 8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(fill))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .onHover(perform: onHover)
-        .help("\(slot.name): \(colors[slot].hex)")
-    }
-
-    private var fill: Color {
-        if editing { return Color.accentColor.opacity(0.25) }
-        if highlighted { return Color.primary.opacity(0.08) }
-        return .clear
-    }
-}
-
-/// "Hello World" drawn the way the slot's color is used.
-private struct SampleChip: View {
-    let slot: ColorSlot
-    let colors: ResolvedColors
-
-    var body: some View {
-        sample
-            .font(.system(size: 11, design: .monospaced))
-            .lineLimit(1)
-            .fixedSize()
-            .frame(width: 104, height: 24)
-            .background(colors.background.color)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.primary.opacity(0.15), lineWidth: 1))
-    }
-
-    private var sample: Text {
-        let fg = colors.foreground.color
-        switch slot {
-        case .key(.background), .key(.foreground):
-            return Text("Hello World").foregroundColor(fg)
-        case .key(.cursorColor), .key(.cursorText):
-            var cursor = AttributedString("W")
-            cursor.foregroundColor = colors.cursorText.color
-            cursor.backgroundColor = colors.cursor.color
-            return Text("Hello ").foregroundColor(fg) + Text(cursor) + Text("orld").foregroundColor(fg)
-        case .key(.selectionBackground), .key(.selectionForeground):
-            var selected = AttributedString("Hello World")
-            selected.foregroundColor = colors.selectionForeground.color
-            selected.backgroundColor = colors.selectionBackground.color
-            return Text(selected)
-        case .palette(0):
-            var label = AttributedString("Hello World")
-            label.foregroundColor = colors.palette[0].color
-            label.backgroundColor = colors.palette[2].color
-            return Text(label).bold()
-        case .palette(let index):
-            return Text("Hello World").foregroundColor(colors.palette[index].color)
-        }
-    }
-}
-
 // MARK: - Terminal preview
 
 /// The sample terminal text. Every color in `ColorSlot.all` shows up in it
-/// (the background behind all of it), so any color can be found by hovering.
+/// (the background behind all of it), so every color can be clicked.
 enum PreviewScript {
     enum Piece {
         /// Text in one color.
@@ -343,20 +254,12 @@ enum PreviewScript {
         /// Spacing between words, in the plain text color.
         case gap(String)
 
-        /// The color a click changes.
-        var primary: ColorSlot? {
-            switch self {
-            case .ink(_, let slot): slot
-            case .block(_, _, let fill): fill
-            case .gap: nil
-            }
-        }
-
-        /// Every color this piece shows.
+        /// Every color this piece shows, block color first. A click on a
+        /// piece with two asks which one to change.
         var slots: [ColorSlot] {
             switch self {
             case .ink(_, let slot): [slot]
-            case .block(_, let text, let fill): [text, fill]
+            case .block(_, let text, let fill): [fill, text]
             case .gap: []
             }
         }
@@ -402,9 +305,12 @@ enum PreviewScript {
 private struct TerminalPreview: View {
     let colors: ResolvedColors
     let highlight: ColorSlot?
-    let onHover: (String, ColorSlot, Bool) -> Void
+    let onHover: (String, [ColorSlot], Bool) -> Void
     let onHoverBackground: (Bool) -> Void
     let onPick: (ColorSlot) -> Void
+
+    /// The piece whose "which color?" choice is showing.
+    @State private var choosing: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -450,8 +356,8 @@ private struct TerminalPreview: View {
     }
 
     private func interactive(_ view: some View, piece: PreviewScript.Piece, id: String, dimmed: Bool) -> some View {
-        let slot = piece.primary ?? .key(.foreground)
-        let lit = highlight.map { piece.slots.contains($0) } ?? false
+        let slots = piece.slots
+        let lit = highlight.map { slots.contains($0) } ?? false
         return view
             .opacity(dimmed ? 0.15 : 1)
             .overlay(
@@ -460,9 +366,59 @@ private struct TerminalPreview: View {
                     .padding(-2)
             )
             .contentShape(Rectangle())
-            .onHover { onHover(id, slot, $0) }
-            .onTapGesture { onPick(slot) }
-            .help("\(slot.name): \(colors[slot].hex)")
+            .onHover { onHover(id, slots, $0) }
+            .onTapGesture {
+                if slots.count > 1 {
+                    choosing = id
+                } else if let slot = slots.first {
+                    onPick(slot)
+                }
+            }
+            .popover(isPresented: choosingBinding(id), arrowEdge: .bottom) {
+                SlotChoice(slots: slots, colors: colors) { slot in
+                    choosing = nil
+                    onPick(slot)
+                }
+            }
+    }
+
+    private func choosingBinding(_ id: String) -> Binding<Bool> {
+        Binding(get: { choosing == id }, set: { if !$0 { choosing = nil } })
+    }
+}
+
+/// Asks which of a piece's colors to change, like a label or its text.
+private struct SlotChoice: View {
+    let slots: [ColorSlot]
+    let colors: ResolvedColors
+    let onPick: (ColorSlot) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(slots) { slot in
+                Button { onPick(slot) } label: {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(colors[slot].color)
+                            .frame(width: 14, height: 14)
+                            .overlay(Circle().strokeBorder(Color.primary.opacity(0.25), lineWidth: 1))
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(slot.name)
+                            Text(slot.usage)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(6)
+        .frame(width: 240)
     }
 }
 
