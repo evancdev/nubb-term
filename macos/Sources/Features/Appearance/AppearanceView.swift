@@ -28,9 +28,7 @@ struct AppearanceView: View {
             header
             Divider()
             VStack(alignment: .leading, spacing: 10) {
-                Text(hint)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                hintLine
                 TerminalPreview(
                     colors: model.previewColors,
                     highlight: hoveredSlots.first,
@@ -38,8 +36,6 @@ struct AppearanceView: View {
                     onHoverBackground: { hoverBackground = $0 },
                     onPick: edit
                 )
-                status
-                    .frame(height: 16, alignment: .leading)
             }
             .padding(16)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -130,43 +126,26 @@ struct AppearanceView: View {
         )
     }
 
+    /// The line above the sample: how editing works, or why a save failed.
+    @ViewBuilder
+    private var hintLine: some View {
+        if let error = model.lastError {
+            Text("Couldn't save: \(error)")
+                .font(.callout)
+                .foregroundStyle(.red)
+                .lineLimit(1)
+        } else {
+            Text(hint)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
     private var hint: String {
         let save = model.editableTheme != nil
             ? "Changes save into this theme."
             : "Your first change saves a copy to My Themes."
         return "Click any word or the background to change its color. \(save)"
-    }
-
-    /// One line under the sample: a save problem, else what the mouse is
-    /// over, else the color being edited, else the latest notice.
-    @ViewBuilder
-    private var status: some View {
-        if let error = model.lastError {
-            Text("Couldn't save: \(error)")
-                .font(.caption)
-                .foregroundStyle(.red)
-        } else if let slot = hoveredSlots.first {
-            if hoveredSlots.count > 1 {
-                caption(hoveredSlots.map(\.name).joined(separator: " and ") + ". Click to choose which to change.")
-            } else {
-                caption("\(slot.name): \(slot.usage.lowercased()). \(model.previewColors[slot].hex)")
-            }
-        } else if let slot = editing {
-            caption("Editing \(slot.name.lowercased()) in the color panel.")
-        } else if let notice = model.notice {
-            Label(notice, systemImage: "checkmark.circle")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        } else if model.hasLightDarkPair {
-            caption("Your config uses separate light and dark themes. Picking a theme here uses it for both.")
-        }
-    }
-
-    private func caption(_ text: String) -> some View {
-        Text(text)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
     }
 
     // MARK: Editing

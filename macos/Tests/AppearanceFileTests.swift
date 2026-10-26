@@ -266,7 +266,6 @@ struct AppearanceModelTests {
 
         #expect(model.selectedName == "Sample Custom")
         #expect(model.editableTheme != nil)
-        #expect(model.notice?.contains("Sample Custom") == true)
         let file = box.read(box.user.appendingPathComponent("Sample Custom"))
         #expect(file.contains("background = #0e1019\n"))
         #expect(file.contains("cursor-color = #ff9e64\n"))

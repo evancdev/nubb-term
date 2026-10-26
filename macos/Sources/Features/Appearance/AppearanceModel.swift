@@ -32,9 +32,6 @@ final class AppearanceModel: ObservableObject {
     @Published var namePrompt: NamePrompt?
     @Published private(set) var lastError: String?
 
-    /// A one-time message, like where an automatic copy was saved.
-    @Published private(set) var notice: String?
-
     /// The main config file. The model adds one include line to it.
     let configURL: URL
 
@@ -78,7 +75,6 @@ final class AppearanceModel: ObservableObject {
         } else {
             settings = AppearanceSettings()
         }
-        notice = nil
     }
 
     private func reloadThemes() {
@@ -120,7 +116,6 @@ final class AppearanceModel: ObservableObject {
     func select(_ name: String?) {
         guard name != selectedName || hasLightDarkPair else { return }
         settings.theme = ThemeChoice(single: name)
-        notice = nil
         save()
     }
 
@@ -157,7 +152,6 @@ final class AppearanceModel: ObservableObject {
         let name = ThemeFile.suggestedName(basedOn: selectedName, existing: existingNames)
         do {
             try createTheme(named: name, colors: colors)
-            notice = "Saved your changes as \u{201C}\(name)\u{201D} in My Themes."
             lastError = nil
         } catch {
             lastError = error.localizedDescription
@@ -208,7 +202,6 @@ final class AppearanceModel: ObservableObject {
             case .rename(let old): try renameTheme(old, to: name)
             }
             namePrompt = nil
-            notice = nil
             lastError = nil
         } catch {
             lastError = error.localizedDescription
@@ -249,7 +242,6 @@ final class AppearanceModel: ObservableObject {
             return
         }
         reloadThemes()
-        notice = nil
 
         // A bundled theme with the same name takes over. Otherwise fall
         // back to Nubb's default colors.
