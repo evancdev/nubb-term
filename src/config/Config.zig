@@ -501,9 +501,9 @@ pub const compatibility = std.StaticStringMap(
 /// `~/.config/nubb/themes`.
 ///
 /// The second directory is the `themes` subdirectory of the Nubb resources
-/// directory. Nubb ships about 500 dark themes from iTerm2-Color-Schemes in
-/// `Nubb.app/Contents/Resources/nubb/themes`. Other themes from
-/// <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/ghostty>
+/// directory. Nubb ships about 200 black and gray themes from
+/// iTerm2-Color-Schemes in `Nubb.app/Contents/Resources/nubb/themes`. Other
+/// themes from <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/ghostty>
 /// work if you copy them into the user themes directory.
 ///
 /// To browse and preview themes, open Nubb > Appearance. To list them, run

@@ -329,10 +329,12 @@ injects generated files. CLI action removed: `+boo`.
 ### Light and tinted themes
 
 Ghostty downloaded 771 themes from iTerm2-Color-Schemes at build time. Nubb
-now keeps the 506 with a black, gray, or dark blue background in
-`vendor/iterm2-color-schemes/` and drops the download. The other 265 are the
-light themes and the dark ones tinted red, brown, green, teal, or purple.
-They were never in this repo, so restore one by copying it from
+now keeps the 219 with a black or gray background in
+`vendor/iterm2-color-schemes/` and drops the download. The other 552 are the
+light themes and the dark ones with a visibly tinted background (blue,
+purple, red, brown, green, or teal). A first pass kept dark blue backgrounds,
+and a second pass dropped those too. They were never in this repo, so
+restore one by copying it from
 <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/ghostty> into
 `~/.config/nubb/themes/`.
 
