@@ -19,11 +19,6 @@ extension ThemeRGB {
 
     /// Lowercase `#rrggbb`.
     var hex: String { String(format: "#%02x%02x%02x", r, g, b) }
-
-    /// Perceived brightness from 0 to 1.
-    var luminance: Double {
-        (0.299 * Double(r) + 0.587 * Double(g) + 0.114 * Double(b)) / 255
-    }
 }
 
 /// The single-value color options a theme or the Appearance window can set.
@@ -36,17 +31,75 @@ enum ThemeColorKey: String, CaseIterable, Identifiable {
     case selectionForeground = "selection-foreground"
 
     var id: String { rawValue }
+}
 
-    var label: String {
+/// One row in the Appearance window's color list: a single option or one of
+/// the 16 palette colors.
+enum ColorSlot: Hashable, Identifiable {
+    case key(ThemeColorKey)
+    case palette(Int)
+
+    /// Every editable color in the order the window lists them: what Nubb
+    /// draws on its own first, then the palette by how often it shows up.
+    static let all: [ColorSlot] = [
+        .key(.background), .key(.foreground),
+        .key(.cursorColor), .key(.cursorText),
+        .key(.selectionBackground), .key(.selectionForeground),
+        .palette(1), .palette(2), .palette(3), .palette(4), .palette(5), .palette(6),
+        .palette(8), .palette(7), .palette(0),
+        .palette(9), .palette(10), .palette(11), .palette(12), .palette(13), .palette(14), .palette(15),
+    ]
+
+    var id: String {
         switch self {
-        case .background: "Background"
-        case .foreground: "Text"
-        case .cursorColor: "Cursor"
-        case .cursorText: "Cursor Text"
-        case .selectionBackground: "Selection"
-        case .selectionForeground: "Selection Text"
+        case .key(let key): key.rawValue
+        case .palette(let index): "palette-\(index)"
         }
     }
+
+    var name: String {
+        switch self {
+        case .key(.background): "Background"
+        case .key(.foreground): "Text"
+        case .key(.cursorColor): "Cursor"
+        case .key(.cursorText): "Cursor text"
+        case .key(.selectionBackground): "Selection"
+        case .key(.selectionForeground): "Selection text"
+        case .palette(let index): Self.paletteNames[index] ?? "Color \(index)"
+        }
+    }
+
+    /// Where the color typically shows up. Programs choose which colors
+    /// they use, so these are examples, not rules.
+    var usage: String {
+        switch self {
+        case .key(.background): "Behind everything"
+        case .key(.foreground): "Plain text"
+        case .key(.cursorColor): "The block cursor"
+        case .key(.cursorText): "The letter under the cursor"
+        case .key(.selectionBackground): "Behind text you select"
+        case .key(.selectionForeground): "Text you select"
+        case .palette(let index): Self.paletteUsage[index] ?? ""
+        }
+    }
+
+    private static let paletteNames: [Int: String] = [
+        0: "Black", 1: "Red", 2: "Green", 3: "Yellow",
+        4: "Blue", 5: "Magenta", 6: "Cyan", 7: "White",
+        8: "Gray", 9: "Bright red", 10: "Bright green", 11: "Bright yellow",
+        12: "Bright blue", 13: "Bright magenta", 14: "Bright cyan", 15: "Bright white",
+    ]
+
+    private static let paletteUsage: [Int: String] = [
+        0: "Text on colored labels", 1: "Removed lines, errors",
+        2: "Added lines, prompts", 3: "Warnings, commit hashes",
+        4: "Folders and paths", 5: "Git branch, symlinks",
+        6: "Diff headers, git refs", 7: "Light text",
+        8: "Dim text, timings", 9: "Failure counts",
+        10: "Passed tests", 11: "Skipped tests, notices",
+        12: "Info logs", 13: "Debug logs",
+        14: "Links", 15: "Bold text, labels on red",
+    ]
 }
 
 /// A set of colors from a theme file or from the user's overrides. Missing
@@ -144,6 +197,23 @@ struct ResolvedColors: Equatable {
         case .selectionForeground: selectionForeground
         }
     }
+
+    subscript(slot: ColorSlot) -> ThemeRGB {
+        switch slot {
+        case .key(let key): value(for: key)
+        case .palette(let index): palette[index]
+        }
+    }
+}
+
+extension ThemeColors {
+    /// Sets one slot's color.
+    mutating func set(_ slot: ColorSlot, _ color: ThemeRGB) {
+        switch slot {
+        case .key(let key): values[key] = color
+        case .palette(let index): palette[index] = color
+        }
+    }
 }
 
 enum NubbConfigLine {
@@ -221,10 +291,14 @@ struct ThemeChoice: Equatable {
     }
 }
 
-/// What the Appearance window manages: a theme plus color overrides. Stored
-/// in `appearance.nubb` next to the main config file.
+/// What the Appearance window manages: the `theme` line, plus any color
+/// lines an older version of the window wrote. Stored in `appearance.nubb`
+/// next to the main config file.
 struct AppearanceSettings: Equatable {
     var theme: ThemeChoice = .none
+
+    /// Colors set on top of the theme. The window no longer writes these.
+    /// When it finds some, it folds them into a theme of your own.
     var overrides = ThemeColors()
 
     init() {}
@@ -304,7 +378,7 @@ enum ThemeFile {
         return .success(name)
     }
 
-    /// A name like "Argonaut Custom" or "Argonaut Custom 2" that isn't taken.
+    /// A name like "Nord Custom" or "Nord Custom 2" that isn't taken.
     static func suggestedName(basedOn base: String?, existing: Set<String>) -> String {
         let stem = "\(base ?? "Nubb") Custom"
         if !existing.contains(stem) { return stem }

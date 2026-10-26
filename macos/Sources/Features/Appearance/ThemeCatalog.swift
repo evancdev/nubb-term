@@ -12,21 +12,7 @@ struct ThemeEntry: Identifiable, Equatable {
     let url: URL
     let colors: ThemeColors
 
-    /// The colors with Nubb's fallbacks filled in.
-    let resolved: ResolvedColors
-
-    let isDark: Bool
-
     var id: String { name }
-
-    init(name: String, location: Location, url: URL, colors: ThemeColors) {
-        self.name = name
-        self.location = location
-        self.url = url
-        self.colors = colors
-        self.resolved = ResolvedColors(colors)
-        self.isDark = resolved.background.luminance < 0.5
-    }
 }
 
 /// Finds and parses theme files the same way Nubb's config loader does:

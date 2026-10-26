@@ -1,24 +1,72 @@
 import AppKit
+import Combine
 import SwiftUI
 
-/// The Appearance window: pick a theme, preview it, change colors, and
-/// make your own themes.
+/// The Appearance window: pick a theme at the top, see it in a sample
+/// terminal, and change any color by clicking it in the sample or in the
+/// list on the right.
 struct AppearanceView: View {
     @ObservedObject var model: AppearanceModel
 
-    /// List tag for the "Nubb Default" row. Theme names can't contain NUL.
+    /// Picker tag for Nubb's default colors. Theme names can't contain NUL.
     private static let defaultTag = "\u{0}default"
 
+    /// What the mouse is over, in the sample or the list. The id tells
+    /// apart neighbors that share a color, so leaving one doesn't clear
+    /// the other.
+    @State private var hover: (id: String, slot: ColorSlot)?
+    @State private var hoverBackground = false
+
+    /// The color the color panel is editing.
+    @State private var editing: ColorSlot?
     @State private var confirmTrash = false
 
+    private var highlight: ColorSlot? {
+        hover?.slot ?? (hoverBackground ? .key(.background) : nil)
+    }
+
     var body: some View {
-        HSplitView {
-            sidebar
-                .frame(minWidth: 240, idealWidth: 280, maxWidth: 360)
-            detail
-                .frame(minWidth: 440, maxWidth: .infinity, maxHeight: .infinity)
+        VStack(spacing: 0) {
+            header
+            Divider()
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(hint)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    TerminalPreview(
+                        colors: model.previewColors,
+                        highlight: highlight,
+                        onHover: setHover,
+                        onHoverBackground: { hoverBackground = $0 },
+                        onPick: edit
+                    )
+                    status
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+                Divider()
+
+                ScrollView {
+                    VStack(spacing: 1) {
+                        ForEach(ColorSlot.all) { slot in
+                            ColorRow(
+                                slot: slot,
+                                colors: model.previewColors,
+                                highlighted: highlight == slot,
+                                editing: editing == slot,
+                                onHover: { setHover("row-\(slot.id)", slot, $0) },
+                                onPick: { edit(slot) }
+                            )
+                        }
+                    }
+                    .padding(8)
+                }
+                .frame(width: 320)
+            }
         }
-        .frame(minWidth: 720, minHeight: 500)
+        .frame(minWidth: 820, minHeight: 560)
         .sheet(item: $model.namePrompt) { prompt in
             NameSheet(
                 prompt: prompt,
@@ -33,233 +81,395 @@ struct AppearanceView: View {
         ) {
             Button("Move to Trash", role: .destructive) { model.trashSelectedTheme() }
         }
-    }
-
-    // MARK: Sidebar
-
-    private var sidebar: some View {
-        VStack(spacing: 0) {
-            TextField("Search themes", text: $model.search)
-                .textFieldStyle(.roundedBorder)
-                .padding(10)
-
-            Divider()
-
-            ScrollViewReader { proxy in
-                List(selection: selection) {
-                    if model.mode == .single && model.search.isEmpty {
-                        ThemeRow(name: "Nubb Default", colors: ResolvedColors(ThemeColors()))
-                            .tag(Self.defaultTag)
-                            .id(Self.defaultTag)
-                    }
-
-                    let mine = model.userThemes
-                    if !mine.isEmpty {
-                        Section("My Themes") {
-                            ForEach(mine) { row($0) }
-                        }
-                    }
-
-                    Section("Bundled") {
-                        ForEach(model.bundledThemes) { row($0) }
-                    }
-                }
-                .listStyle(.sidebar)
-                .onAppear {
-                    proxy.scrollTo(model.selectedName ?? Self.defaultTag, anchor: .center)
-                }
-            }
-
-            Divider()
-
-            HStack(spacing: 6) {
-                Button {
-                    model.beginCreate()
-                } label: {
-                    Label("New Theme", systemImage: "plus")
-                }
-                .help("Save the current colors as a new theme you can edit")
-                Spacer()
-                Button {
-                    model.openUserThemesFolder()
-                } label: {
-                    Image(systemName: "folder")
-                }
-                .help("Open your themes folder")
-                Button {
-                    model.refresh()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .help("Reload theme files")
-            }
-            .controlSize(.small)
-            .padding(8)
+        .onReceive(model.objectWillChange) { _ in
+            // objectWillChange fires before the change lands.
+            DispatchQueue.main.async { syncPanel() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { note in
+            guard note.object is NSColorPanel else { return }
+            editing = nil
+            AppearanceColorPanel.shared.detach()
         }
     }
 
-    private func row(_ theme: ThemeEntry) -> some View {
-        ThemeRow(name: theme.name, colors: theme.resolved)
-            .tag(theme.name)
-            .id(theme.name)
-    }
-
-    private var selection: Binding<String?> {
-        Binding(
-            get: { model.selectedName ?? Self.defaultTag },
-            set: { new in
-                guard let new else { return }
-                model.select(new == Self.defaultTag ? nil : new)
-            }
-        )
-    }
-
-    // MARK: Detail
-
-    private var detail: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                header
-                TerminalPreview(colors: model.previewColors)
-                colorsSection
-                paletteSection
-                footer
-            }
-            .padding(20)
-        }
-    }
+    // MARK: Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Picker("Theme", selection: modeBinding) {
-                Text("One Theme").tag(AppearanceModel.Mode.single)
-                Text("Match macOS Light and Dark").tag(AppearanceModel.Mode.pair)
+        HStack(spacing: 8) {
+            Picker("Theme", selection: themeBinding) {
+                Text("Nubb Default").tag(Self.defaultTag)
+                if !model.userThemes.isEmpty {
+                    Section("My Themes") {
+                        ForEach(model.userThemes) { Text($0.name).tag($0.name) }
+                    }
+                }
+                Section("Themes") {
+                    ForEach(model.bundledThemes) { Text($0.name).tag($0.name) }
+                }
             }
-            .pickerStyle(.segmented)
             .labelsHidden()
+            .frame(width: 260)
 
-            if model.mode == .pair {
-                Picker("Editing", selection: $model.slot) {
-                    Text("Light: \(model.settings.theme.light ?? "Nubb Default")").tag(AppearanceModel.Slot.light)
-                    Text("Dark: \(model.settings.theme.dark ?? "Nubb Default")").tag(AppearanceModel.Slot.dark)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Text("Pick a theme from the list for each mode. Nubb switches when macOS does.")
+            Button { model.step(by: -1) } label: { Image(systemName: "chevron.left") }
+                .help("Previous theme")
+            Button { model.step(by: 1) } label: { Image(systemName: "chevron.right") }
+                .help("Next theme")
+
+            if model.editableTheme != nil {
+                Text("My Theme")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.accentColor.opacity(0.18)))
             }
 
-            HStack(alignment: .firstTextBaseline) {
-                Text(model.selectedName ?? "Nubb Default")
-                    .font(.title2.weight(.semibold))
-                    .lineLimit(1)
-                if model.editableTheme != nil {
-                    Text("Your theme")
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.accentColor.opacity(0.18)))
-                }
-                Spacer()
-                themeActions
-            }
-        }
-    }
+            Spacer()
 
-    @ViewBuilder
-    private var themeActions: some View {
-        if model.editableTheme != nil {
+            Button { model.beginCreate() } label: { Label("New Theme", systemImage: "plus") }
+                .help("Save the current colors as a new theme of your own")
+
             Menu {
-                Button("Rename\u{2026}") { model.beginRename() }
-                Button("Duplicate\u{2026}") { model.beginCreate() }
-                Divider()
-                Button("Move to Trash\u{2026}", role: .destructive) { confirmTrash = true }
+                if model.editableTheme != nil {
+                    Button("Rename\u{2026}") { model.beginRename() }
+                    Button("Move to Trash\u{2026}", role: .destructive) { confirmTrash = true }
+                    Divider()
+                }
+                Button("Show Themes Folder") { model.openUserThemesFolder() }
             } label: {
-                Label("Theme", systemImage: "ellipsis.circle")
+                Image(systemName: "ellipsis.circle")
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
-        } else {
-            Button("Save as New Theme\u{2026}") { model.beginCreate() }
-                .help("Copy these colors into a theme of your own")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    private var themeBinding: Binding<String> {
+        Binding(
+            get: { model.selectedName ?? Self.defaultTag },
+            set: { model.select($0 == Self.defaultTag ? nil : $0) }
+        )
+    }
+
+    private var hint: String {
+        let save = model.editableTheme != nil
+            ? "Changes save into this theme."
+            : "Your first change saves a copy to My Themes."
+        return "Click any word or the background to change its color. \(save)"
+    }
+
+    @ViewBuilder
+    private var status: some View {
+        if let error = model.lastError {
+            Text("Couldn't save: \(error)")
+                .font(.caption)
+                .foregroundStyle(.red)
+        } else if let notice = model.notice {
+            Label(notice, systemImage: "checkmark.circle")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else if model.hasLightDarkPair {
+            Text("Your config uses separate light and dark themes. Picking a theme here uses it for both.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
-    private var modeBinding: Binding<AppearanceModel.Mode> {
-        Binding(get: { model.mode }, set: { model.setMode($0) })
+    // MARK: Editing
+
+    private func setHover(_ id: String, _ slot: ColorSlot, _ inside: Bool) {
+        if inside {
+            hover = (id, slot)
+        } else if hover?.id == id {
+            hover = nil
+        }
     }
 
-    private var colorHelp: String {
-        model.editableTheme != nil
-            ? "Changes save into this theme."
-            : "Changes apply on top of the theme. Save as a new theme to keep them as your own."
+    private func edit(_ slot: ColorSlot) {
+        editing = slot
+        AppearanceColorPanel.shared.open(color: model.previewColors[slot]) { [model] rgb in
+            model.setColor(slot, rgb)
+        }
     }
 
-    private var colorsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("Colors", detail: colorHelp)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), alignment: .leading)], alignment: .leading, spacing: 10) {
-                ForEach(ThemeColorKey.allCases) { key in
-                    ColorWell(
-                        label: key.label,
-                        color: model.previewColors.value(for: key),
-                        overridden: model.isOverridden(key),
-                        onChange: { model.setColor(key, $0) },
-                        onReset: { model.setColor(key, nil) }
-                    )
+    /// Points the color panel at the right color after the theme changes.
+    private func syncPanel() {
+        guard let slot = editing else { return }
+        AppearanceColorPanel.shared.sync(color: model.previewColors[slot])
+    }
+}
+
+// MARK: - Color panel
+
+/// Connects the shared macOS color panel to one color at a time.
+@MainActor
+final class AppearanceColorPanel: NSObject {
+    static let shared = AppearanceColorPanel()
+
+    private var onChange: ((ThemeRGB) -> Void)?
+
+    func open(color: ThemeRGB, onChange: @escaping (ThemeRGB) -> Void) {
+        let panel = NSColorPanel.shared
+        panel.setTarget(nil)
+        panel.setAction(nil)
+        panel.showsAlpha = false
+        panel.isContinuous = true
+        panel.color = color.nsColor
+        self.onChange = onChange
+        panel.setTarget(self)
+        panel.setAction(#selector(colorChanged(_:)))
+        panel.orderFront(nil)
+    }
+
+    /// Shows `color` without reporting it back as a change. Skipped when
+    /// the panel already shows it, so a drag in progress isn't disturbed.
+    func sync(color: ThemeRGB) {
+        let panel = NSColorPanel.shared
+        guard onChange != nil, ThemeRGB(nsColor: panel.color) != color else { return }
+        panel.setTarget(nil)
+        panel.color = color.nsColor
+        panel.setTarget(self)
+    }
+
+    /// Stops editing. Closes the panel too if asked.
+    func detach(closePanel: Bool = false) {
+        guard onChange != nil else { return }
+        onChange = nil
+        let panel = NSColorPanel.shared
+        panel.setTarget(nil)
+        panel.setAction(nil)
+        if closePanel { panel.orderOut(nil) }
+    }
+
+    @objc private func colorChanged(_ sender: NSColorPanel) {
+        guard let rgb = ThemeRGB(nsColor: sender.color) else { return }
+        onChange?(rgb)
+    }
+}
+
+// MARK: - Color list
+
+private struct ColorRow: View {
+    let slot: ColorSlot
+    let colors: ResolvedColors
+    let highlighted: Bool
+    let editing: Bool
+    let onHover: (Bool) -> Void
+    let onPick: () -> Void
+
+    var body: some View {
+        Button(action: onPick) {
+            HStack(spacing: 10) {
+                SampleChip(slot: slot, colors: colors)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(slot.name)
+                    Text(slot.usage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 5)
+            .padding(.horizontal, 8)
+            .background(RoundedRectangle(cornerRadius: 8).fill(fill))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover(perform: onHover)
+        .help("\(slot.name): \(colors[slot].hex)")
+    }
+
+    private var fill: Color {
+        if editing { return Color.accentColor.opacity(0.25) }
+        if highlighted { return Color.primary.opacity(0.08) }
+        return .clear
+    }
+}
+
+/// "Hello World" drawn the way the slot's color is used.
+private struct SampleChip: View {
+    let slot: ColorSlot
+    let colors: ResolvedColors
+
+    var body: some View {
+        sample
+            .font(.system(size: 11, design: .monospaced))
+            .lineLimit(1)
+            .fixedSize()
+            .frame(width: 104, height: 24)
+            .background(colors.background.color)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.primary.opacity(0.15), lineWidth: 1))
+    }
+
+    private var sample: Text {
+        let fg = colors.foreground.color
+        switch slot {
+        case .key(.background), .key(.foreground):
+            return Text("Hello World").foregroundColor(fg)
+        case .key(.cursorColor), .key(.cursorText):
+            var cursor = AttributedString("W")
+            cursor.foregroundColor = colors.cursorText.color
+            cursor.backgroundColor = colors.cursor.color
+            return Text("Hello ").foregroundColor(fg) + Text(cursor) + Text("orld").foregroundColor(fg)
+        case .key(.selectionBackground), .key(.selectionForeground):
+            var selected = AttributedString("Hello World")
+            selected.foregroundColor = colors.selectionForeground.color
+            selected.backgroundColor = colors.selectionBackground.color
+            return Text(selected)
+        case .palette(0):
+            var label = AttributedString("Hello World")
+            label.foregroundColor = colors.palette[0].color
+            label.backgroundColor = colors.palette[2].color
+            return Text(label).bold()
+        case .palette(let index):
+            return Text("Hello World").foregroundColor(colors.palette[index].color)
+        }
+    }
+}
+
+// MARK: - Terminal preview
+
+/// The sample terminal text. Every color in `ColorSlot.all` shows up in it
+/// (the background behind all of it), so any color can be found by hovering.
+enum PreviewScript {
+    enum Piece {
+        /// Text in one color.
+        case ink(String, ColorSlot)
+        /// Text on a colored block, like a label, a selection, or the cursor.
+        case block(String, text: ColorSlot, fill: ColorSlot)
+        /// Spacing between words, in the plain text color.
+        case gap(String)
+
+        /// The color a click changes.
+        var primary: ColorSlot? {
+            switch self {
+            case .ink(_, let slot): slot
+            case .block(_, _, let fill): fill
+            case .gap: nil
+            }
+        }
+
+        /// Every color this piece shows.
+        var slots: [ColorSlot] {
+            switch self {
+            case .ink(_, let slot): [slot]
+            case .block(_, let text, let fill): [text, fill]
+            case .gap: []
             }
         }
     }
 
-    private var paletteSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("Palette", detail: "The 16 colors programs use. Top row is normal, bottom row is bright.")
-            ForEach(0..<2) { row in
-                HStack(spacing: 8) {
-                    ForEach(0..<8) { col in
-                        let index = row * 8 + col
-                        PaletteWell(
-                            index: index,
-                            color: model.previewColors.palette[index],
-                            overridden: model.isOverridden(palette: index),
-                            onChange: { model.setColor(palette: index, $0) },
-                            onReset: { model.setColor(palette: index, nil) }
-                        )
+    private static let text = ColorSlot.key(.foreground)
+
+    private static let prompt: [Piece] = [
+        .ink("user@host", .palette(2)), .gap(" "),
+        .ink("~/project", .palette(4)), .gap(" "),
+        .ink("(main)", .palette(5)), .gap(" "),
+        .ink("$", text), .gap(" "),
+    ]
+
+    static let lines: [[Piece]] = [
+        prompt + [.ink("echo \"Hello World\"", text)],
+        [.ink("Hello World", text)],
+        prompt + [.ink("git log -1 --oneline", text)],
+        [.ink("a1b2c3d", .palette(3)), .gap(" "), .ink("(HEAD -> main)", .palette(6)), .gap(" "), .ink("add a greeting", text)],
+        prompt + [.ink("ls", text)],
+        [
+            .ink("README.md", text), .gap("  "), .ink("src", .palette(4)), .gap("  "),
+            .ink("tests", .palette(4)), .gap("  "), .ink("latest", .palette(5)), .gap(" "), .ink("-> build", text),
+        ],
+        prompt + [.ink("git diff", text)],
+        [.ink("@@ -1,2 +1,2 @@", .palette(6))],
+        [.ink("- let greeting = \"Hi\"", .palette(1))],
+        [.ink("+ let greeting = \"Hello World\"", .palette(2))],
+        [.ink("warning:", .palette(3)), .gap(" "), .ink("1 file changed", text)],
+        [
+            .block(" PASS ", text: .palette(0), fill: .palette(2)), .gap(" "),
+            .ink("412 passed", .palette(10)), .gap("  "), .ink("2 skipped", .palette(11)), .gap("  "),
+            .ink("1 failed", .palette(9)), .gap("  "), .ink("(2.1s)", .palette(8)),
+        ],
+        [.block(" FAIL ", text: .palette(15), fill: .palette(1)), .gap(" "), .ink("error: expected 3, got 4", .palette(1))],
+        [.ink("INFO ", .palette(12)), .gap(" "), .ink("serving", text), .gap(" "), .ink("http://localhost:3000", .palette(14))],
+        [.ink("DEBUG", .palette(13)), .gap(" "), .ink("cache warm", .palette(7))],
+        [.block("selected text", text: .key(.selectionForeground), fill: .key(.selectionBackground)), .ink(" and normal text", text)],
+        prompt + [.block(" ", text: .key(.cursorText), fill: .key(.cursorColor))],
+    ]
+}
+
+private struct TerminalPreview: View {
+    let colors: ResolvedColors
+    let highlight: ColorSlot?
+    let onHover: (String, ColorSlot, Bool) -> Void
+    let onHoverBackground: (Bool) -> Void
+    let onPick: (ColorSlot) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            ForEach(PreviewScript.lines.indices, id: \.self) { line in
+                HStack(spacing: 0) {
+                    ForEach(PreviewScript.lines[line].indices, id: \.self) { index in
+                        piece(PreviewScript.lines[line][index], id: "run-\(line)-\(index)")
                     }
                 }
             }
         }
+        .font(.system(size: 13, design: .monospaced))
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(colors.background.color)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.primary.opacity(highlight == .key(.background) ? 0.6 : 0.12), lineWidth: highlight == .key(.background) ? 2 : 1)
+        )
+        .contentShape(Rectangle())
+        .onTapGesture { onPick(.key(.background)) }
+        .onHover(perform: onHoverBackground)
+        .help("Background: \(colors.background.hex)")
     }
 
-    private var footer: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Divider()
-            HStack {
-                if model.hasOverrides {
-                    Button("Reset Colors to Theme") { model.clearOverrides() }
-                }
-                Spacer()
-                Button("Show Settings File") { model.revealAppearanceFile() }
-            }
-            if let error = model.lastError {
-                Text("Couldn't save: \(error)")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            } else {
-                Text("Saved to \(model.appearanceURL.lastPathComponent). Open terminals update right away.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+    @ViewBuilder
+    private func piece(_ piece: PreviewScript.Piece, id: String) -> some View {
+        let dimmed = highlight != nil && !piece.slots.contains { $0 == highlight }
+        switch piece {
+        case .gap(let text):
+            Text(text)
+        case .ink(let text, let slot):
+            interactive(Text(text).foregroundColor(colors[slot].color), piece: piece, id: id, dimmed: dimmed)
+        case .block(let text, let ink, let fill):
+            interactive(
+                Text(text).foregroundColor(colors[ink].color).bold(fill.isPalette).background(colors[fill].color),
+                piece: piece,
+                id: id,
+                dimmed: dimmed
+            )
         }
     }
 
-    private func sectionHeader(_ title: String, detail: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.headline)
-            Text(detail).font(.caption).foregroundStyle(.secondary)
-        }
+    private func interactive(_ view: some View, piece: PreviewScript.Piece, id: String, dimmed: Bool) -> some View {
+        let slot = piece.primary ?? .key(.foreground)
+        let lit = highlight.map { piece.slots.contains($0) } ?? false
+        return view
+            .opacity(dimmed ? 0.15 : 1)
+            .overlay(
+                RoundedRectangle(cornerRadius: 2)
+                    .strokeBorder(Color.white.opacity(lit ? 0.75 : 0), lineWidth: 1.5)
+                    .padding(-2)
+            )
+            .contentShape(Rectangle())
+            .onHover { onHover(id, slot, $0) }
+            .onTapGesture { onPick(slot) }
+            .help("\(slot.name): \(colors[slot].hex)")
+    }
+}
+
+private extension ColorSlot {
+    var isPalette: Bool {
+        if case .palette = self { return true }
+        return false
     }
 }
 
@@ -332,191 +542,17 @@ private struct NameSheet: View {
     }
 }
 
-// MARK: - Rows and wells
-
-private struct ThemeRow: View {
-    let name: String
-    let colors: ResolvedColors
-
-    var body: some View {
-        HStack(spacing: 8) {
-            ThemeSwatch(colors: colors)
-                .frame(width: 52, height: 22)
-            Text(name)
-                .lineLimit(1)
-                .truncationMode(.tail)
-            Spacer(minLength: 0)
-        }
-        .padding(.vertical, 2)
-    }
-}
-
-/// A small chip showing a theme's background, text, and accent colors.
-private struct ThemeSwatch: View {
-    let colors: ResolvedColors
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: 4)
-            .fill(colors.background.color)
-            .overlay(
-                HStack(spacing: 2) {
-                    Text("A")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(colors.foreground.color)
-                    ForEach([1, 2, 3, 4, 5], id: \.self) { i in
-                        Circle()
-                            .fill(colors.palette[i].color)
-                            .frame(width: 5, height: 5)
-                    }
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1)
-            )
-    }
-}
-
-private struct ColorWell: View {
-    let label: String
-    let color: ThemeRGB
-    let overridden: Bool
-    let onChange: (ThemeRGB) -> Void
-    let onReset: () -> Void
-
-    var body: some View {
-        HStack(spacing: 6) {
-            ColorPicker(label, selection: binding, supportsOpacity: false)
-            if overridden {
-                Button(action: onReset) {
-                    Image(systemName: "arrow.uturn.backward.circle.fill")
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .help("Use the theme's color")
-            }
-        }
-    }
-
-    private var binding: Binding<Color> {
-        Binding(get: { color.color }, set: { if let rgb = ThemeRGB(color: $0) { onChange(rgb) } })
-    }
-}
-
-private struct PaletteWell: View {
-    let index: Int
-    let color: ThemeRGB
-    let overridden: Bool
-    let onChange: (ThemeRGB) -> Void
-    let onReset: () -> Void
-
-    var body: some View {
-        VStack(spacing: 2) {
-            ColorPicker("Color \(index)", selection: binding, supportsOpacity: false)
-                .labelsHidden()
-            Text("\(index)")
-                .font(.caption2.monospacedDigit())
-                .foregroundStyle(overridden ? Color.accentColor : Color.secondary)
-        }
-        .contextMenu {
-            if overridden {
-                Button("Use the Theme's Color", action: onReset)
-            }
-        }
-    }
-
-    private var binding: Binding<Color> {
-        Binding(get: { color.color }, set: { if let rgb = ThemeRGB(color: $0) { onChange(rgb) } })
-    }
-}
-
-// MARK: - Terminal preview
-
-/// A fake terminal drawn with the chosen colors.
-private struct TerminalPreview: View {
-    let colors: ResolvedColors
-
-    /// Where a piece of preview text takes its color from.
-    private enum Ink {
-        case text
-        case palette(Int)
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            line([("user@host", .palette(2)), (" ~/project", .palette(4)), (" (main)", .palette(5)), (" $ ", .text), ("ls", .text)])
-            line([("README.md  ", .text), ("src  ", .palette(4)), ("tests  ", .palette(4)), ("build.sh", .palette(2))])
-            line([("user@host", .palette(2)), (" ~/project", .palette(4)), (" (main)", .palette(5)), (" $ ", .text), ("git diff", .text)])
-            line([("@@ -1,2 +1,2 @@", .palette(6))])
-            line([("- let color = \"old\"", .palette(1))])
-            line([("+ let color = \"new\"", .palette(2))])
-            line([("warning: ", .palette(3)), ("1 file changed", .text)])
-            line([("error: ", .palette(9)), ("tests failed", .palette(8))])
-            HStack(spacing: 0) {
-                Text("selected text")
-                    .foregroundColor(colors.selectionForeground.color)
-                    .background(colors.selectionBackground.color)
-                Text(" and normal text")
-                    .foregroundColor(colors.foreground.color)
-            }
-            HStack(spacing: 0) {
-                line([("user@host", .palette(2)), (" ~/project", .palette(4)), (" $ ", .text)])
-                Text("_")
-                    .foregroundColor(colors.cursorText.color)
-                    .background(colors.cursor.color)
-            }
-            HStack(spacing: 4) {
-                ForEach(0..<16) { i in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(colors.palette[i].color)
-                        .frame(width: 16, height: 10)
-                }
-            }
-            .padding(.top, 6)
-        }
-        .font(.system(size: 13, design: .monospaced))
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(colors.background.color)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
-        )
-    }
-
-    private func line(_ parts: [(String, Ink)]) -> Text {
-        var result = AttributedString()
-        for (text, ink) in parts {
-            var piece = AttributedString(text)
-            piece.foregroundColor = color(ink)
-            result += piece
-        }
-        return Text(result)
-    }
-
-    private func color(_ ink: Ink) -> Color {
-        switch ink {
-        case .text: colors.foreground.color
-        case .palette(let i): colors.palette[i].color
-        }
-    }
-}
-
 // MARK: - Color conversion
 
 extension ThemeRGB {
-    var color: Color {
-        Color(nsColor: NSColor(
-            srgbRed: CGFloat(r) / 255,
-            green: CGFloat(g) / 255,
-            blue: CGFloat(b) / 255,
-            alpha: 1
-        ))
+    var nsColor: NSColor {
+        NSColor(srgbRed: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: 1)
     }
 
-    init?(color: Color) {
-        guard let rgb = NSColor(color).usingColorSpace(.sRGB) else { return nil }
+    var color: Color { Color(nsColor: nsColor) }
+
+    init?(nsColor: NSColor) {
+        guard let rgb = nsColor.usingColorSpace(.sRGB) else { return nil }
         func byte(_ v: CGFloat) -> UInt8 { UInt8(max(0, min(255, (v * 255).rounded()))) }
         self.init(r: byte(rgb.redComponent), g: byte(rgb.greenComponent), b: byte(rgb.blueComponent))
     }

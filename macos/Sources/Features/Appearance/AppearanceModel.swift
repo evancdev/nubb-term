@@ -3,22 +3,12 @@ import Combine
 
 /// State for the Appearance window. Every change writes `appearance.nubb`
 /// and reloads the config, so open terminals update while you pick.
+///
+/// The window edits one theme at a time. Your own themes save as you edit.
+/// Changing a color on a bundled theme (or on Nubb's defaults) first saves
+/// a copy under your themes, so bundled files are never touched.
 @MainActor
 final class AppearanceModel: ObservableObject {
-    enum Mode: String, CaseIterable, Identifiable {
-        case single
-        case pair
-
-        var id: String { rawValue }
-    }
-
-    enum Slot: String, CaseIterable, Identifiable {
-        case light
-        case dark
-
-        var id: String { rawValue }
-    }
-
     /// The name prompt for creating or renaming a theme.
     struct NamePrompt: Identifiable {
         enum Kind: Equatable {
@@ -39,11 +29,11 @@ final class AppearanceModel: ObservableObject {
 
     @Published private(set) var themes: [ThemeEntry] = []
     @Published private(set) var settings = AppearanceSettings()
-    @Published var mode: Mode = .single
-    @Published var slot: Slot = .dark
-    @Published var search = ""
     @Published var namePrompt: NamePrompt?
     @Published private(set) var lastError: String?
+
+    /// A one-time message, like where an automatic copy was saved.
+    @Published private(set) var notice: String?
 
     /// The main config file. The model adds one include line to it.
     let configURL: URL
@@ -88,123 +78,90 @@ final class AppearanceModel: ObservableObject {
         } else {
             settings = AppearanceSettings()
         }
-        mode = settings.theme.isPair ? .pair : .single
+        notice = nil
     }
 
     private func reloadThemes() {
         themes = ThemeCatalog.load(user: userThemesURL, bundled: bundledThemesURL)
     }
 
-    // MARK: Theme list
+    // MARK: Picking a theme
 
-    private func matches(_ theme: ThemeEntry) -> Bool {
-        let query = search.trimmingCharacters(in: .whitespaces)
-        return query.isEmpty || theme.name.localizedCaseInsensitiveContains(query)
-    }
+    var userThemes: [ThemeEntry] { themes.filter { $0.location == .user } }
+    var bundledThemes: [ThemeEntry] { themes.filter { $0.location == .bundled } }
 
-    var userThemes: [ThemeEntry] { themes.filter { $0.location == .user && matches($0) } }
-    var bundledThemes: [ThemeEntry] { themes.filter { $0.location == .bundled && matches($0) } }
+    /// The theme being shown and edited. Nil means Nubb's default colors.
+    /// A config with separate light and dark themes shows the dark one.
+    var selectedName: String? { settings.theme.dark ?? settings.theme.light }
 
-    /// The theme name the list highlights.
-    var selectedName: String? {
-        switch mode {
-        case .single: settings.theme.dark ?? settings.theme.light
-        case .pair: slot == .light ? settings.theme.light : settings.theme.dark
-        }
-    }
+    /// True when the config picks separate light and dark themes. Picking
+    /// a theme in the window replaces both with one.
+    var hasLightDarkPair: Bool { settings.theme.isPair }
 
-    /// The theme that the preview and the color wells show.
-    var previewTheme: ThemeEntry? {
+    var selectedTheme: ThemeEntry? {
         guard let name = selectedName else { return nil }
         return themes.first { $0.name == name }
     }
 
     /// The selected theme if it's one of yours, so color changes save into it.
     var editableTheme: ThemeEntry? {
-        guard let theme = previewTheme, theme.location == .user else { return nil }
+        guard let theme = selectedTheme, theme.location == .user else { return nil }
         return theme
     }
 
-    /// What the terminal shows for the previewed theme plus the overrides.
-    var previewColors: ResolvedColors {
-        let base = previewTheme?.colors ?? ThemeColors()
-        return ResolvedColors(base.merged(with: settings.overrides))
+    /// The selected theme's colors, plus any color lines an older version
+    /// of this window left in `appearance.nubb`. This is what terminals show.
+    private var currentColors: ThemeColors {
+        (selectedTheme?.colors ?? ThemeColors()).merged(with: settings.overrides)
     }
 
+    var previewColors: ResolvedColors { ResolvedColors(currentColors) }
+
     func select(_ name: String?) {
-        var theme = settings.theme
-        switch mode {
-        case .single:
-            theme = ThemeChoice(single: name)
-        case .pair:
-            if slot == .light {
-                theme.light = name
-                if theme.dark == nil { theme.dark = name }
-            } else {
-                theme.dark = name
-                if theme.light == nil { theme.light = name }
-            }
-        }
-        settings.theme = theme
+        guard name != selectedName || hasLightDarkPair else { return }
+        settings.theme = ThemeChoice(single: name)
+        notice = nil
         save()
     }
 
-    func setMode(_ newMode: Mode) {
-        mode = newMode
-        if newMode == .single {
-            let keep = settings.theme.dark ?? settings.theme.light
-            settings.theme = ThemeChoice(single: keep)
-            save()
-        }
+    /// Every choice in menu order: Nubb's default, your themes, then the
+    /// bundled ones.
+    var themeOrder: [String?] {
+        [nil] + userThemes.map(\.name) + bundledThemes.map(\.name)
+    }
+
+    /// Moves to the next or previous theme in menu order.
+    func step(by offset: Int) {
+        let order = themeOrder
+        let current = order.firstIndex { $0 == selectedName } ?? 0
+        let next = min(max(current + offset, 0), order.count - 1)
+        guard next != current else { return }
+        select(order[next])
     }
 
     // MARK: Colors
 
-    func isOverridden(_ key: ThemeColorKey) -> Bool {
-        settings.overrides.values[key] != nil
-    }
+    /// Sets one color. Your own theme saves it directly. Anything else is
+    /// first copied to a new theme of yours, which you keep editing.
+    func setColor(_ slot: ColorSlot, _ color: ThemeRGB) {
+        guard previewColors[slot] != color else { return }
+        var colors = currentColors
+        colors.set(slot, color)
+        settings.overrides = ThemeColors()
 
-    func isOverridden(palette index: Int) -> Bool {
-        settings.overrides.palette[index] != nil
-    }
-
-    /// Sets a color. For your own theme this edits the theme. For a bundled
-    /// theme it's an override on top. Nil removes the override.
-    func setColor(_ key: ThemeColorKey, _ color: ThemeRGB?) {
-        if let color, let theme = editableTheme {
-            let hadOverride = settings.overrides.values[key] != nil
-            var colors = theme.colors
-            colors.values[key] = color
-            settings.overrides.values[key] = nil
-            guard colors != theme.colors || hadOverride else { return }
+        if let theme = editableTheme {
             updateTheme(theme, colors: colors)
             return
         }
 
-        // Picking the theme's own color is the same as no override.
-        let themeColor = ResolvedColors(previewTheme?.colors ?? ThemeColors()).value(for: key)
-        let new = color == themeColor ? nil : color
-        guard settings.overrides.values[key] != new else { return }
-        settings.overrides.values[key] = new
-        save(delay: 0.15)
-    }
-
-    func setColor(palette index: Int, _ color: ThemeRGB?) {
-        if let color, let theme = editableTheme {
-            let hadOverride = settings.overrides.palette[index] != nil
-            var colors = theme.colors
-            colors.palette[index] = color
-            settings.overrides.palette[index] = nil
-            guard colors != theme.colors || hadOverride else { return }
-            updateTheme(theme, colors: colors)
-            return
+        let name = ThemeFile.suggestedName(basedOn: selectedName, existing: existingNames)
+        do {
+            try createTheme(named: name, colors: colors)
+            notice = "Saved your changes as \u{201C}\(name)\u{201D} in My Themes."
+            lastError = nil
+        } catch {
+            lastError = error.localizedDescription
         }
-
-        let themeColor = ResolvedColors(previewTheme?.colors ?? ThemeColors()).palette[index]
-        let new = color == themeColor ? nil : color
-        guard settings.overrides.palette[index] != new else { return }
-        settings.overrides.palette[index] = new
-        save(delay: 0.15)
     }
 
     private func updateTheme(_ theme: ThemeEntry, colors: ThemeColors) {
@@ -216,19 +173,12 @@ final class AppearanceModel: ObservableObject {
         save(delay: 0.15)
     }
 
-    func clearOverrides() {
-        settings.overrides = ThemeColors()
-        save()
-    }
-
-    var hasOverrides: Bool { !settings.overrides.isEmpty }
-
     // MARK: Creating and managing themes
 
     var existingNames: Set<String> { Set(themes.map(\.name)) }
 
     func beginCreate() {
-        let name = ThemeFile.suggestedName(basedOn: previewTheme?.name, existing: existingNames)
+        let name = ThemeFile.suggestedName(basedOn: selectedName, existing: existingNames)
         namePrompt = NamePrompt(kind: .create, name: name)
     }
 
@@ -254,27 +204,27 @@ final class AppearanceModel: ObservableObject {
 
         do {
             switch prompt.kind {
-            case .create: try createTheme(named: name)
+            case .create: try createTheme(named: name, colors: currentColors)
             case .rename(let old): try renameTheme(old, to: name)
             }
             namePrompt = nil
+            notice = nil
             lastError = nil
         } catch {
             lastError = error.localizedDescription
         }
     }
 
-    /// Saves the current colors (theme plus your changes) as a new theme in
-    /// your themes folder and switches to it.
-    private func createTheme(named name: String) throws {
-        let colors = (previewTheme?.colors ?? ThemeColors()).merged(with: settings.overrides)
+    /// Writes `colors` as a new theme in your themes folder and switches to it.
+    private func createTheme(named name: String, colors: ThemeColors) throws {
         try writeDirtyTheme()
         try FileManager.default.createDirectory(at: userThemesURL, withIntermediateDirectories: true)
         let url = userThemesURL.appendingPathComponent(name)
         try ThemeFile.text(for: colors).write(to: url, atomically: true, encoding: .utf8)
         reloadThemes()
         settings.overrides = ThemeColors()
-        select(name)
+        settings.theme = ThemeChoice(single: name)
+        save()
     }
 
     private func renameTheme(_ old: String, to new: String) throws {
@@ -299,6 +249,7 @@ final class AppearanceModel: ObservableObject {
             return
         }
         reloadThemes()
+        notice = nil
 
         // A bundled theme with the same name takes over. Otherwise fall
         // back to Nubb's default colors.
@@ -317,30 +268,18 @@ final class AppearanceModel: ObservableObject {
         settings.theme = theme
     }
 
-    // MARK: Finder
-
     /// Opens the user themes folder in Finder, creating it first.
     func openUserThemesFolder() {
         try? FileManager.default.createDirectory(at: userThemesURL, withIntermediateDirectories: true)
         NSWorkspace.shared.open(userThemesURL)
     }
 
-    /// Shows `appearance.nubb` in Finder, or its folder if it doesn't exist yet.
-    func revealAppearanceFile() {
-        if FileManager.default.fileExists(atPath: appearanceURL.path) {
-            NSWorkspace.shared.activateFileViewerSelecting([appearanceURL])
-        } else {
-            NSWorkspace.shared.open(configURL.deletingLastPathComponent())
-        }
-    }
-
     // MARK: Saving
 
     /// Writes `appearance.nubb` and any edited theme, makes sure the main
-    /// config includes the appearance file, and reloads. The list and the
-    /// color wells can fire many changes in a row (arrow keys, dragging in
-    /// the color panel), so this waits a moment and only writes the latest
-    /// state.
+    /// config includes the appearance file, and reloads. Arrow keys and the
+    /// color panel can fire many changes in a row, so this waits a moment
+    /// and only writes the latest state.
     func save(delay: Double = 0.06) {
         pendingSave?.cancel()
         pendingSave = Task {
