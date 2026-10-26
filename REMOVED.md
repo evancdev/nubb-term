@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,038 files and about 247,000 lines of text.
+brought back later. So far that is 1,076 files and about 256,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -25,7 +25,8 @@ Every removal adds its entry here in the same commit.
 
 - Zig packages: fontconfig, harfbuzz, libxml2, gtk4-layer-shell, gobject,
   wayland, wayland-protocols, plasma-wayland-protocols, zig-wayland, opengl,
-  libintl, sentry, breakpad, zig-js, android-ndk, iterm2_themes.
+  libintl, sentry, breakpad, zig-js, android-ndk, iterm2_themes, dcimgui,
+  freetype, libpng, zlib.
 - Swift packages: Sparkle.
 
 ## Platforms and build
@@ -264,6 +265,20 @@ for global keybinds, which were removed earlier. Config options removed:
 - `macos/Sources/Features/QuickTerminal/`
 - `macos/Tests/QuickTerminalScreenStateCacheTests.swift`
 - `src/cli/toggle_quick_terminal.zig`
+
+### Terminal inspector
+
+A Dear ImGui debug panel (View > Terminal Inspector, ⌘⌥I) that showed key
+events, escape sequences, and terminal state for manual debugging. It was
+the only user of Dear ImGui and FreeType, and libpng and zlib were only
+there for FreeType. The renderer's debug overlay, which only the inspector
+turned on, went with it. Keybind action removed: `inspector`.
+
+- `macos/Sources/Ghostty/Ghostty.Inspector.swift`
+- `macos/Sources/Ghostty/Surface View/InspectorView.swift`
+- `pkg/dcimgui/`, `pkg/freetype/`, `pkg/libpng/`, `pkg/zlib/`
+- `src/inspector/`
+- `src/renderer/Overlay.zig`
 
 ## Terminal and core
 

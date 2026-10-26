@@ -221,58 +221,6 @@ pub fn add(
         .optimize = optimize,
     });
 
-    // Freetype. Nubb renders fonts with CoreText; Dear ImGui (the
-    // inspector) is the only user, but the library must still be linked
-    // here so it lands in the static archive the macOS app links.
-    _ = b.systemIntegrationOption("freetype", .{}); // Shows it in help
-    if (b.lazyDependency("freetype", .{
-        .target = target,
-        .optimize = optimize,
-        .@"enable-libpng" = true,
-    })) |freetype_dep| {
-        if (b.systemIntegrationOption("freetype", .{})) {
-            step.root_module.linkSystemLibrary("bzip2", dynamic_link_opts);
-            step.root_module.linkSystemLibrary("freetype2", dynamic_link_opts);
-        } else {
-            step.root_module.linkLibrary(freetype_dep.artifact("freetype"));
-            try static_libs.append(
-                b.allocator,
-                freetype_dep.artifact("freetype").getEmittedBin(),
-            );
-        }
-    }
-
-    // Libpng - Nubb doesn't actually use this directly, its only used
-    // through dependencies, so we only need to add it to our static
-    // libs list if we're not using system integration. The dependencies
-    // will handle linking it.
-    if (!b.systemIntegrationOption("libpng", .{})) {
-        if (b.lazyDependency("libpng", .{
-            .target = target,
-            .optimize = optimize,
-        })) |libpng_dep| {
-            step.root_module.linkLibrary(libpng_dep.artifact("png"));
-            try static_libs.append(
-                b.allocator,
-                libpng_dep.artifact("png").getEmittedBin(),
-            );
-        }
-    }
-
-    // Zlib - same as libpng, only used through dependencies.
-    if (!b.systemIntegrationOption("zlib", .{})) {
-        if (b.lazyDependency("zlib", .{
-            .target = target,
-            .optimize = optimize,
-        })) |zlib_dep| {
-            step.root_module.linkLibrary(zlib_dep.artifact("z"));
-            try static_libs.append(
-                b.allocator,
-                zlib_dep.artifact("z").getEmittedBin(),
-            );
-        }
-    }
-
     // Oniguruma
     if (b.lazyDependency("oniguruma", .{
         .target = target,
@@ -441,22 +389,6 @@ pub fn add(
                 macos_dep.artifact("macos").getEmittedBin(),
             );
         }
-    }
-
-    // cimgui
-    if (b.lazyDependency("dcimgui", .{
-        .target = target,
-        .optimize = optimize,
-        .freetype = true,
-        .@"backend-metal" = target.result.os.tag.isDarwin(),
-        .@"backend-osx" = target.result.os.tag == .macos,
-    })) |dep| {
-        step.root_module.addImport("dcimgui", dep.module("dcimgui"));
-        step.root_module.linkLibrary(dep.artifact("dcimgui"));
-        try static_libs.append(
-            b.allocator,
-            dep.artifact("dcimgui").getEmittedBin(),
-        );
     }
 
     // Fonts

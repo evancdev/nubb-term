@@ -245,7 +245,6 @@ test {
     _ = @import("tripwire.zig");
     _ = @import("benchmark/main.zig");
     _ = @import("datastruct/main.zig");
-    _ = @import("inspector/main.zig");
     _ = @import("lib/main.zig");
     _ = @import("terminal/main.zig");
     _ = @import("terminfo/main.zig");

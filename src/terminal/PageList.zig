@@ -4943,7 +4943,7 @@ fn compressIncremental(self: *PageList) IncrementalCompressionResult {
 
     // We reached our active node. So we're done, except that we always
     // do one pass after the first success so we can recompress nodes that
-    // were possibly decompressed (e.g. by search, inspector, whatever).
+    // were possibly decompressed (e.g. by search, whatever).
     if (!state.flags.verifying or state.flags.did_compress) {
         const activity_serial: u48 = state.activity_serial;
         state.* = .{

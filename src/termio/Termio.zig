@@ -724,25 +724,7 @@ fn processOutputLocked(self: *Termio, buf: []const u8) void {
         }, .{ .instant = {} });
     }
 
-    // If we have an inspector, we enter SLOW MODE because we need to
-    // process a byte at a time alternating between the inspector handler
-    // and the termio handler. This is very slow compared to our optimizations
-    // below but at least users only pay for it if they're using the inspector.
-    if (self.renderer_state.inspector) |insp| {
-        for (buf, 0..) |byte, i| {
-            insp.recordPtyRead(
-                self.alloc,
-                &self.terminal,
-                buf[i .. i + 1],
-            ) catch |err| {
-                log.err("error recording pty read in inspector err={}", .{err});
-            };
-
-            self.terminal_stream.next(byte);
-        }
-    } else {
-        self.terminal_stream.nextSlice(buf);
-    }
+    self.terminal_stream.nextSlice(buf);
 
     // If our stream handling caused messages to be sent to the mailbox
     // thread, then we need to wake it up so that it processes them.

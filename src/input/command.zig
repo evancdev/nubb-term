@@ -555,12 +555,6 @@ fn actionCommands(action: Action.Key) []const Command {
             .description = "Reset the window size to the default.",
         }},
 
-        .inspector => comptime &.{.{
-            .action = .{ .inspector = .toggle },
-            .title = "Toggle Inspector",
-            .description = "Toggle the inspector.",
-        }},
-
         .show_gtk_inspector => comptime &.{.{
             .action = .show_gtk_inspector,
             .title = "Show the GTK Inspector",

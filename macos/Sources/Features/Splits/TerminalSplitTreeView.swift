@@ -96,7 +96,7 @@ private struct TerminalSplitLeaf: View {
 
     var body: some View {
         GeometryReader { geometry in
-            Nubb.InspectableSurface(
+            Nubb.SurfaceWrapper(
                 surfaceView: surfaceView,
                 isSplit: isSplit)
             .background {

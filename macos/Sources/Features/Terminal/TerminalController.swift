@@ -1413,7 +1413,6 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         guard let window,
               let screen = window.screen ?? NSScreen.main,
               case .leaf(let view) = surfaceTree.root, view == surfaceView,
-              !surfaceView.inspectorVisible,
               (window.tabGroup?.windows.count ?? 1) == 1,
               !(fullscreenStyle?.isFullscreen ?? false) else { return false }
 
@@ -1499,11 +1498,6 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     @IBAction func toggleNubbFullScreen(_ sender: Any?) {
         guard let surface = focusedSurface?.surface else { return }
         nubb.toggleFullscreen(surface: surface)
-    }
-
-    @IBAction func toggleTerminalInspector(_ sender: Any?) {
-        guard let surface = focusedSurface?.surface else { return }
-        nubb.toggleTerminalInspector(surface: surface)
     }
 
     // MARK: - TerminalViewDelegate

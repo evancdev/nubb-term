@@ -394,9 +394,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
         // generally want a fat binary. This can be overridden with the
         // `-fsys` flag.
         for (&[_][]const u8{
-            "freetype",
-            "libpng",
-            "zlib",
             "oniguruma",
         }) |dep| {
             _ = b.systemIntegrationOption(

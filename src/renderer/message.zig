@@ -61,9 +61,6 @@ pub const Message = union(enum) {
     /// no match currently.
     search_selected_match: ?SearchMatch,
 
-    /// Activate or deactivate the inspector.
-    inspector: bool,
-
     /// The macOS display ID has changed for the window.
     macos_display_id: u32,
 

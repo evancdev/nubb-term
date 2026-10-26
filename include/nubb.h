@@ -56,7 +56,6 @@ typedef SSIZE_T ssize_t;
 typedef void* nubb_app_t;
 typedef void* nubb_config_t;
 typedef void* nubb_surface_t;
-typedef void* nubb_inspector_t;
 
 // All the types below are fully defined and must be kept in sync with
 // their Zig counterparts. Any changes to these types MUST have an associated
@@ -646,19 +645,6 @@ typedef enum {
   NUBB_SECURE_INPUT_TOGGLE,
 } nubb_action_secure_input_e;
 
-// apprt.action.Inspector
-typedef enum {
-  NUBB_INSPECTOR_TOGGLE,
-  NUBB_INSPECTOR_SHOW,
-  NUBB_INSPECTOR_HIDE,
-} nubb_action_inspector_e;
-
-// apprt.action.ExportTerminalIO.C
-typedef struct {
-  const char* contents;
-  size_t len;
-} nubb_action_export_terminal_io_s;
-
 // apprt.action.QuitTimer
 typedef enum {
   NUBB_QUIT_TIMER_START,
@@ -940,10 +926,7 @@ typedef enum {
   NUBB_ACTION_CELL_SIZE,
   NUBB_ACTION_SCROLLBAR,
   NUBB_ACTION_RENDER,
-  NUBB_ACTION_INSPECTOR,
   NUBB_ACTION_SHOW_GTK_INSPECTOR,
-  NUBB_ACTION_RENDER_INSPECTOR,
-  NUBB_ACTION_EXPORT_TERMINAL_IO,
   NUBB_ACTION_DESKTOP_NOTIFICATION,
   NUBB_ACTION_SET_TITLE,
   NUBB_ACTION_SET_TAB_TITLE,
@@ -997,8 +980,6 @@ typedef union {
   nubb_action_resize_window_s resize_window;
   nubb_action_cell_size_s cell_size;
   nubb_action_scrollbar_s scrollbar;
-  nubb_action_inspector_e inspector;
-  nubb_action_export_terminal_io_s export_terminal_io;
   nubb_action_desktop_notification_s desktop_notification;
   nubb_action_set_title_s set_title;
   nubb_action_set_title_s set_tab_title;
@@ -1208,32 +1189,6 @@ NUBB_API void nubb_surface_free_text(nubb_surface_t, nubb_text_s*);
 NUBB_API void nubb_surface_set_display_id(nubb_surface_t, uint32_t);
 NUBB_API void* nubb_surface_quicklook_font(nubb_surface_t);
 NUBB_API bool nubb_surface_quicklook_word(nubb_surface_t, nubb_text_s*);
-#endif
-
-NUBB_API nubb_inspector_t nubb_surface_inspector(nubb_surface_t);
-NUBB_API void nubb_inspector_free(nubb_surface_t);
-NUBB_API void nubb_inspector_set_focus(nubb_inspector_t, bool);
-NUBB_API void nubb_inspector_set_content_scale(nubb_inspector_t, double, double);
-NUBB_API void nubb_inspector_set_size(nubb_inspector_t, uint32_t, uint32_t);
-NUBB_API void nubb_inspector_mouse_button(nubb_inspector_t,
-                                                   nubb_input_mouse_state_e,
-                                                   nubb_input_mouse_button_e,
-                                                   nubb_input_mods_e);
-NUBB_API void nubb_inspector_mouse_pos(nubb_inspector_t, double, double);
-NUBB_API void nubb_inspector_mouse_scroll(nubb_inspector_t,
-                                                   double,
-                                                   double,
-                                                   nubb_input_scroll_mods_t);
-NUBB_API void nubb_inspector_key(nubb_inspector_t,
-                                          nubb_input_action_e,
-                                          nubb_input_key_e,
-                                          nubb_input_mods_e);
-NUBB_API void nubb_inspector_text(nubb_inspector_t, const char*);
-
-#ifdef __APPLE__
-NUBB_API bool nubb_inspector_metal_init(nubb_inspector_t, void*);
-NUBB_API void nubb_inspector_metal_render(nubb_inspector_t, void*, void*);
-NUBB_API bool nubb_inspector_metal_shutdown(nubb_inspector_t);
 #endif
 
 // APIs I'd like to get rid of eventually but are still needed for now.

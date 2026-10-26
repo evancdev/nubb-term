@@ -377,12 +377,6 @@ extension Nubb.Notification {
     static let didReceiveInitialWindowFrame = Notification.Name("com.evancdev.nubb.didReceiveInitialWindowFrame")
     static let FrameKey = "com.evancdev.nubb.frame"
 
-    /// Notification to render the inspector for a surface
-    static let inspectorNeedsDisplay = Notification.Name("com.evancdev.nubb.inspectorNeedsDisplay")
-
-    /// Notification to show/hide the inspector
-    static let didControlInspector = Notification.Name("com.evancdev.nubb.didControlInspector")
-
     /// Notification sent to the active split view to resize the split.
     static let didResizeSplit = Notification.Name("com.evancdev.nubb.didResizeSplit")
     static let ResizeSplitDirectionKey = didResizeSplit.rawValue + ".direction"

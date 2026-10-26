@@ -47,15 +47,11 @@
         },
 
         // C libs
-        .dcimgui = .{ .path = "./pkg/dcimgui", .lazy = true },
-        .freetype = .{ .path = "./pkg/freetype", .lazy = true },
         .highway = .{ .path = "./pkg/highway", .lazy = true },
-        .libpng = .{ .path = "./pkg/libpng", .lazy = true },
         .macos = .{ .path = "./pkg/macos", .lazy = true },
         .oniguruma = .{ .path = "./pkg/oniguruma", .lazy = true },
         .simdutf = .{ .path = "./pkg/simdutf", .lazy = true },
         .wuffs = .{ .path = "./pkg/wuffs", .lazy = true },
-        .zlib = .{ .path = "./pkg/zlib", .lazy = true },
 
         // Shader translation
         .glslang = .{ .path = "./pkg/glslang", .lazy = true },
