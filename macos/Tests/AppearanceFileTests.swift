@@ -245,18 +245,6 @@ struct AppearanceModelTests {
         #expect(box.read(box.config).components(separatedBy: AppearanceInclude.directive).count == 2)
     }
 
-    @Test func stepsThroughThemesInMenuOrder() throws {
-        let box = try Sandbox()
-        let model = box.model()
-        #expect(model.themeOrder == [nil, "Sample", "Second"])
-        model.step(by: -1)
-        #expect(model.selectedName == nil)
-        model.step(by: 1)
-        #expect(model.selectedName == "Sample")
-        model.step(by: 5)
-        #expect(model.selectedName == "Second")
-    }
-
     @Test func editingBundledThemeSavesACopy() throws {
         let box = try Sandbox()
         let model = box.model()

@@ -84,11 +84,6 @@ struct AppearanceView: View {
             .labelsHidden()
             .frame(width: 260)
 
-            Button { model.step(by: -1) } label: { Image(systemName: "chevron.left") }
-                .help("Previous theme")
-            Button { model.step(by: 1) } label: { Image(systemName: "chevron.right") }
-                .help("Next theme")
-
             if model.editableTheme != nil {
                 Text("My Theme")
                     .font(.caption)

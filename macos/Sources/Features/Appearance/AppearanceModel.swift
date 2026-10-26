@@ -119,21 +119,6 @@ final class AppearanceModel: ObservableObject {
         save()
     }
 
-    /// Every choice in menu order: Nubb's default, your themes, then the
-    /// bundled ones.
-    var themeOrder: [String?] {
-        [nil] + userThemes.map(\.name) + bundledThemes.map(\.name)
-    }
-
-    /// Moves to the next or previous theme in menu order.
-    func step(by offset: Int) {
-        let order = themeOrder
-        let current = order.firstIndex { $0 == selectedName } ?? 0
-        let next = min(max(current + offset, 0), order.count - 1)
-        guard next != current else { return }
-        select(order[next])
-    }
-
     // MARK: Colors
 
     /// Sets one color. Your own theme saves it directly. Anything else is
