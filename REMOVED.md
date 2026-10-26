@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,076 files and about 256,000 lines of text.
+brought back later. So far that is 1,079 files and about 257,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -265,6 +265,15 @@ for global keybinds, which were removed earlier. Config options removed:
 - `macos/Sources/Features/QuickTerminal/`
 - `macos/Tests/QuickTerminalScreenStateCacheTests.swift`
 - `src/cli/toggle_quick_terminal.zig`
+
+### `+new-window` and `+new-tab`
+
+These sent an IPC message to a running instance. Only the GTK app (D-Bus)
+handled it, so on macOS they always printed "not supported". CLI actions
+removed: `+new-window`, `+new-tab`.
+
+- `src/apprt/ipc.zig`
+- `src/cli/new_tab.zig`, `src/cli/new_window.zig`
 
 ### Terminal inspector
 

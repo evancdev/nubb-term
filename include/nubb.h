@@ -1048,37 +1048,6 @@ typedef struct {
   nubb_runtime_close_surface_cb close_surface_cb;
 } nubb_runtime_config_s;
 
-// apprt.ipc.Target.Key
-typedef enum {
-  NUBB_IPC_TARGET_CLASS,
-  NUBB_IPC_TARGET_DETECT,
-} nubb_ipc_target_tag_e;
-
-typedef union {
-  char *klass;
-} nubb_ipc_target_u;
-
-typedef struct {
-  nubb_ipc_target_tag_e tag;
-  nubb_ipc_target_u target;
-} chostty_ipc_target_s;
-
-// apprt.ipc.Action.NewWindow
-typedef struct {
-  // This should be a null terminated list of strings.
-  const char **arguments;
-} nubb_ipc_action_new_window_s;
-
-typedef union {
-  nubb_ipc_action_new_window_s new_window;
-} nubb_ipc_action_u;
-
-// apprt.ipc.Action.Key
-typedef enum {
-  NUBB_IPC_ACTION_NEW_WINDOW,
-  NUBB_IPC_ACTION_NEW_TAB,
-} nubb_ipc_action_tag_e;
-
 //-------------------------------------------------------------------
 // Published API
 

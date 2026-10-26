@@ -18,8 +18,6 @@ const show_config = @import("show_config.zig");
 const explain_config = @import("explain_config.zig");
 const validate_config = @import("validate_config.zig");
 const show_face = @import("show_face.zig");
-const new_window = @import("new_window.zig");
-const new_tab = @import("new_tab.zig");
 const global = @import("../global.zig");
 
 /// Special commands that can be invoked via CLI flags. These are all
@@ -67,12 +65,6 @@ pub const Action = enum {
 
     // Show which font face Nubb loads a codepoint from.
     @"show-face",
-
-    // Use IPC to tell the running Nubb to open a new window.
-    @"new-window",
-
-    // Use IPC to tell the running Nubb to open a new tab.
-    @"new-tab",
 
     pub fn detectSpecialCase(arg: []const u8) ?SpecialCase(Action) {
         // If we see a "-e" and we haven't seen a command yet, then
@@ -154,8 +146,6 @@ pub const Action = enum {
             .@"explain-config" => try explain_config.run(alloc),
             .@"validate-config" => try validate_config.run(alloc),
             .@"show-face" => try show_face.run(alloc),
-            .@"new-window" => try new_window.run(alloc),
-            .@"new-tab" => try new_tab.run(alloc),
         };
     }
 
@@ -194,8 +184,6 @@ pub const Action = enum {
                 .@"explain-config" => explain_config.Options,
                 .@"validate-config" => validate_config.Options,
                 .@"show-face" => show_face.Options,
-                .@"new-window" => new_window.Options,
-                .@"new-tab" => new_tab.Options,
             };
         }
     }

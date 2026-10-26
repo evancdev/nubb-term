@@ -338,24 +338,6 @@ pub const App = struct {
             else => {},
         }
     }
-
-    /// Send the given IPC to a running Nubb. Returns `true` if the action was
-    /// able to be performed, `false` otherwise.
-    ///
-    /// Note that this is a static function. Since this is called from a CLI app (or
-    /// some other process that is not Nubb) there is no full-featured apprt App
-    /// to use.
-    pub fn performIpc(
-        _: Allocator,
-        _: apprt.ipc.Target,
-        comptime action: apprt.ipc.Action.Key,
-        _: apprt.ipc.Action.Value(action),
-    ) (Allocator.Error || apprt.ipc.Errors)!bool {
-        switch (action) {
-            .new_window => return false,
-            .new_tab => return false,
-        }
-    }
 };
 
 /// Platform-specific configuration for libnubb.

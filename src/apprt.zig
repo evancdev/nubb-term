@@ -13,7 +13,6 @@ const build_config = @import("build_config.zig");
 const structs = @import("apprt/structs.zig");
 
 pub const action = @import("apprt/action.zig");
-pub const ipc = @import("apprt/ipc.zig");
 pub const none = @import("apprt/none.zig");
 pub const embedded = @import("apprt/embedded.zig");
 pub const surface = @import("apprt/surface.zig");
