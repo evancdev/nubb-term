@@ -660,23 +660,6 @@ const Subprocess = struct {
             } else |err| {
                 log.warn("error building {s}; err={}", .{ xdg_data_dir_key, err });
             }
-
-            const manpath_key = "MANPATH";
-            if (std.mem.print(&buf, "{s}/../man", .{resources_dir})) |man_dir| {
-                // Always append with colon in front, as it mean that if
-                // `MANPATH` is empty, then it should be treated as an extra
-                // path instead of overriding all paths set by OS.
-                try env.put(
-                    manpath_key,
-                    try appendEnvAlways(
-                        alloc,
-                        env.get(manpath_key) orelse "",
-                        man_dir,
-                    ),
-                );
-            } else |err| {
-                log.warn("error building {s}; man pages may not be available; err={}", .{ manpath_key, err });
-            }
         }
 
         // Set environment variables used by some programs (such as neovim) to detect
@@ -1763,19 +1746,6 @@ fn appendEnv(
     if (current.len == 0) return try alloc.dupe(u8, value);
 
     // Otherwise we must prefix.
-    return try appendEnvAlways(alloc, current, value);
-}
-
-/// Always append value to environment, even when it is empty.
-/// This is useful because some env vars (like MANPATH) want there
-/// to be an empty prefix to preserve existing values.
-///
-/// The returned value is always allocated so it must be freed.
-fn appendEnvAlways(
-    alloc: Allocator,
-    current: []const u8,
-    value: []const u8,
-) Allocator.Error![]u8 {
     return try alloc.print("{s}{c}{s}", .{
         current,
         std.fs.path.delimiter,

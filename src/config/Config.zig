@@ -1,12 +1,9 @@
 /// Config is the main config struct. These fields map directly to the
 /// CLI flag names hence we use a lot of `@""` syntax to support hyphens.
 
-// Pandoc is used to automatically generate manual pages and other forms of
-// documentation, so documentation comments on fields in the Config struct
-// should use Pandoc's flavor of Markdown.
-//
-// For a reference to Pandoc's Markdown see their [online
-// manual.](https://pandoc.org/MANUAL.html#pandocs-markdown)
+// Documentation comments on fields in the Config struct are shown by
+// `+show-config --docs` and `+explain-config`, so keep them readable as
+// plain Markdown.
 
 const Config = @This();
 

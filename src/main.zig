@@ -5,8 +5,6 @@ const build_config = @import("build_config.zig");
 const entrypoint = switch (build_config.exe_entrypoint) {
     .nubb => @import("main_nubb.zig"),
     .helpgen => @import("helpgen.zig"),
-    .mdgen_nubb_1 => @import("build/mdgen/main_nubb_1.zig"),
-    .mdgen_nubb_5 => @import("build/mdgen/main_nubb_5.zig"),
 };
 
 /// The main entrypoint for the program.

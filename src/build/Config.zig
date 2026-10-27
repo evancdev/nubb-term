@@ -38,7 +38,6 @@ patchelf: ?PatchElf = null,
 
 /// Artifacts
 emit_bench: bool = false,
-emit_docs: bool = false,
 emit_exe: bool = false,
 emit_helpgen: bool = false,
 emit_macos_app: bool = false,
@@ -306,27 +305,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
         "emit-helpgen",
         "Build and install the helpgen executable.",
     ) orelse false;
-
-    config.emit_docs = b.option(
-        bool,
-        "emit-docs",
-        "Build and install auto-generated documentation (requires pandoc)",
-    ) orelse emit_docs: {
-        // If we are emitting any other artifacts then we default to false.
-        if (config.emit_bench or
-            config.emit_test_exe or
-            config.emit_helpgen or
-            config.is_dep) break :emit_docs false;
-
-        // We always emit docs in system package mode.
-        if (system_package) break :emit_docs true;
-
-        // We only default to true if we can find pandoc.
-        const path = expandPath(b.graph.io, b.allocator, &b.graph.environ_map, "pandoc") catch
-            break :emit_docs false;
-        defer if (path) |p| b.allocator.free(p);
-        break :emit_docs path != null;
-    };
 
     config.emit_terminfo = b.option(
         bool,
@@ -598,8 +576,6 @@ pub fn genericMacOSTarget(
 pub const ExeEntrypoint = enum {
     nubb,
     helpgen,
-    mdgen_nubb_1,
-    mdgen_nubb_5,
 };
 
 /// The release channel for the build.

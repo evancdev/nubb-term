@@ -7,7 +7,6 @@ pub const GitVersion = @import("GitVersion.zig");
 
 // Artifacts
 pub const NubbBench = @import("NubbBench.zig");
-pub const NubbDocs = @import("NubbDocs.zig");
 pub const NubbExe = @import("NubbExe.zig");
 pub const NubbLib = @import("NubbLib.zig");
 pub const NubbResources = @import("NubbResources.zig");

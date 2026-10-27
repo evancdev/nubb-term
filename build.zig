@@ -56,17 +56,6 @@ pub fn build(b: *std.Build) !void {
     // Nubb executable, the actual runnable Nubb program.
     const exe = try buildpkg.NubbExe.init(b, &config, &deps);
 
-    // Nubb docs
-    const docs = try buildpkg.NubbDocs.init(b, &deps);
-    if (config.emit_docs) {
-        docs.install();
-    } else if (config.target.result.os.tag.isDarwin()) {
-        // If we aren't emitting docs we need to emit a placeholder so
-        // our macOS xcodeproject builds since it expects the `share/man`
-        // directory to exist to copy into the app bundle.
-        docs.installDummy(b.getInstallStep());
-    }
-
     // Nubb bench tools
     if (config.emit_bench) {
         const bench = try buildpkg.NubbBench.init(b, &deps);
@@ -109,7 +98,6 @@ pub fn build(b: *std.Build) !void {
             &config,
             .{
                 .xcframework = &xcframework,
-                .docs = &docs,
                 .resources = &resources,
             },
         );
@@ -156,7 +144,6 @@ pub fn build(b: *std.Build) !void {
                 &config,
                 .{
                     .xcframework = &xcframework_native,
-                    .docs = &docs,
                     .resources = &resources,
                 },
             );
