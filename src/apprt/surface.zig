@@ -156,9 +156,6 @@ pub const Message = union(enum) {
     /// Selected search index change
     search_selected: ?usize,
 
-    /// Renderer pushed a new frame, redraw this surface.
-    redraw,
-
     pub const ReportTitleStyle = enum {
         csi_21_t,
 

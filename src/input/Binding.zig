@@ -607,13 +607,6 @@ pub const Action = union(enum) {
     /// If the title is empty, the tab title override is cleared.
     set_tab_title: []const u8,
 
-    /// Set the title for the current focused window.
-    ///
-    /// If the title is empty, the tab title override is cleared.
-    ///
-    /// Only implement on Linux.
-    set_window_title: []const u8,
-
     /// Create a new split in the specified direction.
     ///
     /// Valid arguments:
@@ -792,11 +785,6 @@ pub const Action = union(enum) {
     ///
     /// Only implemented on macOS.
     toggle_background_opacity,
-
-    /// Check for updates.
-    ///
-    /// Only implemented on macOS.
-    check_for_updates,
 
     /// Undo the last undoable action for the focused surface or terminal,
     /// if possible. This can undo actions such as closing tabs or
@@ -1259,7 +1247,6 @@ pub const Action = union(enum) {
             .close_all_windows,
             .quit,
             .toggle_visibility,
-            .check_for_updates,
             => .app,
 
             // These are app but can be special-cased in a surface context.
@@ -1292,7 +1279,6 @@ pub const Action = union(enum) {
             .prompt_tab_title,
             .set_surface_title,
             .set_tab_title,
-            .set_window_title,
             .clear_screen,
             .select_all,
             .scroll_to_top,

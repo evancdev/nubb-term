@@ -54,7 +54,7 @@ pub const Target = union(Key) {
 /// messages that are sent to the app runtime to trigger some behavior.
 ///
 /// Actions are very often key binding actions but can also be triggered
-/// by lifecycle events. For example, the `quit_timer` action is not bindable.
+/// by lifecycle events. For example, the `cell_size` action is not bindable.
 ///
 /// Importantly, actions are generally OPTIONAL to implement by an apprt.
 /// Required functionality is called directly on the runtime structure so
@@ -146,9 +146,6 @@ pub const Action = union(Key) {
     /// Present the target terminal whether its a tab, split, or window.
     present_terminal,
 
-    /// Sets a size limit (in pixels) for the target terminal.
-    size_limit: SizeLimit,
-
     /// Resets the window size to the default size. See the
     /// `reset_window_size` keybinding for more information.
     reset_window_size,
@@ -171,11 +168,6 @@ pub const Action = union(Key) {
     /// The scrollbar is updating.
     scrollbar: terminal.Scrollbar,
 
-    /// The target should be re-rendered. This usually has a specific
-    /// surface target but if the app is targeted then all active
-    /// surfaces should be redrawn.
-    render,
-
     /// Show a desktop notification.
     desktop_notification: DesktopNotification,
 
@@ -184,9 +176,6 @@ pub const Action = union(Key) {
 
     /// Set the tab title override for the target's tab.
     set_tab_title: SetTitle,
-
-    /// Set the window title override for the target's tab.
-    set_window_title: SetTitle,
 
     /// Set the title of the target to a prompted value. It is up to
     /// the apprt to prompt. The value specifies whether to prompt for the
@@ -212,19 +201,6 @@ pub const Action = union(Key) {
     /// what it means; it can mean opening a dedicated UI or just opening
     /// a file in a text editor.
     open_config: OpenConfig,
-
-    /// Called when there are no more surfaces and the app should quit
-    /// after the configured delay.
-    ///
-    /// Despite the name, this is the notification that libnubb sends
-    /// when there are no more surfaces regardless of if the configuration
-    /// wants to quit after close, has any delay set, etc. It's up to the
-    /// apprt to implement the proper logic based on the config.
-    ///
-    /// This can be cancelled by sending another quit_timer action with "stop".
-    /// Multiple "starts" shouldn't happen and can be ignored or cause a
-    /// restart it isn't that important.
-    quit_timer: QuitTimer,
 
     /// Set the window floating state. A floating window is one that is
     /// always on top of other windows even when not focused.
@@ -289,8 +265,6 @@ pub const Action = union(Key) {
 
     /// Redo the last undone action.
     redo,
-
-    check_for_updates,
 
     /// Open a URL using the native OS mechanisms. On macOS this might be `open`
     /// or on Linux this might be `xdg-open`. The exact mechanism is up to the
@@ -359,16 +333,13 @@ pub const Action = union(Key) {
         equalize_splits,
         toggle_split_zoom,
         present_terminal,
-        size_limit,
         reset_window_size,
         initial_size,
         cell_size,
         scrollbar,
-        render,
         desktop_notification,
         set_title,
         set_tab_title,
-        set_window_title,
         prompt_title,
         pwd,
         mouse_shape,
@@ -376,7 +347,6 @@ pub const Action = union(Key) {
         mouse_over_link,
         renderer_health,
         open_config,
-        quit_timer,
         float_window,
         secure_input,
         key_sequence,
@@ -389,7 +359,6 @@ pub const Action = union(Key) {
         selection_changed,
         undo,
         redo,
-        check_for_updates,
         open_url,
         show_child_exited,
         progress_report,
@@ -587,15 +556,6 @@ pub const SecureInput = enum(c_int) {
     }
 };
 
-pub const QuitTimer = enum(c_int) {
-    start,
-    stop,
-
-    test "nubb.h QuitTimer" {
-        try lib.checkNubbHEnum(QuitTimer, "NUBB_QUIT_TIMER_");
-    }
-};
-
 pub const Readonly = enum(c_int) {
     off,
     on,
@@ -639,13 +599,6 @@ pub const MouseOverLink = struct {
             .len = self.url.len,
         };
     }
-};
-
-pub const SizeLimit = extern struct {
-    min_width: u32,
-    min_height: u32,
-    max_width: u32,
-    max_height: u32,
 };
 
 pub const InitialSize = extern struct {

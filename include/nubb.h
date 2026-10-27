@@ -645,12 +645,6 @@ typedef enum {
   NUBB_SECURE_INPUT_TOGGLE,
 } nubb_action_secure_input_e;
 
-// apprt.action.QuitTimer
-typedef enum {
-  NUBB_QUIT_TIMER_START,
-  NUBB_QUIT_TIMER_STOP,
-} nubb_action_quit_timer_e;
-
 // apprt.action.Readonly
 typedef enum {
   NUBB_READONLY_OFF,
@@ -736,14 +730,6 @@ typedef struct {
   const char* url;
   size_t len;
 } nubb_action_mouse_over_link_s;
-
-// apprt.action.SizeLimit
-typedef struct {
-  uint32_t min_width;
-  uint32_t min_height;
-  uint32_t max_width;
-  uint32_t max_height;
-} nubb_action_size_limit_s;
 
 // apprt.action.InitialSize
 typedef struct {
@@ -917,16 +903,13 @@ typedef enum {
   NUBB_ACTION_EQUALIZE_SPLITS,
   NUBB_ACTION_TOGGLE_SPLIT_ZOOM,
   NUBB_ACTION_PRESENT_TERMINAL,
-  NUBB_ACTION_SIZE_LIMIT,
   NUBB_ACTION_RESET_WINDOW_SIZE,
   NUBB_ACTION_INITIAL_SIZE,
   NUBB_ACTION_CELL_SIZE,
   NUBB_ACTION_SCROLLBAR,
-  NUBB_ACTION_RENDER,
   NUBB_ACTION_DESKTOP_NOTIFICATION,
   NUBB_ACTION_SET_TITLE,
   NUBB_ACTION_SET_TAB_TITLE,
-  NUBB_ACTION_SET_WINDOW_TITLE,
   NUBB_ACTION_PROMPT_TITLE,
   NUBB_ACTION_PWD,
   NUBB_ACTION_MOUSE_SHAPE,
@@ -934,7 +917,6 @@ typedef enum {
   NUBB_ACTION_MOUSE_OVER_LINK,
   NUBB_ACTION_RENDERER_HEALTH,
   NUBB_ACTION_OPEN_CONFIG,
-  NUBB_ACTION_QUIT_TIMER,
   NUBB_ACTION_FLOAT_WINDOW,
   NUBB_ACTION_SECURE_INPUT,
   NUBB_ACTION_KEY_SEQUENCE,
@@ -947,7 +929,6 @@ typedef enum {
   NUBB_ACTION_SELECTION_CHANGED,
   NUBB_ACTION_UNDO,
   NUBB_ACTION_REDO,
-  NUBB_ACTION_CHECK_FOR_UPDATES,
   NUBB_ACTION_OPEN_URL,
   NUBB_ACTION_SHOW_CHILD_EXITED,
   NUBB_ACTION_PROGRESS_REPORT,
@@ -970,7 +951,6 @@ typedef union {
   nubb_action_goto_split_e goto_split;
   nubb_action_goto_window_e goto_window;
   nubb_action_resize_split_s resize_split;
-  nubb_action_size_limit_s size_limit;
   nubb_action_initial_size_s initial_size;
   nubb_action_resize_window_s resize_window;
   nubb_action_cell_size_s cell_size;
@@ -984,7 +964,6 @@ typedef union {
   nubb_action_mouse_visibility_e mouse_visibility;
   nubb_action_mouse_over_link_s mouse_over_link;
   nubb_action_renderer_health_e renderer_health;
-  nubb_action_quit_timer_e quit_timer;
   nubb_action_float_window_e float_window;
   nubb_action_secure_input_e secure_input;
   nubb_action_key_sequence_s key_sequence;

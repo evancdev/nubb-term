@@ -98,7 +98,9 @@ Nubb only ships the Mac app. Config options removed: all `gtk-*` options,
 `window-subtitle`, `window-titlebar-background`, `window-titlebar-foreground`,
 `quick-terminal-keyboard-interactivity`. Keybind actions removed (they did
 nothing on macOS): `toggle_tab_overview`, `toggle_window_decorations`,
-`prompt_window_title`, `show_gtk_inspector`, `show_on_screen_keyboard`. The
+`prompt_window_title`, `set_window_title`, `show_gtk_inspector`,
+`show_on_screen_keyboard`. Runtime actions only GTK handled went too:
+`size_limit`, `render` and `quit_timer`. The
 renderer's exported frame queue and presentation health reporting went too,
 since only the GTK app pulled frames out of the renderer. Later,
 the Linux and FreeBSD branches inside shared code went too: desktop
@@ -203,7 +205,8 @@ Nothing in the build, CI, or tests read these.
 
 Nubb has no update feed and updates by rebuilding. This removed the Sparkle
 Swift package and the update UI. Config options removed: `auto-update`,
-`auto-update-channel`.
+`auto-update-channel`. The `check_for_updates` keybind action went later, since
+nothing handled it.
 
 - `.github/workflows/publish-tag.yml`, `.github/workflows/release-tag.yml`,
   `.github/workflows/release-tip.yml`

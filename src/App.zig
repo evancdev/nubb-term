@@ -203,17 +203,6 @@ pub fn addSurface(
     rt_surface: *apprt.Surface,
 ) Allocator.Error!void {
     try self.surfaces.append(self.alloc, rt_surface);
-
-    // Since we have non-zero surfaces, we can cancel the quit timer.
-    // It is up to the apprt if there is a quit timer at all and if it
-    // should be canceled.
-    _ = rt_surface.rtApp().performAction(
-        .app,
-        .quit_timer,
-        .stop,
-    ) catch |err| {
-        log.warn("error stopping quit timer err={}", .{err});
-    };
 }
 
 /// Delete the surface from the known surface list. This will NOT call the
@@ -238,16 +227,6 @@ pub fn deleteSurface(self: *App, rt_surface: *apprt.Surface) void {
 
         i += 1;
     }
-
-    // If we have no surfaces, we can start the quit timer. It is up to the
-    // apprt to determine if this is necessary.
-    if (self.surfaces.items.len == 0) _ = rt_surface.rtApp().performAction(
-        .app,
-        .quit_timer,
-        .start,
-    ) catch |err| {
-        log.warn("error starting quit timer err={}", .{err});
-    };
 }
 
 /// The last focused surface. This is only valid while on the main thread
@@ -461,7 +440,6 @@ pub fn performAction(
         .reload_config => _ = try rt_app.performAction(.app, .reload_config, .{}),
         .close_all_windows => _ = try rt_app.performAction(.app, .close_all_windows, {}),
         .toggle_visibility => _ = try rt_app.performAction(.app, .toggle_visibility, {}),
-        .check_for_updates => _ = try rt_app.performAction(.app, .check_for_updates, {}),
         .undo => _ = try rt_app.performAction(.app, .undo, {}),
 
         .redo => _ = try rt_app.performAction(.app, .redo, {}),

@@ -726,18 +726,6 @@ pub fn init(
         .{ .width = size.cell.width, .height = size.cell.height },
     );
 
-    _ = try rt_app.performAction(
-        .{ .surface = self },
-        .size_limit,
-        .{
-            .min_width = size.cell.width * min_window_width_cells,
-            .min_height = size.cell.height * min_window_height_cells,
-            // No max:
-            .max_width = 0,
-            .max_height = 0,
-        },
-    );
-
     // Call our size callback which handles all our retina setup
     // Note: this shouldn't be necessary and when we clean up the surface
     // init stuff we should get rid of this. But this is required because
@@ -1049,8 +1037,6 @@ pub fn handleMessage(self: *Surface, msg: Message) !void {
             const body = std.mem.sliceTo(&notification.body, 0);
             try self.showDesktopNotification(title, body);
         },
-
-        .redraw => self.redraw(),
 
         .renderer_health => |health| self.updateRendererHealth(health),
 
@@ -1670,18 +1656,6 @@ fn updateScrollbar(self: *Surface, scrollbar: terminal.Scrollbar) void {
         scrollbar,
     ) catch |err| {
         log.warn("failed to notify app of scrollbar change err={}", .{err});
-    };
-}
-
-/// Called when the render thread has pushed a new frame.
-/// Notifies the apprt to redraw this surface.
-fn redraw(self: *Surface) void {
-    _ = self.rt_app.performAction(
-        .{ .surface = self },
-        .render,
-        {},
-    ) catch |err| {
-        log.warn("failed to notify app of frame present err={}", .{err});
     };
 }
 
@@ -5070,16 +5044,6 @@ pub fn performBindingAction(self: *Surface, action: input.Binding.Action) !bool 
             return try self.rt_app.performAction(
                 .{ .surface = self },
                 .set_tab_title,
-                .{ .title = title },
-            );
-        },
-
-        .set_window_title => |v| {
-            const title = try self.alloc.dupeSentinel(u8, v, 0);
-            defer self.alloc.free(title);
-            return try self.rt_app.performAction(
-                .{ .surface = self },
-                .set_window_title,
                 .{ .title = title },
             );
         },

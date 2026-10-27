@@ -634,12 +634,6 @@ fn actionCommands(action: Action.Key) []const Command {
             .description = "Toggle the background opacity of a window that started transparent.",
         }},
 
-        .check_for_updates => comptime &.{.{
-            .action = .check_for_updates,
-            .title = "Check for Updates",
-            .description = "Check for updates to the application.",
-        }},
-
         .undo => comptime &.{.{
             .action = .undo,
             .title = "Undo",
@@ -674,7 +668,6 @@ fn actionCommands(action: Action.Key) []const Command {
         .set_font_size,
         .set_surface_title,
         .set_tab_title,
-        .set_window_title,
         .search,
         .scroll_to_row,
         .scroll_page_fractional,
