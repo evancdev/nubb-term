@@ -47,7 +47,6 @@ emit_termcap: bool = false,
 emit_test_exe: bool = false,
 emit_themes: bool = false,
 emit_xcframework: bool = false,
-emit_webdata: bool = false,
 emit_unicode_table_gen: bool = false,
 
 /// True when Nubb is being built as a dependency of another project
@@ -353,12 +352,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
         "Install the bundled dark themes",
     ) orelse true;
 
-    config.emit_webdata = b.option(
-        bool,
-        "emit-webdata",
-        "Build the website data for the website.",
-    ) orelse false;
-
     config.emit_xcframework = b.option(
         bool,
         "emit-xcframework",
@@ -607,9 +600,6 @@ pub const ExeEntrypoint = enum {
     helpgen,
     mdgen_nubb_1,
     mdgen_nubb_5,
-    webgen_config,
-    webgen_actions,
-    webgen_commands,
 };
 
 /// The release channel for the build.

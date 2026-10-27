@@ -7,9 +7,6 @@ const entrypoint = switch (build_config.exe_entrypoint) {
     .helpgen => @import("helpgen.zig"),
     .mdgen_nubb_1 => @import("build/mdgen/main_nubb_1.zig"),
     .mdgen_nubb_5 => @import("build/mdgen/main_nubb_5.zig"),
-    .webgen_config => @import("build/webgen/main_config.zig"),
-    .webgen_actions => @import("build/webgen/main_actions.zig"),
-    .webgen_commands => @import("build/webgen/main_commands.zig"),
 };
 
 /// The main entrypoint for the program.

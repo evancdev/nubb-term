@@ -19,24 +19,7 @@ pub fn build(b: *std.Build) !void {
     // want to know what options are available, you can run `--help` or
     // you can read `src/build/Config.zig`.
 
-    // If we have a VERSION file (present in source tarballs) then we
-    // use that as the version source of truth. Otherwise we fall back
-    // to what is in the build.zig.zon.
-    const file_version: ?[]const u8 = if (b.root.root_dir.handle.readFileAlloc(
-        b.graph.io,
-        "VERSION",
-        b.allocator,
-        .limited(128),
-    )) |content| std.mem.trim(
-        u8,
-        content,
-        &std.ascii.whitespace,
-    ) else |_| null;
-
-    const config = try buildpkg.Config.init(
-        b,
-        file_version orelse app_zon_version,
-    );
+    const config = try buildpkg.Config.init(b, app_zon_version);
     const test_filters = b.option(
         [][]const u8,
         "test-filter",
@@ -84,24 +67,10 @@ pub fn build(b: *std.Build) !void {
         docs.installDummy(b.getInstallStep());
     }
 
-    // Nubb webdata
-    const webdata = try buildpkg.NubbWebdata.init(b, &deps);
-    if (config.emit_webdata) webdata.install();
-
     // Nubb bench tools
     if (config.emit_bench) {
         const bench = try buildpkg.NubbBench.init(b, &deps);
         bench.install();
-    }
-
-    // Nubb dist tarball
-    const dist = try buildpkg.NubbDist.init(b, &config);
-    {
-        const step = b.step("dist", "Build the dist tarball");
-        step.dependOn(dist.install_step);
-        const check_step = b.step("distcheck", "Install and validate the dist tarball");
-        check_step.dependOn(dist.check_step);
-        check_step.dependOn(dist.install_step);
     }
 
     // Helpgen

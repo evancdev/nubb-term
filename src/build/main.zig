@@ -7,14 +7,12 @@ pub const GitVersion = @import("GitVersion.zig");
 
 // Artifacts
 pub const NubbBench = @import("NubbBench.zig");
-pub const NubbDist = @import("NubbDist.zig");
 pub const NubbDocs = @import("NubbDocs.zig");
 pub const NubbExe = @import("NubbExe.zig");
 pub const NubbLib = @import("NubbLib.zig");
 pub const NubbResources = @import("NubbResources.zig");
 pub const NubbXcodebuild = @import("NubbXcodebuild.zig");
 pub const NubbXCFramework = @import("NubbXCFramework.zig");
-pub const NubbWebdata = @import("NubbWebdata.zig");
 pub const NubbZig = @import("NubbZig.zig");
 pub const HelpStrings = @import("HelpStrings.zig");
 pub const SharedDeps = @import("SharedDeps.zig");
