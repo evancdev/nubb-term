@@ -29,7 +29,7 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:Nubb.xcodeproj",
         "identifier" : "A54F45F22E1F047A0046BD5C",
@@ -37,7 +37,7 @@
       }
     },
     {
-      "parallelizable" : true,
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:Nubb.xcodeproj",
         "identifier" : "810ACC9E2E9D3301004F8F92",

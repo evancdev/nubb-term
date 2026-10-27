@@ -100,6 +100,15 @@ pub fn init(
             "Nubb",
             "-skip-testing",
             "NubbUITests",
+            // Each parallel worker is a full copy of the app (Metal, fonts,
+            // libnubb), so run every test in one host process.
+            "-parallel-testing-enabled",
+            "NO",
+            // Fail a hung test instead of leaving the host running forever.
+            "-test-timeouts-enabled",
+            "YES",
+            "-default-test-execution-time-allowance",
+            "60",
         });
         if (xc_arch) |arch| step.addArgs(&.{ "-arch", arch });
 
