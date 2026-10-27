@@ -1719,11 +1719,6 @@ pub inline fn scrollClear(self: *Screen) !void {
     }
 }
 
-/// Returns true if the viewport is scrolled to the bottom of the screen.
-pub inline fn viewportIsBottom(self: Screen) bool {
-    return self.pages.viewport == .active;
-}
-
 /// Erase the region specified by tl and br, inclusive. This will physically
 /// erase the rows meaning the memory will be reclaimed (if the underlying
 /// page is empty) and other rows will be shifted up.

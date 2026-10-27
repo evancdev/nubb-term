@@ -670,11 +670,6 @@ pub const Image = union(enum) {
         return self.getPending() != null;
     }
 
-    /// Returns true if this image has an associated texture.
-    pub fn hasTexture(self: Image) bool {
-        return self.getTexture() != null;
-    }
-
     /// Returns true if this image is marked for unload.
     pub fn isUnloading(self: Image) bool {
         return switch (self) {

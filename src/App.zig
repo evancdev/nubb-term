@@ -536,16 +536,6 @@ fn hasSurface(self: *const App, surface: *const Surface) bool {
     return false;
 }
 
-/// Search for a surface by a 64 bit unique ID.
-pub fn findSurfaceByID(self: *const App, id: u64) ?*Surface {
-    for (self.surfaces.items) |v| {
-        const surface: *Surface = v.core();
-        if (surface.id == id) return surface;
-    }
-
-    return null;
-}
-
 /// The message types that can be sent to the app thread.
 pub const Message = union(enum) {
     // Open the configuration file

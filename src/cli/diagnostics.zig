@@ -181,17 +181,4 @@ pub const DiagnosticList = struct {
     pub fn items(self: *const DiagnosticList) []const Diagnostic {
         return self.list.items;
     }
-
-    /// Returns true if there are any diagnostics for the given
-    /// location type.
-    pub fn containsLocation(
-        self: *const DiagnosticList,
-        location: Location.Key,
-    ) bool {
-        for (self.list.items) |diag| {
-            if (diag.location == location) return true;
-        }
-
-        return false;
-    }
 };

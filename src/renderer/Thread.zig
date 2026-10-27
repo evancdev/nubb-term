@@ -388,8 +388,6 @@ fn drainMailbox(self: *Thread) !void {
                 grid.set.deref(grid.old_key);
             },
 
-            .presentation_health => |v| self.renderer.setPresentationHealth(v),
-
             .resize => |v| self.renderer.setScreenSize(v),
 
             .change_config => |config| {

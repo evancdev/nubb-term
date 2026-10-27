@@ -106,25 +106,6 @@ pub fn retarget(
     return result;
 }
 
-/// Change the exe entrypoint.
-pub fn changeEntrypoint(
-    self: *const SharedDeps,
-    b: *std.Build,
-    entrypoint: Config.ExeEntrypoint,
-) !SharedDeps {
-    // Change our config
-    const config = try b.allocator.create(Config);
-    config.* = self.config.*;
-    config.exe_entrypoint = entrypoint;
-
-    var result = self.*;
-    result.config = config;
-    result.options = b.addOptions();
-    try config.addOptions(result.options);
-
-    return result;
-}
-
 fn initTarget(
     self: *SharedDeps,
     b: *std.Build,

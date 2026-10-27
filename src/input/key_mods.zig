@@ -116,14 +116,6 @@ pub const Mods = packed struct(Mods.Backing) {
         return @bitCast(self.int() & ~other.int());
     }
 
-    /// Returns the mods without locks set.
-    pub fn withoutLocks(self: Mods) Mods {
-        var copy = self;
-        copy.caps_lock = false;
-        copy.num_lock = false;
-        return copy;
-    }
-
     /// Return the mods to use for key translation. This handles settings
     /// like macos-option-as-alt. The translation mods should be used for
     /// translation but never sent back in for the key callback.

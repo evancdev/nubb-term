@@ -185,13 +185,6 @@ pub fn paletteCvalSlice(src: []const RGB, dst: []RGB.C) void {
     for (src[i..], dst[i..]) |entry, *out| out.* = entry.cval();
 }
 
-/// Convert a PaletteC to a Palette.
-pub fn paletteZval(palette: *const PaletteC) Palette {
-    var result: Palette = undefined;
-    for (&result, palette) |*dst, src| dst.* = .fromC(src);
-    return result;
-}
-
 /// Mask that can be used to set which palette indexes were set.
 pub const PaletteMask = std.bit_set.Static(@typeInfo(Palette).array.len);
 
@@ -677,17 +670,6 @@ pub const RGB = packed struct(u24) {
         const normalized: f64 = c_f64 / 255;
         if (normalized <= 0.03928) return normalized / 12.92;
         return std.math.pow(f64, (normalized + 0.055) / 1.055, 2.4);
-    }
-
-    /// Calculates "perceived luminance" which is better for determining
-    /// light vs dark.
-    ///
-    /// Source: https://www.w3.org/TR/AERT/#color-contrast
-    pub fn perceivedLuminance(self: RGB) f64 {
-        const r_f64: f64 = @floatFromInt(self.r);
-        const g_f64: f64 = @floatFromInt(self.g);
-        const b_f64: f64 = @floatFromInt(self.b);
-        return 0.299 * (r_f64 / 255) + 0.587 * (g_f64 / 255) + 0.114 * (b_f64 / 255);
     }
 
     comptime {

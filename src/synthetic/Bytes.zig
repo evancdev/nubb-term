@@ -50,17 +50,6 @@ pub fn newAlphabet(self: *const Bytes, new_alphabet: ?[]const u8) Bytes {
     };
 }
 
-/// Return a copy of the Bytes, but with a new min_len. The new min
-/// len cannot be more than the previous max_len.
-pub fn atLeast(self: *const Bytes, new_min_len: usize) Bytes {
-    return .{
-        .rand = self.rand,
-        .alphabet = self.alphabet,
-        .min_len = @min(self.max_len, new_min_len),
-        .max_len = self.max_len,
-    };
-}
-
 /// Return a copy of the Bytes, but with a new max_len. The new max_len cannot
 /// be more the previous max_len.
 pub fn atMost(self: *const Bytes, new_max_len: usize) Bytes {

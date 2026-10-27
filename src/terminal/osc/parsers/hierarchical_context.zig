@@ -50,17 +50,6 @@ pub const UnescapedString = struct {
         return .{ .raw = self.raw };
     }
 
-    /// Allocates a new string with the unescaped content.
-    /// The caller owns the returned memory.
-    pub fn toAllocated(self: UnescapedString, alloc: std.mem.Allocator) ![]u8 {
-        var list: std.ArrayList(u8) = .empty;
-        errdefer list.deinit(alloc);
-
-        var it = self.iterator();
-        while (it.next()) |c| try list.append(alloc, c);
-        return list.toOwnedSlice(alloc);
-    }
-
     /// Returns true if the unescaped string matches `other`.
     pub fn eql(self: UnescapedString, other: []const u8) bool {
         var it = self.iterator();

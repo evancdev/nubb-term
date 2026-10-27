@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,104 files and about 260,000 lines of text.
+brought back later. So far that is 1,105 files and about 260,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -45,6 +45,7 @@ Dependency builds still skip the app, xcframework, and docs.
 - `example/`
 - `include/ghostty/`
 - `nix/libghostty-vt.nix`, `nix/test-src/`
+- `pkg/apple-sdk/native_link.zig` (only the C library's dylib link used it)
 - `src/build/GhosttyLibVt.zig`, `src/build/libghostty-vt.pc.in`,
   `src/build/wasm_patch_growable_table.zig`, `src/build/docker/lib-c-docs/`
 - `src/lib/TinyIo.zig`, `src/lib/allocator.zig`, `src/lib/allocator/`,
@@ -97,7 +98,9 @@ Nubb only ships the Mac app. Config options removed: all `gtk-*` options,
 `window-subtitle`, `window-titlebar-background`, `window-titlebar-foreground`,
 `quick-terminal-keyboard-interactivity`. Keybind actions removed (they did
 nothing on macOS): `toggle_tab_overview`, `toggle_window_decorations`,
-`prompt_window_title`, `show_gtk_inspector`, `show_on_screen_keyboard`. Later,
+`prompt_window_title`, `show_gtk_inspector`, `show_on_screen_keyboard`. The
+renderer's exported frame queue and presentation health reporting went too,
+since only the GTK app pulled frames out of the renderer. Later,
 the Linux and FreeBSD branches inside shared code went too: desktop
 environment detection, `xdg-terminal-exec` support, `xdg-open`, the Linux
 pty and `dup3` paths, and the Linux `madvise` path in the terminal core.

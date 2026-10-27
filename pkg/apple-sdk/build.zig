@@ -1,9 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-/// Helpers for linking Mach-O artifacts with Apple's native toolchain.
-pub const nativeLink = @import("native_link.zig");
-
 // The cache. This always uses b.allocator and never frees memory
 // (which is idiomatic for a Zig build exe). We cache the libc txt
 // file we create because it is expensive to generate (subprocesses).

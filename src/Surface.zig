@@ -889,19 +889,6 @@ fn queueIo(
     self.io.queueMessage(msg, mutex);
 }
 
-/// Report to the renderer how well the apprt can present the frames
-/// the renderer exports. See `renderer.Health` and the renderer's
-/// `presentation_health` state for the semantics.
-pub fn reportPresentationHealth(self: *Surface, health: rendererpkg.Health) void {
-    _ = self.renderer_thread.mailbox.push(
-        global.io(),
-        .{ .presentation_health = health },
-        .forever,
-    );
-    self.renderer_thread.wakeup.notify() catch |err|
-        log.warn("failed to wake up renderer err={}", .{err});
-}
-
 /// True if the surface requires confirmation to quit. This should be called
 /// by apprt to determine if the surface should confirm before quitting.
 pub fn needsConfirmQuit(self: *Surface) bool {
@@ -1936,21 +1923,9 @@ pub const Text = struct {
 /// Grab the value of text at the given selection point. Note that the
 /// selection structure is used as a way to determine the area of the
 /// screen to read from, it doesn't have to match the user's current
-/// selection state.
+/// selection state. The renderer state mutex must already be held.
 ///
 /// The returned value contains allocated data and must be deinitialized.
-pub fn dumpText(
-    self: *Surface,
-    alloc: Allocator,
-    sel: terminal.Selection,
-) !Text {
-    self.renderer_state.mutex.lockUncancelable(global.io());
-    defer self.renderer_state.mutex.unlock(global.io());
-    return try self.dumpTextLocked(alloc, sel);
-}
-
-/// Same as `dumpText` but assumes the renderer state mutex is already
-/// held.
 pub fn dumpTextLocked(
     self: *Surface,
     alloc: Allocator,
@@ -3611,12 +3586,6 @@ pub fn contentScaleCallback(self: *Surface, content_scale: apprt.ContentScale) !
 fn isMouseReporting(self: *const Surface) bool {
     return self.config.mouse_reporting and
         self.io.terminal.flags.mouse_event != .none;
-}
-
-pub fn mouseReportingActive(self: *Surface) bool {
-    self.renderer_state.mutex.lockUncancelable(global.io());
-    defer self.renderer_state.mutex.unlock(global.io());
-    return self.isMouseReporting();
 }
 
 fn mouseReport(

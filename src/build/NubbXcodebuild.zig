@@ -179,11 +179,6 @@ pub fn install(self: *const Xcodebuild) void {
     b.getInstallStep().dependOn(&self.copy.step);
 }
 
-pub fn installXcframework(self: *const Xcodebuild) void {
-    const b = self.build.step.owner;
-    b.getInstallStep().dependOn(&self.build.step);
-}
-
 pub fn addTestStepDependencies(
     self: *const Xcodebuild,
     other_step: *std.Build.Step,

@@ -31,29 +31,10 @@ pub fn readerInt(reader: *std.Io.Reader, comptime T: type, endian: std.lang.Endi
 }
 
 /// Pulled from old stdlib as this function has been removed.
-pub fn readByteSigned(reader: *std.Io.Reader) std.Io.Reader.Error!i8 {
-    return @as(i8, @bitCast(try readByte(reader)));
-}
-
-/// Pulled from old stdlib as this function has been removed.
 pub fn readByte(reader: *std.Io.Reader) std.Io.Reader.Error!u8 {
     var result: [1]u8 = undefined;
     try reader.readSliceAll(&result);
     return result[0];
-}
-
-/// Pulled from old stdlib as this function has been removed.
-pub fn readSkipBytes(reader: *std.Io.Reader, num_bytes: u64) std.Io.Reader.Error!void {
-    const buf_size = 512;
-
-    var buf: [buf_size]u8 = undefined;
-    var remaining = num_bytes;
-
-    while (remaining > 0) {
-        const amt = @min(remaining, buf_size);
-        try reader.readSliceAll(buf[0..amt]);
-        remaining -= amt;
-    }
 }
 
 /// Pulled from old stdlib as this function has been removed.

@@ -82,21 +82,11 @@ const log = std.log.scoped(.generic_renderer);
 ///
 /// [ Texture ] - An abstraction over a GPU texture.
 ///
-/// [ ExportedFrame ] - A finished frame ready to be consumed by the apprt
-///                     in case that the frame needs to be composited with
-///                     UI elements by the graphical toolkit manually.
-///
 pub fn Renderer(comptime GraphicsAPI: type) type {
     return struct {
         const Self = @This();
 
         pub const API = GraphicsAPI;
-
-        pub const ExportedFrame = if (@hasDecl(GraphicsAPI, "ExportedFrame")) GraphicsAPI.ExportedFrame else void;
-
-        /// Whether +Y is down in the coordinate space of exported
-        /// frames. Apprts use this to orient frames when presenting.
-        pub const custom_shader_y_is_down = GraphicsAPI.custom_shader_y_is_down;
 
         const Target = GraphicsAPI.Target;
         const Buffer = GraphicsAPI.Buffer;
@@ -119,15 +109,6 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
 
         /// The mailbox for communicating with the window.
         surface_mailbox: apprt.surface.Mailbox,
-
-        /// The latest exported frame ready to be consumed by an apprt
-        /// who needs to manually composite the frame with UI elements.
-        /// Previously exported frames are released when a new frame is
-        /// exported and pushed onto the queue.
-        ///
-        /// Unused if the renderer does not need to export frames to
-        /// present its rendered frame.
-        latest_frame: LatestFrame = .{},
 
         /// Current font metrics defining our grid.
         grid_metrics: font.Metrics,
@@ -239,12 +220,6 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
 
         /// Health of the most recently completed frame.
         health: std.atomic.Value(Health) = .{ .raw = .healthy },
-
-        /// Health of how well the apprt can present our frames.
-        ///
-        /// This is separate from `health` because a renderer
-        /// can produce healthy frames that the apprt can't present.
-        presentation_health: std.atomic.Value(Health) = .{ .raw = .healthy },
 
         /// True when we have a graphics context that can create GPU
         /// resources. Creating any GPU resource while this is false is invalid.
@@ -843,8 +818,6 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
             if (self.search_selected_match) |*m| m.arena.deinit();
             if (self.search_matches) |*m| m.arena.deinit();
 
-            self.latest_frame.deinit(global.io());
-
             // Stop and release the display link. Surfaces are destroyed
             // on the main thread, where `close` stops the link before
             // returning. After this the display link callback is never
@@ -1008,64 +981,6 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
             self.display_realized = false;
         }
 
-        /// A thread-safe, single-slot "latest wins" queue. The render thread
-        /// calls `push` with the latest frame; the apprt calls `take` in its
-        /// snapshot handler to grab the most recent frame. Old frames are
-        /// dropped and released. For a terminal this is correct — we never
-        /// want to queue up frames behind a slow compositor.
-        const LatestFrame = struct {
-            const Self = @This();
-            mutex: std.Io.Mutex = .init,
-            latest: ?ExportedFrame = null,
-
-            pub fn push(self: *LatestFrame, io: std.Io, value: ExportedFrame) void {
-                if (comptime ExportedFrame == void) return;
-
-                self.mutex.lockUncancelable(io);
-                defer self.mutex.unlock(io);
-                if (self.latest) |*old| old.deinit();
-                self.latest = value;
-            }
-
-            pub fn take(self: *LatestFrame, io: std.Io) ?ExportedFrame {
-                if (comptime ExportedFrame == void) return null;
-
-                self.mutex.lockUncancelable(io);
-                defer self.mutex.unlock(io);
-                const result = self.latest orelse return null;
-                self.latest = null;
-                return result;
-            }
-
-            pub fn deinit(self: *LatestFrame, io: std.Io) void {
-                if (comptime ExportedFrame == void) return;
-
-                self.mutex.lockUncancelable(io);
-                defer self.mutex.unlock(io);
-                if (self.latest) |*v| v.deinit();
-                self.latest = null;
-            }
-        };
-
-        /// Push the latest completed frame, replacing if one previously
-        /// existed. Called on the render thread.
-        ///
-        /// Has no effect for renderers that do not export frames
-        /// (i.e. `ExportedFrame == void`).
-        pub fn pushFrame(self: *Self, frame: ExportedFrame) void {
-            return self.latest_frame.push(global.io(), frame);
-        }
-
-        /// Take the latest completed frame for the apprt to composite.
-        /// Returns null if no frame is available. The caller takes
-        /// ownership of the returned frame. Called on the main thread.
-        ///
-        /// Has no effect for renderers that do not export frames
-        /// (i.e. `ExportedFrame == void`).
-        pub fn takeFrame(self: *Self) ?ExportedFrame {
-            return self.latest_frame.take(global.io());
-        }
-
         /// The display link output callback. CoreVideo invokes this on
         /// its own thread once per display refresh while the link is
         /// running. All it does is wake the render thread, which then
@@ -1196,17 +1111,6 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
             self.custom_shader_focused_changed = true;
 
             self.syncDisplayLink(null, null);
-        }
-
-        /// Called when the apprt reports a change in how well
-        /// frames can be presented.
-        pub fn setPresentationHealth(self: *Self, health: Health) void {
-            self.presentation_health.store(health, .seq_cst);
-        }
-
-        /// Returns how well frames can be presented.
-        pub fn presentationHealth(self: *Self) Health {
-            return self.presentation_health.load(.seq_cst);
         }
 
         /// Callback when the window is visible or occluded.

@@ -46,17 +46,6 @@ pub fn CircBuf(comptime T: type, comptime default: T) type {
                 return &self.buf.storage[storage_idx];
             }
 
-            /// Seek the iterator by a given amount. This will clamp
-            /// the values to the bounds of the buffer so overflows are
-            /// not possible.
-            pub fn seekBy(self: *Iterator, amount: isize) void {
-                if (amount > 0) {
-                    self.idx +|= @intCast(amount);
-                } else {
-                    self.idx -|= @intCast(@abs(amount));
-                }
-            }
-
             /// Reset the iterator back to the first value.
             pub fn reset(self: *Iterator) void {
                 self.idx = 0;

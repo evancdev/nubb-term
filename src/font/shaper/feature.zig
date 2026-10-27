@@ -188,13 +188,6 @@ pub const Feature = struct {
         };
     }
 
-    /// Serialize this feature to the provided buffer.
-    /// The string that this produces should be valid to parse.
-    pub fn toString(self: *const Feature, buf: []u8) !void {
-        var fbs = std.io.fixedBufferStream(buf);
-        try self.format("", .{}, fbs.writer());
-    }
-
     /// Formatter for logging
     pub fn format(
         self: Feature,

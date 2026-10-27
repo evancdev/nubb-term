@@ -427,19 +427,4 @@ pub const Canvas = struct {
         }
         std.mem.swap(u32, &self.clip_left, &self.clip_right);
     }
-
-    /// Mirror the canvas vertically.
-    pub fn flipVertical(self: *Canvas) Allocator.Error!void {
-        const buf = std.mem.sliceAsBytes(self.sfc.image_surface_alpha8.buf);
-        const clone = try self.alloc.dupe(u8, buf);
-        defer self.alloc.free(clone);
-        const width: usize = @intCast(self.sfc.getWidth());
-        const height: usize = @intCast(self.sfc.getHeight());
-        for (0..height) |y| {
-            for (0..width) |x| {
-                buf[y * width + x] = clone[(height - y - 1) * width + x];
-            }
-        }
-        std.mem.swap(u32, &self.clip_top, &self.clip_bottom);
-    }
 };
