@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,101 files and about 260,000 lines of text.
+brought back later. So far that is 1,102 files and about 260,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -59,11 +59,14 @@ library with pkg-config files. The macOS app links the static library
 inside the xcframework, which stays. The `dist` source tarball (with its
 `VERSION` file) and the website reference data went too. Man pages needed
 pandoc, which the build never had, so the app only shipped an empty `man`
-folder and set `MANPATH` to it. Build steps and options removed: `dist`,
-`distcheck`, `-Demit-webdata`, `-Demit-docs`.
+folder and set `MANPATH` to it. The standalone `nubb` executable build (for
+GTK) and the NixOS patchelf step went too. Build steps and options removed:
+`dist`, `distcheck`, `-Demit-webdata`, `-Demit-docs`, `-Demit-exe`, `-Dpie`,
+`-Dpatch-interp`, `-Dpatch-rpath`.
 
 - `src/build/GhosttyDist.zig`, `src/build/GhosttyDocs.zig`,
-  `src/build/GhosttyWebdata.zig`, `src/build/mdgen/`, `src/build/webgen/`
+  `src/build/GhosttyExe.zig`, `src/build/GhosttyWebdata.zig`,
+  `src/build/mdgen/`, `src/build/webgen/`
 - `src/build/GhosttyPkgConfig.zig`
 - `src/extra/pkg-config.zig`
 

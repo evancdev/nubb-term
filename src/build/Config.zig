@@ -32,13 +32,10 @@ exe_entrypoint: ExeEntrypoint = .nubb,
 version: std.SemanticVersion = .{ .major = 0, .minor = 0, .patch = 0 },
 
 /// Binary properties
-pie: bool = false,
 strip: bool = false,
-patchelf: ?PatchElf = null,
 
 /// Artifacts
 emit_bench: bool = false,
-emit_exe: bool = false,
 emit_helpgen: bool = false,
 emit_macos_app: bool = false,
 emit_terminfo: bool = false,
@@ -53,9 +50,6 @@ emit_unicode_table_gen: bool = false,
 /// test/fuzz-libnubb) only need the nubb-vt module, so they skip the
 /// app, xcframework, and docs by default.
 is_dep: bool = false,
-
-/// Environmental properties
-env: *const std.process.Environ.Map,
 
 pub fn init(b: *std.Build, appVersion: []const u8) !Config {
     // Setup our standard Zig target and optimize options, i.e.
@@ -83,20 +77,10 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
         break :target result;
     };
 
-    // This is set to true when we're building a system package. For now
-    // this is trivially detected using the "system_package_mode" bool
-    // but we may want to make this more sophisticated in the future.
-    const system_package = b.graph.system_package_mode;
-
-    // Grab the environment from build state
-    const env = &b.graph.environ_map;
-
-    // We use env vars throughout the build so we grab them immediately here.
     var config: Config = .{
         .optimize = optimize,
         .target = target,
         .is_dep = is_dep,
-        .env = env,
     };
 
     //---------------------------------------------------------------
@@ -207,62 +191,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
     //---------------------------------------------------------------
     // Binary Properties
 
-    // On NixOS, the built binary from `zig build` needs to patch the interp
-    // and rpath into the built binary for it to be portable across the NixOS
-    // system it was built for. We default this to true if we can detect we're
-    // in a Nix shell.
-    //
-    // Note that this option is only available on Linux and if building
-    // natively.
-    //
-    // NOTE: Zig does now have an option to pass in the dynamic linker
-    // (-Ddynamic-linker), but it does seem to have some issues in 0.16.0 that
-    // may be fixed in 0.17.0. We may want to revisit this afterwards; although
-    // I'm not too sure if that helps to clean up rpath, this may just be the
-    // better option. See https://codeberg.org/ziglang/zig/issues/31760.
-    if (b.option(
-        []const u8,
-        "patch-interp",
-        "Inject the supplied path as the dynamic linker in the built binary. " ++
-            "Under Nix, this defaults to the dynamic linker found in PATH.",
-    )) |interp| {
-        PatchElf.setInterp(&config, interp);
-    } else patch_interp: {
-        if (!(target.result.os.tag == .linux) or !target.query.isNativeCpu()) break :patch_interp;
-        if (env.get("IN_NIX_SHELL") == null) break :patch_interp;
-
-        if (b.findProgram(.{ .names = &.{"ld.so"} })) |ld_so| {
-            PatchElf.setInterp(
-                &config,
-                std.Io.Dir.realPathFileAbsoluteAlloc(b.graph.io, ld_so, b.allocator) catch break :patch_interp,
-            );
-        } else {}
-    }
-
-    if (b.option(
-        []const u8,
-        "patch-rpath",
-        "Inject the supplied colon-delimited search path as the rpath in the built binary. " ++
-            "This defaults to LD_LIBRARY_PATH if we're in a Nix shell environment.",
-    )) |rpath| {
-        PatchElf.setRpath(&config, rpath);
-    } else patch_rpath: {
-        if (!(target.result.os.tag == .linux) or !target.query.isNativeCpu()) break :patch_rpath;
-        if (env.get("IN_NIX_SHELL") == null) break :patch_rpath;
-
-        if (env.get("LD_LIBRARY_PATH")) |ld_library_path| {
-            if (ld_library_path.len > 0) {
-                PatchElf.setRpath(&config, ld_library_path);
-            }
-        }
-    }
-
-    config.pie = b.option(
-        bool,
-        "pie",
-        "Build a Position Independent Executable. Default true for system packages.",
-    ) orelse system_package;
-
     config.strip = b.option(
         bool,
         "strip",
@@ -275,12 +203,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
 
     //---------------------------------------------------------------
     // Artifacts to Emit
-
-    config.emit_exe = b.option(
-        bool,
-        "emit-exe",
-        "Build and install main executables with 'build'",
-    ) orelse !is_dep;
 
     config.emit_test_exe = b.option(
         bool,
@@ -391,45 +313,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
     return config;
 }
 
-const PatchElf = struct {
-    interp: ?[]const u8 = null,
-    rpath: ?[]const u8 = null,
-
-    fn setInterp(config: *Config, interp: []const u8) void {
-        if (config.patchelf) |*patchelf| {
-            patchelf.interp = interp;
-            return;
-        }
-
-        config.patchelf = .{ .interp = interp };
-    }
-
-    fn setRpath(config: *Config, rpath: []const u8) void {
-        if (config.patchelf) |*patchelf| {
-            patchelf.rpath = rpath;
-            return;
-        }
-
-        config.patchelf = .{ .rpath = rpath };
-    }
-};
-
-/// Add a patchelf step for the supplied `artifact`, depending on the supplied
-/// `step`, if `patchelf` is present in the config.
-pub fn addPatchElf(self: *const Config, artifact: *std.Build.Step.Compile, step: *std.Build.Step) void {
-    const b = artifact.step.owner;
-    std.debug.assert(b == step.owner);
-
-    if (self.patchelf) |patchelf| {
-        const run = std.Build.Step.Run.create(b, "patchelf");
-        run.addArgs(&.{"patchelf"});
-        if (patchelf.interp) |interp| run.addArgs(&.{ "--set-interpreter", interp });
-        if (patchelf.rpath) |rpath| run.addArgs(&.{ "--set-rpath", rpath });
-        run.addArtifactArg(artifact);
-        step.dependOn(&run.step);
-    }
-}
-
 /// Configure the build options with our values.
 pub fn addOptions(self: *const Config, step: *std.Build.Step.Options) !void {
     // We need to break these down individual because addOption doesn't
@@ -509,7 +392,6 @@ pub fn fromOptions() Config {
         // Unused at runtime.
         .optimize = undefined,
         .target = undefined,
-        .env = undefined,
 
         .version = options.app_version,
         .app_runtime = std.meta.stringToEnum(ApprtRuntime, @tagName(options.app_runtime)).?,

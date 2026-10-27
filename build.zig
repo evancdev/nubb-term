@@ -1,5 +1,4 @@
 const std = @import("std");
-const assert = std.debug.assert;
 const builtin = @import("builtin");
 const buildpkg = @import("src/build/main.zig");
 const translate_c = @import("translate_c");
@@ -53,9 +52,6 @@ pub fn build(b: *std.Build) !void {
     // Nubb resources like terminfo, shell integration, themes, etc.
     const resources = try buildpkg.NubbResources.init(b, &config, &deps);
 
-    // Nubb executable, the actual runnable Nubb program.
-    const exe = try buildpkg.NubbExe.init(b, &config, &deps);
-
     // Nubb bench tools
     if (config.emit_bench) {
         const bench = try buildpkg.NubbBench.init(b, &deps);
@@ -64,14 +60,6 @@ pub fn build(b: *std.Build) !void {
 
     // Helpgen
     if (config.emit_helpgen) deps.help_strings.install();
-
-    // Runtime "none" is libnubb, anything else is an executable.
-    if (config.app_runtime != .none) {
-        if (config.emit_exe) {
-            exe.install();
-            resources.install();
-        }
-    }
 
     // macOS only artifacts. These will error if they're initialized for
     // other targets.
@@ -107,27 +95,7 @@ pub fn build(b: *std.Build) !void {
     }
 
     // Run step
-    run: {
-        if (config.app_runtime != .none) {
-            const run_cmd = b.addRunArtifact(exe.exe);
-            run_cmd.addPassthruArgs();
-
-            // Set the proper resources dir so things like shell integration
-            // work correctly. If we're running `zig build run` in Nubb,
-            // this also ensures it overwrites the release one with our debug
-            // build.
-            // FIXME: This is not possible after Zig 0.17.
-            // run_cmd.setEnvironmentVariable(
-            //     "NUBB_RESOURCES_DIR",
-            //     b.getInstallPath(.prefix, "share/nubb"),
-            // );
-
-            run_step.dependOn(&run_cmd.step);
-            break :run;
-        }
-
-        assert(config.app_runtime == .none);
-
+    {
         // On macOS we can run the macOS app. For "run" we always force
         // a native-only build so that we can run as quickly as possible.
         if (!config.is_dep and
@@ -188,7 +156,6 @@ pub fn build(b: *std.Build) !void {
         });
         if (config.emit_test_exe) {
             const test_exe_install = b.addInstallArtifact(test_exe, .{});
-            config.addPatchElf(test_exe, &test_exe_install.step);
             test_step.dependOn(&test_exe_install.step);
         }
         _ = try deps.add(test_exe);
@@ -197,7 +164,6 @@ pub fn build(b: *std.Build) !void {
 
         // Normal test running
         const test_run = b.addRunArtifact(test_exe);
-        config.addPatchElf(test_exe, &test_run.step);
         test_step.dependOn(&test_run.step);
 
         // Normal tests always test our libnubb modules
