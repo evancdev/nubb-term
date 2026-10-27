@@ -92,12 +92,6 @@ default_xt_checksum: xt_checksum.Flags = .{},
 /// The most recently set mouse shape for the terminal.
 mouse_shape: mouse.Shape = .text,
 
-/// Kitty drag and drop protocol (OSC 72) state. Allocated when a client
-/// registers to accept drops (t=a) and freed when it unregisters (t=A),
-/// so a terminal that never runs a drag and drop aware program pays
-/// nothing for it. Non-null means a client currently accepts drops.
-kitty_dnd: ?*kitty.dnd.State = null,
-
 /// These are just a packed set of flags we may set on the terminal.
 flags: packed struct {
     // This supports a Kitty extension where programs using semantic
@@ -370,7 +364,6 @@ pub fn deinit(self: *Terminal, alloc: Allocator) void {
     self.colors.palette.deinit(alloc);
     self.pwd.deinit(alloc);
     self.title.deinit(alloc);
-    if (self.kitty_dnd) |dnd| dnd.destroy(alloc);
     self.* = undefined;
 }
 
@@ -5072,9 +5065,6 @@ pub fn fullReset(self: *Terminal) void {
     self.previous_char = null;
     self.pwd.clearRetainingCapacity();
     self.title.clearRetainingCapacity();
-    // A reset only interrupts an in-progress chunked OSC 72 command;
-    // drag and drop registration survives, matching kitty.
-    if (self.kitty_dnd) |dnd| dnd.chunking = .{};
     self.status_display = .main;
     self.scrolling_region = .{
         .top = 0,

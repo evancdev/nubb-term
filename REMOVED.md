@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,079 files and about 257,000 lines of text.
+brought back later. So far that is 1,085 files and about 259,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -314,6 +314,17 @@ records app crashes in its own crash reports. CLI action removed:
 The `tmux -CC` parser ran, but no UI ever showed its windows or panes.
 
 - `src/terminal/tmux.zig`, `src/terminal/tmux/`
+
+### Kitty drag and drop (OSC 72)
+
+The terminal core parsed the protocol and kept its state, but the app never
+sent native drags to it. OSC 72 is now ignored like any unknown OSC, and
+dropping files still pastes their paths.
+
+- `src/terminal/kitty/dnd.zig`, `src/terminal/kitty/dnd_command.zig`,
+  `src/terminal/kitty/dnd_drop.zig`, `src/terminal/kitty/dnd_response.zig`,
+  `src/terminal/kitty/dnd_test.zig`
+- `src/terminal/osc/parsers/kitty_dnd_protocol.zig`
 
 ### APC glyph protocol
 

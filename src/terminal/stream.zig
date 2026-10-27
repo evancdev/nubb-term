@@ -130,7 +130,6 @@ pub const Action = union(Key) {
     color_operation: ColorOperation,
     semantic_prompt: SemanticPrompt,
     kitty_clipboard: KittyClipboard,
-    kitty_dnd: KittyDnd,
     resize_window: ResizeWindow,
     osc_unknown: osc.Command.Unknown,
     mouse_shape_reset,
@@ -238,7 +237,6 @@ pub const Action = union(Key) {
             "color_operation",
             "semantic_prompt",
             "kitty_clipboard",
-            "kitty_dnd",
             "resize_window",
             "osc_unknown",
             "mouse_shape_reset",
@@ -504,8 +502,6 @@ pub const Action = union(Key) {
     pub const SemanticPrompt = osc.Command.SemanticPrompt;
 
     pub const KittyClipboard = osc.Command.KittyClipboardProtocol;
-
-    pub const KittyDnd = osc.Command.KittyDndProtocol;
 
     pub const ProgramStatus = osc.Command.ProgramStatus;
 };
@@ -2939,10 +2935,6 @@ pub fn Stream(comptime H: type) type {
 
                 .kitty_clipboard_protocol => |v| {
                     self.handler.vt(.kitty_clipboard, v);
-                },
-
-                .kitty_dnd_protocol => |v| {
-                    self.handler.vt(.kitty_dnd, v);
                 },
 
                 .program_status => |v| {

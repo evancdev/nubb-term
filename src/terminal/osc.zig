@@ -159,9 +159,6 @@ pub const Command = union(Key) {
 
     kitty_clipboard_protocol: KittyClipboardProtocol,
 
-    /// Kitty drag and drop protocol (OSC 72)
-    kitty_dnd_protocol: KittyDndProtocol,
-
     /// OSC 3008. Hierarchical context signalling (UAPI spec).
     /// https://uapi-group.org/specifications/specs/osc_context/
     hierarchical_context: parsers.hierarchical_context.Command,
@@ -182,8 +179,6 @@ pub const Command = union(Key) {
     pub const HierarchicalContext = parsers.hierarchical_context.Command;
 
     pub const KittyClipboardProtocol = parsers.kitty_clipboard_protocol.OSC;
-
-    pub const KittyDndProtocol = parsers.kitty_dnd_protocol.OSC;
 
     pub const KittyDesktopNotification = parsers.kitty_desktop_notification.OSC;
 
@@ -217,7 +212,6 @@ pub const Command = union(Key) {
             "conemu_comment",
             "kitty_text_sizing",
             "kitty_clipboard_protocol",
-            "kitty_dnd_protocol",
             "hierarchical_context",
             "kitty_desktop_notification",
             "unknown",
@@ -464,7 +458,6 @@ pub const Parser = struct {
         @"52",
         @"55",
         @"66",
-        @"72",
         @"75",
         @"750",
         @"7501",
@@ -551,7 +544,6 @@ pub const Parser = struct {
             .show_desktop_notification,
             .kitty_text_sizing,
             .kitty_clipboard_protocol,
-            .kitty_dnd_protocol,
             .kitty_desktop_notification,
             .hierarchical_context,
             .unknown,
@@ -988,7 +980,6 @@ pub const Parser = struct {
 
             .@"7" => switch (c) {
                 ';' => self.captureTrailing(.fixed),
-                '2' => self.state = .@"72",
                 '5' => self.state = .@"75",
                 '7' => self.state = .@"77",
                 else => self.unknownOrInvalid(c),
@@ -1005,11 +996,6 @@ pub const Parser = struct {
             },
 
             .@"7501" => switch (c) {
-                ';' => self.captureTrailing(.allocating),
-                else => self.unknownOrInvalid(c),
-            },
-
-            .@"72" => switch (c) {
                 ';' => self.captureTrailing(.allocating),
                 else => self.unknownOrInvalid(c),
             },
@@ -1171,8 +1157,6 @@ pub const Parser = struct {
 
             .@"66" => parsers.kitty_text_sizing.parse(self, terminator_ch),
 
-            .@"72" => parsers.kitty_dnd_protocol.parse(self, terminator_ch),
-
             .@"99" => parsers.kitty_desktop_notification.parse(self, terminator_ch),
 
             .@"7501" => parsers.program_status.parse(self, terminator_ch),
@@ -1218,7 +1202,7 @@ test "Parser end with CAN or SUB cancels the command" {
 
 test "Parser allocating captures have a hard limit" {
     const testing = std.testing;
-    const prefixes = [_][]const u8{ "52;", "66;", "72;", "99;", "5522;" };
+    const prefixes = [_][]const u8{ "52;", "66;", "99;", "5522;" };
     const limit = Parser.MAX_BUF + 1;
 
     for (prefixes) |prefix| {
