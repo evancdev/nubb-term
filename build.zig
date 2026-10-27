@@ -113,22 +113,6 @@ pub fn build(b: *std.Build) !void {
             exe.install();
             resources.install();
         }
-    } else if (!config.is_dep) {
-        // The macOS Nubb Library
-        //
-        // This is NOT libnubb (even though its named that for historical
-        // reasons). It is just the glue between Nubb GUI on macOS and
-        // the full Nubb GUI core.
-        const lib_shared = try buildpkg.NubbLib.initShared(b, &deps);
-        const lib_static = try buildpkg.NubbLib.initStatic(b, &deps);
-
-        // We shouldn't have this guard but we don't currently
-        // build on macOS this way ironically so we need to fix that.
-        if (!config.target.result.os.tag.isDarwin()) {
-            lib_shared.installHeader(); // Only need one header
-            lib_shared.install("nubb-internal.so");
-            lib_static.install("nubb-internal.a");
-        }
     }
 
     // macOS only artifacts. These will error if they're initialized for

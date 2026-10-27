@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,085 files and about 259,000 lines of text.
+brought back later. So far that is 1,087 files and about 259,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -51,6 +51,15 @@ Dependency builds still skip the app, xcframework, and docs.
   `src/lib/c_abi.zig`, `src/lib/tinyio/`, `src/lib/windows_dll.zig`
 - `src/terminal/c/`
 - `test/wasm-alloc.mjs`
+
+### Linux library build
+
+On Linux, `zig build` also produced a shared and static `nubb-internal`
+library with pkg-config files. The macOS app links the static library
+inside the xcframework, which stays.
+
+- `src/build/GhosttyPkgConfig.zig`
+- `src/extra/pkg-config.zig`
 
 ### Windows and WebAssembly
 
