@@ -97,7 +97,10 @@ Nubb only ships the Mac app. Config options removed: all `gtk-*` options,
 `window-subtitle`, `window-titlebar-background`, `window-titlebar-foreground`,
 `quick-terminal-keyboard-interactivity`. Keybind actions removed (they did
 nothing on macOS): `toggle_tab_overview`, `toggle_window_decorations`,
-`prompt_window_title`, `show_gtk_inspector`, `show_on_screen_keyboard`.
+`prompt_window_title`, `show_gtk_inspector`, `show_on_screen_keyboard`. Later,
+the Linux and FreeBSD branches inside shared code went too: desktop
+environment detection, `xdg-terminal-exec` support, `xdg-open`, the Linux
+pty and `dup3` paths, and the Linux `madvise` path in the terminal core.
 
 - `.github/workflows/flatpak.yml`, `.github/workflows/snap.yml`
 - `dist/linux/`, `flatpak/`, `snap/`

@@ -31,7 +31,6 @@ pub fn open(
     }
 
     var spawn_opts: std.process.SpawnOptions = switch (builtin.target.os.tag) {
-        .linux, .freebsd => .{ .argv = &.{ "xdg-open", url } },
         .macos => switch (kind) {
             .text => .{ .argv = &.{ "open", "-t", url } },
             .html => .{ .argv = &.{ "open", url } },

@@ -26,7 +26,6 @@ const global = @import("global.zig");
 const internal_os = @import("os/main.zig");
 const TempDir = internal_os.TempDir;
 const mem = std.mem;
-const linux = std.os.linux;
 const posix = std.posix;
 const debug = std.debug;
 const testing = std.testing;
@@ -315,13 +314,7 @@ fn setupFd(src: File.Handle, target: i32) !void {
     };
 
     switch (builtin.target.os.tag) {
-        .linux => {
-            // We use dup3 so that we can clear CLO_ON_EXEC. We do NOT want this
-            // file descriptor to be closed on exec since we're exactly exec-ing after
-            // this.
-            _ = try PosixCall.f(linux.dup3, .{ src, target, 0 });
-        },
-        .freebsd, .ios, .macos => {
+        .ios, .macos => {
             // Mac doesn't support dup3 so we use dup2. We purposely clear
             // CLO_ON_EXEC for this fd.
             const flags = try PosixCall.f(posix.system.fcntl, .{ src, posix.F.GETFD });

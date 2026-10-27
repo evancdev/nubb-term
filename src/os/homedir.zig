@@ -12,7 +12,7 @@ const Error = error{
 /// is generally an expensive process so the value should be cached.
 pub inline fn home(io: std.Io, environ_map: *const std.process.Environ.Map, buf: []u8) !?[]const u8 {
     return switch (builtin.target.os.tag) {
-        .linux, .freebsd, .macos => try homeUnix(io, environ_map, buf),
+        .macos => try homeUnix(io, environ_map, buf),
 
         // iOS doesn't have a user-writable home directory
         .ios => null,
@@ -96,7 +96,7 @@ pub fn expandHome(
     buf: []u8,
 ) ExpandError![]const u8 {
     return switch (builtin.target.os.tag) {
-        .linux, .freebsd, .macos => try expandHomeUnix(io, environ_map, path, buf),
+        .macos => try expandHomeUnix(io, environ_map, path, buf),
 
         // iOS doesn't have a user-writable home directory
         .ios => return path,

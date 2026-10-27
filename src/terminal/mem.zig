@@ -52,11 +52,6 @@ pub inline fn canReclaim(comptime mode: DecommitMode) bool {
             // the retained-mapping behavior has been validated.
             if (builtin.target.ptrBitWidth() != 64) break :supported false;
 
-            // Linux provides MADV_DONTNEED, which immediately discards pages
-            // from a private anonymous mapping and faults them back as zeroes.
-            // Zig reaches this through the raw syscall path without libc.
-            if (builtin.target.os.tag == .linux) break :supported true;
-
             // Darwin provides the paired MADV_FREE_REUSABLE/FREE_REUSE
             // operations used below. Darwin requires libc independently of
             // this feature, so using its madvise entry point adds no new
@@ -99,22 +94,6 @@ pub fn decommit(
     if (comptime builtin.is_test) {
         @memset(memory[0..dirty_len], 0);
         return true;
-    }
-
-    // DONTNEED immediately reclaims private anonymous pages on Linux and
-    // faults them back as zero-filled pages. We deliberately avoid MADV_FREE:
-    // it does not reduce RSS until memory pressure and does not guarantee that
-    // the next read is zero.
-    if (comptime builtin.target.os.tag == .linux) {
-        if (std.posix.madvise(
-            memory.ptr,
-            memory.len,
-            std.posix.MADV.DONTNEED,
-        )) |_| return true else |err| {
-            log.warn("madvise(DONTNEED) failed err={}", .{err});
-            if (comptime mode == .strict) return false;
-            // Zero mode falls through to the memset below.
-        }
     }
 
     // FREE_REUSABLE removes the range from the Darwin process footprint while

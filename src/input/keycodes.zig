@@ -10,7 +10,6 @@ const Key = @import("key.zig").Key;
 pub const entries: []const Entry = entries: {
     const native_idx = switch (builtin.target.os.tag) {
         .ios, .macos => 4, // mac
-        .freebsd, .linux => 2, // xkb
         else => @compileError("unsupported platform"),
     };
 

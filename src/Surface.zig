@@ -780,26 +780,6 @@ pub fn init(
             .set_title,
             .{ .title = title },
         );
-    } else if ((comptime builtin.target.os.tag == .linux) and
-        config.@"_xdg-terminal-exec")
-    xdg: {
-        // For xdg-terminal-exec execution we special-case and set the window
-        // title to the command being executed. This allows window managers
-        // to set custom styling based on the command being executed.
-        const v = command orelse break :xdg;
-        const title = v.string(alloc) catch |err| {
-            log.warn(
-                "error copying command for title, title will not be set err={}",
-                .{err},
-            );
-            break :xdg;
-        };
-        defer alloc.free(title);
-        _ = try rt_app.performAction(
-            .{ .surface = self },
-            .set_title,
-            .{ .title = title },
-        );
     } else if (command) |cmd| switch (cmd) {
         // If a user specifies a command it is appropriate to set the title as argv[0]
         // we know in the case of a direct command it has been supplied by the user

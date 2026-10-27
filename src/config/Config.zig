@@ -2385,14 +2385,10 @@ keybind: Keybinds = .{},
 ///   on macOS. (Available since: 1.4.0)
 ///
 /// For backward compatibility and convenience, a value of `true` is the same as
-/// `primary` on Linux and `clipboard` on macOS, and `false` is an alias for
-/// `none`.
+/// `clipboard`, and `false` is an alias for `none`.
 ///
-/// The default value is `primary` on Linux and `none` otherwise.
-@"copy-on-select": CopyOnSelect = switch (builtin.target.os.tag) {
-    .linux => .primary,
-    else => .none,
-},
+/// The default value is `none`.
+@"copy-on-select": CopyOnSelect = .none,
 
 /// The action to take when the user right-clicks on the terminal surface.
 ///
@@ -2476,10 +2472,9 @@ keybind: Keybinds = .{},
 
 /// Whether or not to quit after the last surface is closed.
 ///
-/// This defaults to `false` on macOS since that is standard behavior for
-/// a macOS application. On Linux, this defaults to `true` since that is
-/// generally expected behavior.
-@"quit-after-last-window-closed": bool = builtin.target.os.tag == .linux,
+/// This defaults to `false` since that is standard behavior for a macOS
+/// application.
+@"quit-after-last-window-closed": bool = false,
 
 /// This controls whether an initial window is created when Nubb
 /// is run. Only implemented on Linux and macOS.
@@ -3238,9 +3233,6 @@ _conditional_set: std.EnumSet(conditional.Key) = .{},
 /// as loadTheme which has more details on why.
 _replay_steps: std.ArrayList(Replay.Step) = .empty,
 
-/// Set to true if Nubb was executed as xdg-terminal-exec on Linux.
-@"_xdg-terminal-exec": bool = false,
-
 pub fn deinit(self: *Config) void {
     if (self._arena) |arena| arena.deinit();
     self.* = undefined;
@@ -3520,52 +3512,6 @@ pub fn loadDefaultFiles(self: *Config, alloc: Allocator) !void {
 
 /// Load and parse the CLI args.
 pub fn loadCliArgs(self: *Config, alloc_gpa: Allocator) !void {
-    switch (builtin.target.os.tag) {
-        // Fast-path if we are Linux/BSD and have no args.
-        .linux, .freebsd => if (global.args().vector.len <= 1) return,
-
-        // Everything else we have to at least try because it may
-        // not use std.os.argv.
-        else => {},
-    }
-
-    // On Linux, we have a special case where if the executing
-    // program is "xdg-terminal-exec" then we treat all CLI
-    // args as if they are a command to execute.
-    //
-    // In this mode, we also behave slightly differently:
-    //
-    //   - The initial window title is set to the full command. This
-    //     can be used with window managers to modify positioning,
-    //     styling, etc. based on the command.
-    //
-    // See: https://github.com/Vladimir-csp/xdg-terminal-exec
-    if ((comptime builtin.target.os.tag == .linux) or (comptime builtin.target.os.tag == .freebsd)) {
-        if (internal_os.xdg.parseTerminalExec(global.args().vector)) |args| {
-            const arena_alloc = self._arena.?.allocator();
-
-            // First, we add an artificial "-e" so that if we
-            // replay the inputs to rebuild the config (i.e. if
-            // a theme is set) then we will get the same behavior.
-            try self._replay_steps.append(arena_alloc, .@"-e");
-
-            // Next, take all remaining args and use that to build up
-            // a command to execute.
-            var builder: std.ArrayList([:0]const u8) = .empty;
-            errdefer builder.deinit(arena_alloc);
-            for (args) |arg_raw| {
-                const arg = std.mem.sliceTo(arg_raw, 0);
-                const copy = try arena_alloc.dupeSentinel(u8, arg, 0);
-                try self._replay_steps.append(arena_alloc, .{ .arg = copy });
-                try builder.append(arena_alloc, copy);
-            }
-
-            self.@"_xdg-terminal-exec" = true;
-            self.@"initial-command" = .{ .direct = try builder.toOwnedSlice(arena_alloc) };
-            return;
-        }
-    }
-
     // We set config-default-files to true here because this
     // should always be reset so we can detect if it is set
     // in the CLI since it is documented as having no affect
@@ -4242,10 +4188,7 @@ fn compatCopyOnSelect(
     assert(std.mem.eql(u8, key, "copy-on-select"));
 
     if (std.mem.eql(u8, value orelse "", "true")) {
-        self.@"copy-on-select" = switch (builtin.target.os.tag) {
-            .linux, .freebsd => .primary,
-            else => .clipboard,
-        };
+        self.@"copy-on-select" = .clipboard;
         return true;
     }
 

@@ -29,7 +29,6 @@ pub const uri = @import("uri.zig");
 pub const CFReleaseThread = @import("cf_release_thread.zig");
 pub const TempDir = @import("TempDir.zig");
 pub const launchedFromDesktop = desktop.launchedFromDesktop;
-pub const desktopEnvironment = desktop.desktopEnvironment;
 pub const rlimit = file.rlimit;
 pub const fixMaxFiles = file.fixMaxFiles;
 pub const restoreMaxFiles = file.restoreMaxFiles;

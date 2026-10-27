@@ -61,7 +61,6 @@ pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
     // we've found the resources directory.
     const sentinels = switch (comptime builtin.target.os.tag) {
         .macos => .{"terminfo/78/xterm-ghostty"},
-        .freebsd => .{ "site-terminfo/g/ghostty", "site-terminfo/x/xterm-ghostty" },
         else => .{ "terminfo/g/ghostty", "terminfo/x/xterm-ghostty" },
     };
 
@@ -92,14 +91,13 @@ pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
             }
         }
 
-        // On all platforms (except BSD), we look for a /usr/share style path. This
-        // is valid even on Mac since there is nothing that requires
+        // We also look for a /usr/share style path, since nothing requires
         // Nubb to be in an app bundle.
         inline for (sentinels) |sentinel| {
             if (try maybeDir(
                 &dir_buf,
                 dir,
-                if (builtin.target.os.tag == .freebsd) "local/share" else "share",
+                "share",
                 sentinel,
             )) |v| {
                 return .{ .app_path = try std.fs.path.join(alloc, &.{ v, "nubb" }) };

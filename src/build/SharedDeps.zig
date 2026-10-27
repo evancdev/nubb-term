@@ -193,8 +193,6 @@ pub fn add(
 
     // C imports needed to manage/create PTYs
     switch (target.result.os.tag) {
-        .freebsd,
-        .linux,
         .macos,
         => {
             try translate_c.addImportToModule(b, "pty-c", step.root_module, .{
@@ -288,17 +286,6 @@ pub fn add(
         step.root_module,
         &static_libs,
     );
-
-    // On Linux, we need to add a couple common library paths that aren't
-    // on the standard search list. i.e. libs are often in /usr/lib/x86_64-linux-gnu
-    // on x86_64.
-    if (step.rootModuleTarget().os.tag == .linux) {
-        const triple = try step.rootModuleTarget().linuxTriple(b.allocator);
-        const path = b.fmt("/usr/lib/{s}", .{triple});
-        if (std.Io.Dir.accessAbsolute(b.graph.io, path, .{})) {
-            step.root_module.addLibraryPath(.{ .cwd_relative = path });
-        } else |_| {}
-    }
 
     // C files
     step.root_module.link_libc = true;

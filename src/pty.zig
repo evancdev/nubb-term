@@ -269,22 +269,9 @@ const PosixPty = struct {
     pub fn getProcessInfo(self: *PosixPty, comptime info: ProcessInfo) ?ProcessInfo.Type(info) {
         return switch (info) {
             .foreground_pid => {
-                switch (builtin.target.os.tag) {
-                    .linux => {
-                        const linux = std.os.linux;
-                        var pgrp: i32 = undefined;
-                        const rc = linux.tcgetpgrp(self.master, &pgrp);
-                        switch (rc) {
-                            0 => return @intCast(pgrp), // SUCCESS
-                            else => return null, // Anything else
-                        }
-                    },
-                    else => {
-                        const rc = c.tcgetpgrp(self.master);
-                        if (rc < 0) return null;
-                        return @intCast(rc);
-                    },
-                }
+                const rc = c.tcgetpgrp(self.master);
+                if (rc < 0) return null;
+                return @intCast(rc);
             },
             .tty_name => {
                 if (self.tty_name) |tty_name| return tty_name;
@@ -306,12 +293,6 @@ const PosixPty = struct {
                                 return null;
                             },
                         }
-                    },
-                    .linux => {
-                        if (c.ptsname_r(self.master, &self.tty_name_buf, self.tty_name_buf.len) != 0) return null;
-                        const tty_name: [:0]const u8 = std.mem.sliceTo(&self.tty_name_buf, 0);
-                        self.tty_name = tty_name;
-                        return tty_name;
                     },
                     else => return null,
                 }
@@ -341,8 +322,6 @@ test {
     try testing.expectEqual(ws, try pty.getSize());
 
     switch (builtin.target.os.tag) {
-        .freebsd => try testing.expect(std.mem.startsWith(u8, pty.getProcessInfo(.tty_name).?, "/dev/")),
-        .linux => try testing.expect(std.mem.startsWith(u8, pty.getProcessInfo(.tty_name).?, "/dev/pts/")),
         .macos => try testing.expect(std.mem.startsWith(u8, pty.getProcessInfo(.tty_name).?, "/dev/")),
         else => try testing.expect(pty.getProcessInfo(.tty_name) == null),
     }
