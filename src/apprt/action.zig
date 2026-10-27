@@ -105,12 +105,6 @@ pub const Action = union(Key) {
     /// Toggle fullscreen mode.
     toggle_fullscreen: Fullscreen,
 
-    /// Toggle tab overview.
-    toggle_tab_overview,
-
-    /// Toggle whether window directions are shown.
-    toggle_window_decorations,
-
     /// Toggle the command palette.
     toggle_command_palette,
 
@@ -181,9 +175,6 @@ pub const Action = union(Key) {
     /// surface target but if the app is targeted then all active
     /// surfaces should be redrawn.
     render,
-
-    /// Show the GTK inspector.
-    show_gtk_inspector,
 
     /// Show a desktop notification.
     desktop_notification: DesktopNotification,
@@ -312,9 +303,6 @@ pub const Action = union(Key) {
     /// Show a native GUI notification about the progress of some TUI operation.
     progress_report: terminal.osc.Command.ProgressReport,
 
-    /// Show the on-screen keyboard.
-    show_on_screen_keyboard,
-
     /// A command has finished,
     command_finished: CommandFinished,
 
@@ -360,8 +348,6 @@ pub const Action = union(Key) {
         close_all_windows,
         toggle_maximize,
         toggle_fullscreen,
-        toggle_tab_overview,
-        toggle_window_decorations,
         toggle_command_palette,
         toggle_visibility,
         toggle_background_opacity,
@@ -379,7 +365,6 @@ pub const Action = union(Key) {
         cell_size,
         scrollbar,
         render,
-        show_gtk_inspector,
         desktop_notification,
         set_title,
         set_tab_title,
@@ -408,7 +393,6 @@ pub const Action = union(Key) {
         open_url,
         show_child_exited,
         progress_report,
-        show_on_screen_keyboard,
         command_finished,
         start_search,
         end_search,
@@ -630,11 +614,10 @@ pub const MouseVisibility = enum(c_int) {
     }
 };
 
-/// Whether to prompt for the surface, tab, or window title.
+/// Whether to prompt for the surface or tab title.
 pub const PromptTitle = enum(c_int) {
     surface,
     tab,
-    window,
 
     test "nubb.h PromptTitle" {
         try lib.checkNubbHEnum(PromptTitle, "NUBB_PROMPT_TITLE_");

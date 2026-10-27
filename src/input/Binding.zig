@@ -589,13 +589,6 @@ pub const Action = union(enum) {
     /// Move a tab to a new window.
     move_tab_to_new_window,
 
-    /// Toggle the tab overview.
-    ///
-    /// This is only supported on Linux and when the system's libadwaita
-    /// version is 1.4 or newer. The current libadwaita version can be
-    /// found by running `nubb +version`.
-    toggle_tab_overview,
-
     /// Change the title of the current focused surface via a pop-up prompt.
     prompt_surface_title,
 
@@ -603,13 +596,6 @@ pub const Action = union(enum) {
     /// title set via this prompt overrides any title set by the terminal
     /// and persists across focus changes within the tab.
     prompt_tab_title,
-
-    /// Change the title of the current window via a pop-up prompt. The
-    /// title set via this prompt overrides any title set by the terminal
-    /// and persists across focus changes within the tab.
-    ///
-    /// Only implemented on Linux.
-    prompt_window_title,
 
     /// Set the title for the current focused surface.
     ///
@@ -684,19 +670,6 @@ pub const Action = union(enum) {
     /// Only implemented on macOS.
     reset_window_size,
 
-    /// Show the GTK inspector.
-    ///
-    /// Has no effect on macOS.
-    show_gtk_inspector,
-
-    /// Show the on-screen keyboard if one is present.
-    ///
-    /// Only implemented on Linux (GTK). On GNOME, the "Screen Keyboard"
-    /// accessibility feature must be turned on, which can be found under
-    /// Settings > Accessibility > Typing. Other platforms are as of now
-    /// untested.
-    show_on_screen_keyboard,
-
     /// Open the configuration file in an editor.
     ///
     /// * `os_open`: Use the OS's default editor to edit the configuration file.
@@ -760,11 +733,6 @@ pub const Action = union(enum) {
 
     /// Fullscreen or unfullscreen the current window.
     toggle_fullscreen,
-
-    /// Toggle window decorations (titlebar, buttons, etc.) for the current window.
-    ///
-    /// Only implemented on Linux.
-    toggle_window_decorations,
 
     /// Toggle whether the terminal window should always float on top of other
     /// windows even when unfocused.
@@ -1292,7 +1260,6 @@ pub const Action = union(enum) {
             .quit,
             .toggle_visibility,
             .check_for_updates,
-            .show_gtk_inspector,
             => .app,
 
             // These are app but can be special-cased in a surface context.
@@ -1323,7 +1290,6 @@ pub const Action = union(enum) {
             .set_font_size,
             .prompt_surface_title,
             .prompt_tab_title,
-            .prompt_window_title,
             .set_surface_title,
             .set_tab_title,
             .set_window_title,
@@ -1347,13 +1313,11 @@ pub const Action = union(enum) {
             .close_window,
             .toggle_maximize,
             .toggle_fullscreen,
-            .toggle_window_decorations,
             .toggle_window_float_on_top,
             .toggle_secure_input,
             .toggle_mouse_reporting,
             .toggle_command_palette,
             .toggle_background_opacity,
-            .show_on_screen_keyboard,
             .reset_window_size,
             .activate_key_table,
             .activate_key_table_once,
@@ -1374,7 +1338,6 @@ pub const Action = union(enum) {
             .goto_tab,
             .move_tab,
             .move_tab_to_new_window,
-            .toggle_tab_overview,
             .new_split,
             .goto_split,
             .goto_window,

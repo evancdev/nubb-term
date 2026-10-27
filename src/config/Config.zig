@@ -2051,9 +2051,6 @@ keybind: Keybinds = .{},
 /// differentiate between client and server-side decorations (e.g. macOS and
 /// Windows).
 ///
-/// The "toggle_window_decorations" keybind action can be used to create
-/// a keybinding to toggle this setting at runtime.
-///
 /// macOS: To hide the titlebar without removing the native window borders
 ///        or rounded corners, use `macos-titlebar-style = hidden` instead.
 @"window-decoration": WindowDecoration = .auto,

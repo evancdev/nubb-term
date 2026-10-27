@@ -16,20 +16,6 @@ extension Nubb {
         /// instead of `goto_split:left`.
         let actionKey: String
 
-        /// True if this can be performed on this target.
-        var isSupported: Bool {
-            !Self.unsupportedActionKeys.contains(actionKey)
-        }
-
-        /// Unsupported action keys, because they either don't make sense in the context of our
-        /// target platform or they just aren't implemented yet.
-        static let unsupportedActionKeys: [String] = [
-            "toggle_tab_overview",
-            "toggle_window_decorations",
-            "prompt_window_title",
-            "show_gtk_inspector",
-        ]
-
         init(cValue: nubb_command_s) {
             self.title = String(cString: cValue.title)
             self.description = String(cString: cValue.description)

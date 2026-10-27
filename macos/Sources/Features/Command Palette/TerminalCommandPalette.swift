@@ -79,7 +79,6 @@ struct TerminalCommandPaletteView: View {
     private var terminalOptions: [CommandOption] {
         guard let appDelegate = NSApp.delegate as? AppDelegate else { return [] }
         return appDelegate.nubb.config.commandPaletteEntries
-            .filter(\.isSupported)
             .map { c in
                 let symbols = appDelegate.nubb.config.keyboardShortcut(for: c.action)?.keyList
                 return CommandOption(

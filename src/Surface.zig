@@ -5119,12 +5119,6 @@ pub fn performBindingAction(self: *Surface, action: input.Binding.Action) !bool 
             .tab,
         ),
 
-        .prompt_window_title => return try self.rt_app.performAction(
-            .{ .surface = self },
-            .prompt_title,
-            .window,
-        ),
-
         .set_surface_title => |v| {
             const title = try self.alloc.dupeSentinel(u8, v, 0);
             defer self.alloc.free(title);
@@ -5394,18 +5388,6 @@ pub fn performBindingAction(self: *Surface, action: input.Binding.Action) !bool 
             },
         ),
 
-        .toggle_window_decorations => return try self.rt_app.performAction(
-            .{ .surface = self },
-            .toggle_window_decorations,
-            {},
-        ),
-
-        .toggle_tab_overview => return try self.rt_app.performAction(
-            .{ .surface = self },
-            .toggle_tab_overview,
-            {},
-        ),
-
         .toggle_window_float_on_top => return try self.rt_app.performAction(
             .{ .surface = self },
             .float_window,
@@ -5432,12 +5414,6 @@ pub fn performBindingAction(self: *Surface, action: input.Binding.Action) !bool 
         .toggle_background_opacity => return try self.rt_app.performAction(
             .{ .surface = self },
             .toggle_background_opacity,
-            {},
-        ),
-
-        .show_on_screen_keyboard => return try self.rt_app.performAction(
-            .{ .surface = self },
-            .show_on_screen_keyboard,
             {},
         ),
 

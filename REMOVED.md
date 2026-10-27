@@ -92,7 +92,9 @@ Nubb only ships the Mac app. Config options removed: all `gtk-*` options,
 `linux-cgroup-processes-limit`, `x11-instance-name`, `app-notifications`,
 `async-backend`, `quit-after-last-window-closed-delay`, `window-show-tab-bar`,
 `window-subtitle`, `window-titlebar-background`, `window-titlebar-foreground`,
-`quick-terminal-keyboard-interactivity`.
+`quick-terminal-keyboard-interactivity`. Keybind actions removed (they did
+nothing on macOS): `toggle_tab_overview`, `toggle_window_decorations`,
+`prompt_window_title`, `show_gtk_inspector`, `show_on_screen_keyboard`.
 
 - `.github/workflows/flatpak.yml`, `.github/workflows/snap.yml`
 - `dist/linux/`, `flatpak/`, `snap/`

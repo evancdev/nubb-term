@@ -438,12 +438,6 @@ fn actionCommands(action: Action.Key) []const Command {
             .description = "Move the current tab to a new window.",
         }},
 
-        .toggle_tab_overview => comptime &.{.{
-            .action = .toggle_tab_overview,
-            .title = "Toggle Tab Overview",
-            .description = "Toggle the tab overview.",
-        }},
-
         .prompt_surface_title => comptime &.{.{
             .action = .prompt_surface_title,
             .title = "Change Terminal Title…",
@@ -454,12 +448,6 @@ fn actionCommands(action: Action.Key) []const Command {
             .action = .prompt_tab_title,
             .title = "Change Tab Title…",
             .description = "Prompt for a new title for the current tab.",
-        }},
-
-        .prompt_window_title => comptime &.{.{
-            .action = .prompt_window_title,
-            .title = "Change Window Title…",
-            .description = "Prompt for a new title for the current window.",
         }},
 
         .new_split => comptime &.{
@@ -555,18 +543,6 @@ fn actionCommands(action: Action.Key) []const Command {
             .description = "Reset the window size to the default.",
         }},
 
-        .show_gtk_inspector => comptime &.{.{
-            .action = .show_gtk_inspector,
-            .title = "Show the GTK Inspector",
-            .description = "Show the GTK inspector.",
-        }},
-
-        .show_on_screen_keyboard => comptime &.{.{
-            .action = .show_on_screen_keyboard,
-            .title = "Show On-Screen Keyboard",
-            .description = "Show the on-screen keyboard if present.",
-        }},
-
         .open_config => comptime &.{
             .{
                 .action = .{ .open_config = .os_open },
@@ -632,12 +608,6 @@ fn actionCommands(action: Action.Key) []const Command {
             .action = .toggle_fullscreen,
             .title = "Toggle Fullscreen",
             .description = "Toggle the fullscreen state of the current window.",
-        }},
-
-        .toggle_window_decorations => comptime &.{.{
-            .action = .toggle_window_decorations,
-            .title = "Toggle Window Decorations",
-            .description = "Toggle the window decorations.",
         }},
 
         .toggle_window_float_on_top => comptime &.{.{
