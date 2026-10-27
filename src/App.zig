@@ -4,7 +4,6 @@
 const App = @This();
 
 const std = @import("std");
-const builtin = @import("builtin");
 const assert = @import("quirks.zig").inlineAssert;
 const Allocator = std.mem.Allocator;
 const apprt = @import("apprt.zig");

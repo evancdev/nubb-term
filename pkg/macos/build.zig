@@ -1,5 +1,4 @@
 const std = @import("std");
-const builtin = @import("builtin");
 const apple_sdk = @import("apple_sdk");
 const translate_c = @import("translate_c");
 

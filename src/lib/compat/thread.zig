@@ -3,7 +3,6 @@
 //!
 //! FIXME: Should be able to remove after 0.17.0, see:
 //!   https://codeberg.org/ziglang/zig/pulls/31278
-const builtin = @import("builtin");
 const std = @import("std");
 const assert = @import("../../quirks.zig").inlineAssert;
 

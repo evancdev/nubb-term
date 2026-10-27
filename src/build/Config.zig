@@ -10,7 +10,6 @@ const FontBackend = @import("../font/backend.zig").Backend;
 const RendererBackend = @import("../renderer/backend.zig").Backend;
 const TerminalBuildOptions = @import("../terminal/build_options.zig").Options;
 const XCFrameworkTarget = @import("xcframework.zig").Target;
-const expandPath = @import("../os/path.zig").expand;
 
 const GitVersion = @import("GitVersion.zig");
 

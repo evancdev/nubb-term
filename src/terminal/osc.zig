@@ -6,7 +6,6 @@
 const osc = @This();
 
 const std = @import("std");
-const builtin = @import("builtin");
 const build_options = @import("terminal_options");
 const mem = std.mem;
 const assert = @import("../quirks.zig").inlineAssert;

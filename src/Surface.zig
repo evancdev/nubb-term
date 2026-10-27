@@ -889,15 +889,6 @@ fn queueIo(
     self.io.queueMessage(msg, mutex);
 }
 
-/// Forces the surface to render. This is useful for when the surface
-/// is in the middle of animation (such as a resize, etc.) or when
-/// the render timer is managed manually by the apprt.
-pub fn draw(self: *Surface) !void {
-    // Renderers are required to support `drawFrame` being called from
-    // the main thread, so that they can update contents during resize.
-    try self.renderer.drawFrame(true);
-}
-
 /// Report to the renderer how well the apprt can present the frames
 /// the renderer exports. See `renderer.Health` and the renderer's
 /// `presentation_health` state for the semantics.
@@ -3384,11 +3375,6 @@ pub fn focusCallback(self: *Surface, focused: bool) !void {
         self.renderer_state.mutex.unlock(global.io());
         self.queueIo(.{ .focused = focused }, .unlocked);
     }
-}
-
-pub fn refreshCallback(self: *Surface) !void {
-    // The point of this callback is to schedule a render, so do that.
-    try self.queueRender();
 }
 
 // The amount to scroll. This structure is always normalized so that

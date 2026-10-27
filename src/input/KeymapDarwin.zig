@@ -245,9 +245,6 @@ extern const kTISPropertyInputSourceID: *CFString;
 const TISInputSource = opaque {};
 const UCKeyboardLayout = opaque {};
 const kUCKeyActionDown: u16 = 0;
-const kUCKeyActionUp: u16 = 1;
-const kUCKeyActionAutoKey: u16 = 2;
-const kUCKeyActionDisplay: u16 = 3;
 const kUCKeyTranslateNoDeadKeysBit: u32 = 0;
 const kUCKeyTranslateNoDeadKeysMask: u32 = 1 << kUCKeyTranslateNoDeadKeysBit;
 

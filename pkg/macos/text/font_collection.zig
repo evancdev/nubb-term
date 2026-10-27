@@ -38,46 +38,6 @@ pub const FontCollection = opaque {
     }
 };
 
-fn debugDumpList(list: *foundation.Array) !void {
-    var i: usize = 0;
-    while (i < list.getCount()) : (i += 1) {
-        const desc = list.getValueAtIndex(text.FontDescriptor, i);
-        {
-            var buf: [128]u8 = undefined;
-            const name = desc.copyAttribute(.name);
-            defer name.release();
-            const cstr = name.cstring(&buf, .utf8).?;
-
-            var family_buf: [128]u8 = undefined;
-            const family = desc.copyAttribute(.family_name);
-            defer family.release();
-            const family_cstr = family.cstring(&family_buf, .utf8).?;
-
-            var buf2: [128]u8 = undefined;
-            const url = desc.copyAttribute(.url);
-            defer url.release();
-            const path = path: {
-                const blank = try foundation.String.createWithBytes("", .utf8, false);
-                defer blank.release();
-
-                const path = url.copyPath() orelse break :path "<no path>";
-                defer path.release();
-
-                const decoded = try foundation.URL.createStringByReplacingPercentEscapes(
-                    path,
-                    blank,
-                );
-                defer decoded.release();
-
-                break :path decoded.cstring(&buf2, .utf8) orelse
-                    "<path cannot be converted to string>";
-            };
-
-            std.log.warn("i={d} name={s} family={s} path={s}", .{ i, cstr, family_cstr, path });
-        }
-    }
-}
-
 test "collection" {
     const testing = std.testing;
 
@@ -110,8 +70,6 @@ test "from descriptors" {
     defer list.release();
 
     try testing.expect(list.getCount() > 0);
-
-    // try debugDumpList(list);
 }
 
 test "from descriptors no match" {
@@ -134,6 +92,4 @@ test "from descriptors no match" {
     defer list.release();
 
     try testing.expect(list.getCount() == 0);
-
-    //try debugDumpList(list);
 }

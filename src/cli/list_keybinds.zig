@@ -1,7 +1,6 @@
 const std = @import("std");
 const args = @import("args.zig");
 const Action = @import("nubb.zig").Action;
-const Arena = std.heap.ArenaAllocator;
 const Allocator = std.mem.Allocator;
 const configpkg = @import("../config.zig");
 const Config = configpkg.Config;

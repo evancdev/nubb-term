@@ -1076,7 +1076,6 @@ NUBB_API void* nubb_app_userdata(nubb_app_t);
 NUBB_API void nubb_app_set_focus(nubb_app_t, bool);
 NUBB_API bool nubb_app_key(nubb_app_t, nubb_input_key_s);
 NUBB_API void nubb_app_keyboard_changed(nubb_app_t);
-NUBB_API void nubb_app_open_config(nubb_app_t);
 NUBB_API void nubb_app_update_config(nubb_app_t, nubb_config_t);
 NUBB_API bool nubb_app_needs_confirm_quit(nubb_app_t);
 NUBB_API void nubb_app_set_color_scheme(nubb_app_t, nubb_color_scheme_e);
@@ -1092,8 +1091,6 @@ NUBB_API nubb_surface_config_s nubb_surface_inherited_config(nubb_surface_t, nub
 NUBB_API void nubb_surface_update_config(nubb_surface_t, nubb_config_t);
 NUBB_API bool nubb_surface_needs_confirm_quit(nubb_surface_t);
 NUBB_API bool nubb_surface_process_exited(nubb_surface_t);
-NUBB_API void nubb_surface_refresh(nubb_surface_t);
-NUBB_API void nubb_surface_draw(nubb_surface_t);
 NUBB_API void nubb_surface_set_content_scale(nubb_surface_t, double, double);
 NUBB_API void nubb_surface_set_focus(nubb_surface_t, bool);
 NUBB_API void nubb_surface_set_occlusion(nubb_surface_t, bool);

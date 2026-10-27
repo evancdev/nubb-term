@@ -15,7 +15,6 @@ const build_config = @import("build_config.zig");
 const main = @import("main_nubb.zig");
 const global = @import("global.zig");
 const apprt = @import("apprt.zig");
-const internal_os = @import("os/main.zig");
 
 // Some comptime assertions that our C API depends on.
 comptime {

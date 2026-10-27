@@ -1,4 +1,3 @@
-const std = @import("std");
 const nubb_vt = @import("nubb-vt");
 const mem = @import("mem.zig");
 const osc = nubb_vt.osc;

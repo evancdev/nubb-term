@@ -8,7 +8,6 @@ const assert = @import("../quirks.zig").inlineAssert;
 const testing = std.testing;
 const posix = std.posix;
 const fastmem = @import("../fastmem.zig");
-const color = @import("color.zig");
 const hyperlink = @import("hyperlink.zig");
 const kitty = @import("kitty.zig");
 const stylepkg = @import("style.zig");

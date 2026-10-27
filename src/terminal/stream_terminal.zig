@@ -11,7 +11,6 @@ const device_attributes = @import("device_attributes.zig");
 const device_status = @import("device_status.zig");
 const stream = @import("stream.zig");
 const Action = stream.Action;
-const Screen = @import("Screen.zig");
 const color = @import("color.zig");
 const modes = @import("modes.zig");
 const osc = @import("osc.zig");

@@ -7,8 +7,6 @@ const Allocator = std.mem.Allocator;
 const posix = std.posix;
 const build_config = @import("build_config.zig");
 const macos = @import("macos");
-const cli = @import("cli.zig");
-const renderer = @import("renderer.zig");
 const apprt = @import("apprt.zig");
 
 const App = @import("App.zig");

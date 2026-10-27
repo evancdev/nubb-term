@@ -3,7 +3,6 @@
 //! https://rockorager.dev/misc/bracketed-paste-mime/
 
 const std = @import("std");
-const build_options = @import("terminal_options");
 
 const assert = @import("../../../quirks.zig").inlineAssert;
 

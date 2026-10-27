@@ -1,7 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const build_config = @import("build_config.zig");
-const build_options = @import("build_options");
 const cli = @import("cli.zig");
 const internal_os = @import("os/main.zig");
 const glslang = @import("glslang");

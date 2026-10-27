@@ -19,11 +19,9 @@ const font = @import("../../main.zig");
 // Utility names for common fractions
 const one_eighth: f64 = 0.125;
 const one_quarter: f64 = 0.25;
-const one_third: f64 = (1.0 / 3.0);
 const three_eighths: f64 = 0.375;
 const half: f64 = 0.5;
 const five_eighths: f64 = 0.625;
-const two_thirds: f64 = (2.0 / 3.0);
 const three_quarters: f64 = 0.75;
 const seven_eighths: f64 = 0.875;
 

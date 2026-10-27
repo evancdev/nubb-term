@@ -1,4 +1,3 @@
-const std = @import("std");
 const builtin = @import("builtin");
 
 /// Same as @memmove but prefers libc memmove if it is

@@ -1,4 +1,3 @@
-const std = @import("std");
 const build_config = @import("../build_config.zig");
 
 pub const Atlas = @import("Atlas.zig");

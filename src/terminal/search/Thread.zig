@@ -433,11 +433,6 @@ fn startRefreshTimer(self: *Thread) void {
     );
 }
 
-fn stopRefreshTimer(self: *Thread) void {
-    // This will stop the refresh on the next iteration.
-    self.refresh_active = false;
-}
-
 fn wakeupCallback(
     self_: ?*Thread,
     _: *xev.Loop,

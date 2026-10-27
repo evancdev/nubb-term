@@ -6,10 +6,8 @@
 //! Setting either env var to an empty string disables paging.
 //! If stdout is not a TTY, writes go directly to stdout.
 const Pager = @This();
-const builtin = @import("builtin");
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const internal_os = @import("../os/main.zig");
 const global = @import("../global.zig");
 
 /// The pager child process, if one was spawned.

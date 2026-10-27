@@ -1,5 +1,3 @@
-const builtin = @import("builtin");
-
 pub const carbon = @import("carbon.zig");
 pub const foundation = @import("foundation.zig");
 pub const animation = @import("animation.zig");

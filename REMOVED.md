@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,102 files and about 260,000 lines of text.
+brought back later. So far that is 1,104 files and about 260,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -186,6 +186,8 @@ the app.
 Nothing in the build, CI, or tests read these.
 
 - `.gitmodules`, `passthrough.glsl`
+- `src/config/ErrorList.zig`, `src/renderer/shaders/test_shadertoy_focus.glsl`
+  (nothing imported or embedded them)
 - `src/font/res/JetBrainsMonoNerdFont-Bold.ttf`,
   `src/font/res/JetBrainsMonoNerdFont-BoldItalic.ttf`,
   `src/font/res/JetBrainsMonoNerdFont-Italic.ttf`, `src/font/res/Lilex-VF.ttf`

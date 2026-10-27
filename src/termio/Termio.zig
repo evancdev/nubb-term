@@ -5,10 +5,8 @@
 pub const Termio = @This();
 
 const std = @import("std");
-const assert = @import("../quirks.zig").inlineAssert;
 const Allocator = std.mem.Allocator;
 const ArenaAllocator = std.heap.ArenaAllocator;
-const EnvMap = std.process.Environ.Map;
 const posix = std.posix;
 const termio = @import("../termio.zig");
 const StreamHandler = @import("stream_handler.zig").StreamHandler;
@@ -17,7 +15,6 @@ const global = @import("../global.zig");
 const xev = global.xev;
 const renderer = @import("../renderer.zig");
 const apprt = @import("../apprt.zig");
-const internal_os = @import("../os/main.zig");
 const configpkg = @import("../config.zig");
 const ProcessInfo = @import("../pty.zig").ProcessInfo;
 const compat_file = @import("../lib/compat/file.zig");

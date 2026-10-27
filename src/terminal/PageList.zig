@@ -13,7 +13,6 @@ const simd = @import("../simd/main.zig");
 const tripwire = @import("../tripwire.zig");
 const DoublyLinkedList = @import("../datastruct/main.zig").IntrusiveDoublyLinkedList;
 const datastruct = @import("../datastruct/main.zig");
-const color = @import("color.zig");
 const compression = @import("compress.zig");
 const highlight = @import("highlight.zig");
 const hyperlink = @import("hyperlink.zig");
@@ -3140,36 +3139,6 @@ fn resizeWithoutReflowGrowCols(
     // Deallocate the old page.
     self.pages.remove(chunk.node);
     self.destroyNode(chunk.node);
-}
-
-/// Returns the number of trailing blank lines, not to exceed max. Max
-/// is used to limit our traversal in the case of large scrollback.
-fn trailingBlankLines(
-    self: *const PageList,
-    max: size.CellCountInt,
-) size.CellCountInt {
-    var count: size.CellCountInt = 0;
-
-    // Go through our pages backwards since we're counting trailing blanks.
-    var it = self.pages.last;
-    while (it) |node| : (it = node.prev) {
-        const page = node.page();
-        const len = node.rows();
-        const rows = page.rows.ptr(page.memory)[0..len];
-        for (0..len) |i| {
-            const rev_i = len - i - 1;
-            const cells = rows[rev_i].cells.ptr(page.memory)[0..node.cols()];
-
-            // If the row has any text then we're done.
-            if (pagepkg.Cell.hasTextAny(cells)) return count;
-
-            // Inc count, if we're beyond max then we're done.
-            count += 1;
-            if (count >= max) return count;
-        }
-    }
-
-    return count;
 }
 
 /// Trims up to max trailing blank rows from the pagelist and returns the

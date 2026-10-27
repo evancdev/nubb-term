@@ -67,7 +67,6 @@
 const SelectionGesture = @This();
 
 const std = @import("std");
-const builtin = @import("builtin");
 const assert = std.debug.assert;
 const testing = std.testing;
 const Allocator = std.mem.Allocator;

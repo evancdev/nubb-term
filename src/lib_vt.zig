@@ -7,7 +7,6 @@
 //! by thousands of users for years. However, the API itself (functions,
 //! types, etc.) may change without warning. We're working on stabilizing
 //! this in the future.
-const lib = @This();
 
 const std = @import("std");
 const builtin = @import("builtin");

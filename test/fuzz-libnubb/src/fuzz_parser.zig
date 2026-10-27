@@ -1,4 +1,3 @@
-const std = @import("std");
 const nubb_vt = @import("nubb-vt");
 
 pub export fn zig_fuzz_init() callconv(.c) void {

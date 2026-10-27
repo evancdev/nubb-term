@@ -1,5 +1,4 @@
 const std = @import("std");
-const builtin = @import("builtin");
 const buildpkg = @import("src/build/main.zig");
 const translate_c = @import("translate_c");
 

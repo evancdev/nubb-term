@@ -4,7 +4,6 @@ const assert = @import("../quirks.zig").inlineAssert;
 const Allocator = mem.Allocator;
 const ArenaAllocator = std.heap.ArenaAllocator;
 const diags = @import("diagnostics.zig");
-const internal_os = @import("../os/main.zig");
 const Diagnostic = diags.Diagnostic;
 const DiagnosticList = diags.DiagnosticList;
 const CommaSplitter = @import("CommaSplitter.zig");

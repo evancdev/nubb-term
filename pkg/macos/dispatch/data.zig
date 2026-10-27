@@ -1,4 +1,3 @@
-const std = @import("std");
 const foundation = @import("../foundation.zig");
 const c = @import("c.zig").c;
 

@@ -1,6 +1,5 @@
 //! Code taken from 0.15.2 and `std.fs.file`. See README.md for license and
 //! details.
-const builtin = @import("builtin");
 const std = @import("std");
 const global = @import("../../global.zig");
 
