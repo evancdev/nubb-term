@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,105 files and about 260,000 lines of text.
+brought back later. So far that is 1,113 files and about 280,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -196,6 +196,12 @@ Nothing in the build, CI, or tests read these.
 - `src/font/res/JetBrainsMonoNerdFont-Bold.ttf`,
   `src/font/res/JetBrainsMonoNerdFont-BoldItalic.ttf`,
   `src/font/res/JetBrainsMonoNerdFont-Italic.ttf`, `src/font/res/Lilex-VF.ttf`
+- `src/font/res/CozetteVector.ttf`, `src/font/res/KawkabMono-Regular.ttf`,
+  `src/font/res/TerminusTTF-Regular.ttf`, `src/font/res/spleen-8x16.bdf`,
+  `src/font/res/spleen-8x16.otb`, `src/font/res/spleen-8x16.pcf`, and their
+  licenses `src/font/res/BSD-2-Clause.txt` and `src/font/res/MIT.txt` (embedded
+  for tests that no longer exist). The unused bold and italic static JetBrains
+  Mono imports went too.
 - `test/README.md`, `test/ucs-detect.sh` (ucs-detect needs a live terminal
   window, so it cannot run headless)
 
