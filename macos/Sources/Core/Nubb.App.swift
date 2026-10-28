@@ -622,6 +622,9 @@ extension Nubb {
             case NUBB_ACTION_MOVE_TAB_TO_NEW_WINDOW:
                 return moveTabToNewWindow(app, target: target)
 
+            case NUBB_ACTION_TOGGLE_TAB_SIDEBAR:
+                return toggleTabSidebar(app, target: target)
+
             case NUBB_ACTION_GOTO_TAB:
                 return gotoTab(app, target: target, tab: action.action.goto_tab)
 
@@ -1137,6 +1140,35 @@ extension Nubb {
             }
         }
 
+        private static func toggleTabSidebar(
+            _ app: nubb_app_t,
+            target: nubb_target_s) -> Bool {
+            switch target.tag {
+            case NUBB_TARGET_APP:
+                Nubb.logger.warning("toggle tab sidebar does nothing with an app target")
+                return false
+
+            case NUBB_TARGET_SURFACE:
+                guard let surface = target.target.surface else { return false }
+                guard let surfaceView = self.surfaceView(from: surface) else { return false }
+
+                // Let the key pass through to the terminal when the sidebar is
+                // disabled so the binding doesn't swallow it for nothing.
+                guard let config = (NSApplication.shared.delegate as? AppDelegate)?.nubb.config,
+                      config.macosTabSidebar else { return false }
+
+                NotificationCenter.default.post(
+                    name: .nubbToggleTabSidebar,
+                    object: surfaceView
+                )
+                return true
+
+            default:
+                assertionFailure()
+                return false
+            }
+        }
+
         private static func toggleMaximize(
             _ app: nubb_app_t,
             target: nubb_target_s
@@ -1181,6 +1213,7 @@ extension Nubb {
             case NUBB_TARGET_SURFACE:
                 guard let surface = target.target.surface else { return }
                 guard let surfaceView = self.surfaceView(from: surface) else { return }
+                TabSidebarActivityRecorder.recordBell(surfaceView)
                 NotificationCenter.default.post(
                     name: .nubbBellDidRing,
                     object: surfaceView
@@ -1528,6 +1561,7 @@ extension Nubb {
                 guard let surfaceView = self.surfaceView(from: surface) else { return }
                 guard let title = String(cString: n.title!, encoding: .utf8) else { return }
                 guard let body = String(cString: n.body!, encoding: .utf8) else { return }
+                TabSidebarActivityRecorder.recordNotification(surfaceView, title: title, body: body)
                 showDesktopNotification(surfaceView, title: title, body: body)
 
             default:
@@ -1570,6 +1604,16 @@ extension Nubb {
             case NUBB_TARGET_SURFACE:
                 guard let surface = target.target.surface else { return }
                 guard let surfaceView = self.surfaceView(from: surface) else { return }
+
+                // The tab sidebar shows long commands that finished in the
+                // background regardless of notify-on-command-finish.
+                if let config = (NSApplication.shared.delegate as? AppDelegate)?.nubb.config {
+                    TabSidebarActivityRecorder.recordCommandFinished(
+                        surfaceView,
+                        exitCode: v.exit_code < 0 ? nil : Int(v.exit_code),
+                        duration: .nanoseconds(v.duration),
+                        threshold: config.notifyOnCommandFinishAfter)
+                }
 
                 // Determine if we even care about command finish notifications
                 guard let config = (NSApplication.shared.delegate as? AppDelegate)?.nubb.config else { return }
@@ -1841,6 +1885,7 @@ extension Nubb {
                     guard let window = NSApp.mainWindow ?? NSApp.keyWindow,
                           let controller = window.windowController as? BaseTerminalController
                     else { return false }
+                    if (controller as? TerminalController)?.beginTabSidebarRename() == true { return true }
                     controller.promptTabTitle()
                     return true
 
@@ -1850,6 +1895,7 @@ extension Nubb {
                     guard let window = surfaceView.window,
                           let controller = window.windowController as? BaseTerminalController
                     else { return false }
+                    if (controller as? TerminalController)?.beginTabSidebarRename() == true { return true }
                     controller.promptTabTitle()
                     return true
 

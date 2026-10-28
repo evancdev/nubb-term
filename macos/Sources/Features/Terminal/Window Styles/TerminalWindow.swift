@@ -198,6 +198,7 @@ class TerminalWindow: NSWindow {
         } else {
             tabBarDidDisappear()
         }
+        syncNativeTabBarVisibility()
         viewModel.isMainWindow = true
     }
 
@@ -240,6 +241,11 @@ class TerminalWindow: NSWindow {
         if isTabBar(childViewController) {
             childViewController.identifier = Self.tabBarIdentifier
             tabBarDidAppear()
+
+            // The tab sidebar replaces the native tab bar. AppKit adds the bar
+            // a turn after a tab is created, so check again on the next turn.
+            syncNativeTabBarVisibility()
+            DispatchQueue.main.async { [weak self] in self?.syncNativeTabBarVisibility() }
         }
     }
 

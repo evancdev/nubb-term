@@ -588,6 +588,13 @@ pub const Action = union(enum) {
     /// Move a tab to a new window.
     move_tab_to_new_window,
 
+    /// Show or hide the vertical tab sidebar of the window.
+    ///
+    /// While the sidebar is hidden, moving the mouse to the left edge of
+    /// the window shows it as an overlay until the mouse leaves it. This
+    /// does nothing when `macos-tab-sidebar` is `false`.
+    toggle_tab_sidebar,
+
     /// Change the title of the current focused surface via a pop-up prompt.
     prompt_surface_title,
 
@@ -1318,6 +1325,7 @@ pub const Action = union(enum) {
             .goto_tab,
             .move_tab,
             .move_tab_to_new_window,
+            .toggle_tab_sidebar,
             .new_split,
             .goto_split,
             .goto_window,

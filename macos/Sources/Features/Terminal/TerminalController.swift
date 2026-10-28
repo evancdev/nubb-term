@@ -59,6 +59,10 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     /// The notification cancellable for focused surface property changes.
     private var surfaceAppearanceCancellables: Set<AnyCancellable> = []
 
+    /// The tab sidebar state of this tab: working directory, branch, activity,
+    /// and the sidebar shown in this window.
+    private(set) lazy var tabSidebar = TabSidebarTabState(controller: self)
+
     init(_ nubb: Nubb.App,
          withBaseConfig base: Nubb.SurfaceConfiguration? = nil,
          withSurfaceTree tree: SplitTree<Nubb.SurfaceView>? = nil,
@@ -129,6 +133,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
             self,
             selector: #selector(onCloseWindow),
             name: .nubbCloseWindow,
+            object: nil
+        )
+        center.addObserver(
+            self,
+            selector: #selector(onToggleTabSidebar),
+            name: .nubbToggleTabSidebar,
             object: nil
         )
     }
@@ -444,6 +454,9 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         controller.isBackgroundOpaque = parentController.isBackgroundOpaque
         guard let window = controller.window else { return controller }
 
+        // New tabs join the parent's sidebar state (collapsed and width).
+        controller.tabSidebar.adoptGroupState(parentController.tabSidebar.groupState)
+
         // If the parent is miniaturized, then macOS exhibits really strange behaviors
         // so we have to bring it back out.
         if parent.isMiniaturized { parent.deminiaturize(self) }
@@ -519,6 +532,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         // solution we should do that.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             controller.relabelTabs()
+        }
+
+        // A new tab while the sidebar is collapsed briefly reveals it so the
+        // user sees where the tab went.
+        DispatchQueue.main.async {
+            controller.tabSidebar.model?.presentation.flash()
         }
 
         // Setup our undo
@@ -1111,8 +1130,10 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         }
 
         // Initialize our content view to the SwiftUI root
+        let sidebarModel = TabSidebarModel(controller: self, groupState: tabSidebar.groupState)
+        tabSidebar.model = sidebarModel
         let container = TerminalViewContainer {
-            TerminalView(nubb: nubb, viewModel: self, delegate: self)
+            TerminalView(nubb: nubb, viewModel: self, delegate: self, tabSidebar: sidebarModel)
         }
 
         // Set the initial content size on the container so that
@@ -1122,6 +1143,9 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         container.initialContentSize = focusedSurface?.initialSize
 
         window.contentView = container
+        tabSidebar.attach()
+        tabSidebar.focusedSurfaceDidChange(focusedSurface)
+        installTabSidebarChrome(model: sidebarModel)
 
         // If we have a default size, we want to apply it.
         if let defaultSize {
@@ -1266,6 +1290,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         super.windowDidBecomeKey(notification)
         self.relabelTabs()
         self.fixTabBar()
+        TabSidebarActivityRecorder.markKeyWindowSeen()
     }
 
     override func windowDidMove(_ notification: Notification) {
@@ -1505,6 +1530,8 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     override func focusedSurfaceDidChange(to: Nubb.SurfaceView?) {
         super.focusedSurfaceDidChange(to: to)
 
+        tabSidebar.focusedSurfaceDidChange(focusedSurface)
+
         // We always cancel our event listener
         surfaceAppearanceCancellables.removeAll()
 
@@ -1675,6 +1702,12 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         closeWindow(self)
     }
 
+    @objc private func onToggleTabSidebar(notification: SwiftUI.Notification) {
+        guard let target = notification.object as? Nubb.SurfaceView else { return }
+        guard surfaceTree.contains(target) else { return }
+        toggleTabSidebar(self)
+    }
+
     @objc private func onResetWindowSize(notification: SwiftUI.Notification) {
         guard let target = notification.object as? Nubb.SurfaceView else { return }
         guard surfaceTree.contains(target) else { return }
@@ -1735,6 +1768,9 @@ extension TerminalController {
             guard let window, let tabGroup = window.tabGroup else { return false }
             guard let currentIndex = tabGroup.windows.firstIndex(of: window) else { return false }
             return tabGroup.windows.indices.contains { $0 > currentIndex }
+
+        case #selector(toggleTabSidebar):
+            return validateTabSidebarMenuItem(item)
 
         case #selector(returnToDefaultSize):
             guard let window else { return false }

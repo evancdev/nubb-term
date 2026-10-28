@@ -367,6 +367,14 @@ extension Nubb {
             return v
         }
 
+        var macosTabSidebar: Bool {
+            guard let config = self.config else { return true }
+            var v = true
+            let key = "macos-tab-sidebar"
+            _ = nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8)))
+            return v
+        }
+
         var macosHidden: MacHidden {
             guard let config = self.config else { return .never }
             var v: UnsafePointer<Int8>?

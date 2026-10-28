@@ -2916,6 +2916,23 @@ keybind: Keybinds = .{},
 /// Changing this option at runtime only applies to new windows.
 @"macos-titlebar-style": MacTitlebarStyle = .transparent,
 
+/// Whether windows list their tabs in a vertical sidebar on the left
+/// instead of the native macOS tab bar.
+///
+/// The sidebar shows each tab's title, working directory, git branch,
+/// progress, and the latest notification, bell, or finished command from
+/// tabs you are not looking at. Click a tab to select it, drag to reorder,
+/// double-click to rename, and right-click for colors and close actions.
+///
+/// The `toggle_tab_sidebar` action (`cmd+b` by default) hides the sidebar.
+/// While hidden, moving the mouse to the left edge of the window shows it
+/// as an overlay until the mouse leaves it.
+///
+/// The default value is `true`. Changing this option at runtime applies
+/// to all open windows. The sidebar is not shown with
+/// `macos-titlebar-style = tabs` or `hidden`.
+@"macos-tab-sidebar": bool = true,
+
 /// Whether the proxy icon in the macOS titlebar is visible. The proxy icon
 /// is the icon that represents the folder of the current working directory.
 /// You can see this very clearly in the macOS built-in Terminal.app
@@ -5638,6 +5655,11 @@ pub const Keybinds = struct {
                 alloc,
                 .{ .key = .{ .unicode = 'a' }, .mods = .{ .super = true } },
                 .{ .select_all = {} },
+            );
+            try self.set.put(
+                alloc,
+                .{ .key = .{ .unicode = 'b' }, .mods = .{ .super = true } },
+                .toggle_tab_sidebar,
             );
 
             // Undo/redo

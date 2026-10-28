@@ -312,6 +312,9 @@ pub const Action = union(Key) {
     /// split or the window is fullscreen.
     resize_window: ResizeWindow,
 
+    /// Show or hide the vertical tab sidebar of the target's window.
+    toggle_tab_sidebar,
+
     /// Sync with: nubb_action_tag_e
     pub const Key = enum(c_int) {
         quit,
@@ -371,6 +374,7 @@ pub const Action = union(Key) {
         copy_title_to_clipboard,
         move_tab_to_new_window,
         resize_window,
+        toggle_tab_sidebar,
 
         test "nubb.h Action.Key" {
             try lib.checkNubbHEnum(Key, "NUBB_ACTION_");

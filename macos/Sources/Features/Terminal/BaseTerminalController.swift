@@ -1260,6 +1260,10 @@ class BaseTerminalController: NSWindowController,
     }
 
     @IBAction func changeTabTitle(_ sender: Any) {
+        if (self as? TerminalController)?.beginTabSidebarRename() == true {
+            return
+        }
+
         if let targetWindow = window {
             let inlineHostWindow =
                 targetWindow.tabbedWindows?

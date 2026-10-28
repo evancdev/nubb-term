@@ -438,6 +438,12 @@ fn actionCommands(action: Action.Key) []const Command {
             .description = "Move the current tab to a new window.",
         }},
 
+        .toggle_tab_sidebar => comptime &.{.{
+            .action = .toggle_tab_sidebar,
+            .title = "Toggle Tab Sidebar",
+            .description = "Show or hide the vertical tab sidebar.",
+        }},
+
         .prompt_surface_title => comptime &.{.{
             .action = .prompt_surface_title,
             .title = "Change Terminal Title…",

@@ -5192,6 +5192,12 @@ pub fn performBindingAction(self: *Surface, action: input.Binding.Action) !bool 
             {},
         ),
 
+        .toggle_tab_sidebar => return try self.rt_app.performAction(
+            .{ .surface = self },
+            .toggle_tab_sidebar,
+            {},
+        ),
+
         .new_split => |direction| return try self.rt_app.performAction(
             .{ .surface = self },
             .new_split,

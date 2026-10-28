@@ -44,6 +44,9 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
     // An optional delegate to receive information about terminal changes.
     weak var delegate: (any TerminalViewDelegate)?
 
+    /// The tab sidebar shown to the left of the terminal, if this window has one.
+    var tabSidebar: TabSidebarModel?
+
     /// The most recently focused surface, equal to `focusedSurface` when it is non-nil.
     @State private var lastFocusedSurface: Weak<Nubb.SurfaceView>?
 
@@ -68,6 +71,15 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
         case .error:
             ErrorView()
         case .ready:
+            if let tabSidebar {
+                TabSidebarContainer(model: tabSidebar) { terminal }
+            } else {
+                terminal
+            }
+        }
+    }
+
+    private var terminal: some View {
             ZStack {
                 VStack(spacing: 0) {
                     // If we're running in debug mode we show a warning so that users
@@ -114,7 +126,6 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
                 }
             }
             .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)
-        }
     }
 }
 

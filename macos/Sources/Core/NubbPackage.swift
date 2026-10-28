@@ -325,6 +325,9 @@ extension Notification.Name {
     static let ReadonlyKey = nubbDidChangeReadonly.rawValue + ".readonly"
     static let nubbCommandPaletteDidToggle = Notification.Name("com.evancdev.nubb.commandPaletteDidToggle")
 
+    /// Toggle the tab sidebar of the window containing the surface (the notification object).
+    static let nubbToggleTabSidebar = Notification.Name("com.evancdev.nubb.toggleTabSidebar")
+
     /// Toggle maximize of current window
     static let nubbMaximizeDidToggle = Notification.Name("com.evancdev.nubb.maximizeDidToggle")
 
