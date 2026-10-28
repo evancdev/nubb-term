@@ -100,9 +100,8 @@ pub const compatibility = std.StaticStringMap(
 /// etc.
 ///
 /// Notes on emoji specifically: On macOS, Nubb by default will always use
-/// Apple Color Emoji and on Linux will always use Noto Emoji. You can
-/// override this behavior by specifying a font family here that contains
-/// emoji glyphs.
+/// Apple Color Emoji. You can override this behavior by specifying a font
+/// family here that contains emoji glyphs.
 ///
 /// The specific styles (bold, italic, bold italic) do not need to be
 /// explicitly set. If a style is not set, then the regular style (font-family)
@@ -226,10 +225,6 @@ pub const compatibility = std.StaticStringMap(
 /// adjusted their font size will retain their manually adjusted size.
 /// Otherwise, the font size of existing terminals will be updated on
 /// reload.
-///
-/// On Linux with GTK, font size is scaled according to both display-wide and
-/// text-specific scaling factors, which are often managed by your desktop
-/// environment (e.g. the GNOME display scale and large text settings).
 @"font-size": f32 = switch (builtin.target.os.tag) {
     // On macOS we default a little bigger since this tends to look better. This
     // is purely subjective but this is easy to modify.
@@ -354,7 +349,7 @@ pub const compatibility = std.StaticStringMap(
 /// Valid values:
 ///
 /// * `native` - Perform alpha blending in the native color space for the OS.
-///   On macOS this corresponds to Display P3, and on Linux it's sRGB.
+///   On macOS this corresponds to Display P3.
 ///
 /// * `linear` - Perform alpha blending in linear space. This will eliminate
 ///   the darkening artifacts around the edges of text that are very visible
@@ -975,16 +970,6 @@ palette: Palette = .{},
 ///
 /// If the macOS values are set, then this implies `background-blur = true`
 /// on non-macOS platforms.
-///
-/// On Linux, the exact blur intensity is ignored and any positive integer
-/// or `true` value will enable background blur. On Wayland, Nubb uses
-/// the [`ext-background-effect-v1`](https://wayland.app/protocols/ext-background-effect-v1)
-/// protocol to enable the blur effect, but this is not always supported
-/// on all compositors. Check the documentation of your compositor or
-/// desktop environment for blur support and how to configure it.
-///
-/// On X11, blur can only be enabled when using the KWin compositor
-/// as a part of KDE Plasma.
 @"background-blur": BackgroundBlur = .false,
 
 /// The opacity level (opposite of transparency) of an unfocused split.
@@ -1133,10 +1118,6 @@ command: ?Command = null,
 /// enabled, or that your shell sends OSC 133 escape sequences to mark the start
 /// and end of commands.
 ///
-/// On GTK, there is a context menu item that will enable command finished
-/// notifications for a single command, overriding the `never` and `unfocused`
-/// options.
-///
 /// Available since 1.3.0.
 @"notify-on-command-finish": NotifyOnCommandFinish = .never,
 
@@ -1223,8 +1204,7 @@ command: ?Command = null,
 /// automatically injects.
 ///
 /// These environment variables _will not_ be passed to commands run by Nubb
-/// for other purposes, like `open` or `xdg-open` used to open URLs in your
-/// browser.
+/// for other purposes, like `open` used to open URLs in your browser.
 ///
 /// Available since: 1.2.0
 env: RepeatableStringMap = .{},
@@ -1284,8 +1264,7 @@ input: RepeatableReadableIO = .{},
 /// to be abnormal. This is used to show an error message when the process exits
 /// too quickly.
 ///
-/// On Linux, this must be paired with a non-zero exit code. On macOS, we allow
-/// any exit code because of the way shell processes are launched via the login
+/// Any exit code counts, because shell processes are launched via the login
 /// command.
 @"abnormal-command-exit-runtime": u32 = 250,
 
@@ -1380,8 +1359,8 @@ scrollbar: Scrollbar = .system,
 
 /// Match a regular expression against the terminal text and associate clicking
 /// it with an action. This can be used to match URLs, file paths, etc. Actions
-/// can be opening using the system opener (e.g. `open` or `xdg-open`) or
-/// executing any arbitrary binding action.
+/// can be opening using the system opener (`open`) or executing any arbitrary
+/// binding action.
 ///
 /// Links that are configured earlier take precedence over links that are
 /// configured later.
@@ -1392,9 +1371,8 @@ scrollbar: Scrollbar = .system,
 /// TODO: This can't currently be set!
 link: RepeatableLink = .{},
 
-/// Enable URL matching. URLs are matched on hover with control (Linux) or
-/// command (macOS) pressed and open using the default system application for
-/// the linked URL.
+/// Enable URL matching. URLs are matched on hover with command pressed and
+/// open using the default system application for the linked URL.
 ///
 /// The URL matcher is always lowest priority of any configured links (see
 /// `link`). If you want to customize URL matching, use `link` and disable this.
@@ -1477,8 +1455,7 @@ title: ?[:0]const u8 = null,
 ///
 /// The default is `inherit` except in special scenarios listed next. On macOS,
 /// if Nubb can detect it is launched from launchd (double-clicked) or
-/// `open`, then it defaults to `home`. On Linux with GTK, if Nubb can detect
-/// it was launched from a desktop launcher, then it defaults to `home`.
+/// `open`, then it defaults to `home`.
 ///
 /// The value of this must be an absolute path, a path prefixed with `~/`
 /// (the tilde will be expanded to the user's home directory), or
@@ -1662,7 +1639,7 @@ title: ?[:0]const u8 = null,
 ///    Note: this does not work in all environments; see the additional notes
 ///    below for more information.
 ///
-///    Available since: 1.0.0 on macOS, 1.2.0 on GTK
+///    Available since: 1.0.0
 ///
 ///  * `unconsumed:`
 ///
@@ -1710,41 +1687,6 @@ title: ?[:0]const u8 = null,
 /// If the permissions are not granted, the keybind will not work. On macOS,
 /// you can find these permissions in System Preferences -> Privacy & Security
 /// -> Accessibility.
-///
-/// Since Ghostty 1.4.0, global shortcuts on Linux are primarily supported
-/// through the [`vicinae-hotkey-v1`](https://github.com/vicinaehq/vicinae-wayland-protocols/tree/main/staging/vicinae-hotkey)
-/// protocol, available out-of-the-box with the following Wayland compositors
-/// and desktop environments:
-///
-///   - Hyprland since version 0.56.0
-///
-/// On X11 or when your Wayland compositor/desktop environment does not
-/// support `vicinae-hotkey-v1`, the much more widely-used
-/// [XDG Global Shortcuts](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html)
-/// protocol is used instead.
-///
-/// Note: XDG Global Shortcuts rely on a functional XDG Desktop Portal
-/// implementation **that is designed to be used with your desktop environment
-/// or compositor**. Please make sure that you have the correct one installed.
-///
-/// Desktop environments that are known to support the XDG Global Shortcuts
-/// protocol include:
-///
-///  - KDE Plasma since [5.27](https://kde.org/announcements/plasma/5/5.27.0/#wayland)
-///    with `xdg-desktop-portal-kde` installed
-///
-///  - GNOME since [48](https://release.gnome.org/48/#and-thats-not-all) with
-///    `xdg-desktop-portal-gnome` installed
-///
-///  - Hyprland before version 0.56.0, with `xdg-desktop-portal-hyprland`
-///    installed. **Some manual configuration is required.** Consult the steps
-///    outlined on the [Hyprland Wiki](https://wiki.hypr.land/Configuring/Basics/Binds/#dbus-global-shortcuts)
-///    to set up D-Bus-based global shortcuts correctly.
-///
-/// Desktop environments and compositors that don't implement either protocol
-/// do not support global shortcuts, like wlroots-based compositors e.g. Sway
-/// (see [upstream issue](https://github.com/emersion/xdg-desktop-portal-wlr/issues/240))
-/// and COSMIC.
 ///
 /// ## Chained Actions
 ///
@@ -2001,55 +1943,39 @@ keybind: Keybinds = .{},
 /// configuration `font-size` will be used.
 @"window-inherit-font-size": bool = true,
 
-/// Configure a preference for window decorations. This setting specifies
-/// a _preference_; the actual OS, desktop environment, window manager, etc.
-/// may override this preference. Nubb will do its best to respect this
-/// preference but it may not always be possible.
+/// Configure window decorations.
 ///
 /// Valid values:
 ///
 ///  * `none`
 ///
 ///    All window decorations will be disabled. Titlebar, borders, etc. will
-///    not be shown. On macOS, this will also disable tabs (enforced by the
-///    system).
+///    not be shown. This also disables tabs (enforced by the system).
 ///
 ///  * `auto`
 ///
-///    Automatically decide to use either client-side or server-side
-///    decorations based on the detected preferences of the current OS and
-///    desktop environment. This option usually makes Nubb look the most
-///    "native" for your desktop.
+///    Show the standard macOS window frame.
 ///
 ///  * `client`
 ///
-///    Prefer client-side decorations.
+///    Same as `auto`. Kept so existing configurations still parse.
 ///
 ///    Available since: 1.1.0
 ///
 ///  * `server`
 ///
-///    Prefer server-side decorations. This is only relevant on Linux with GTK,
-///    either on X11, or Wayland on a compositor that supports the
-///    `org_kde_kwin_server_decoration` protocol (e.g. KDE Plasma, but almost
-///    any non-GNOME desktop supports this protocol).
-///
-///    If `server` is set but the environment doesn't support server-side
-///    decorations, client-side decorations will be used instead.
+///    Same as `auto`. Kept so existing configurations still parse.
 ///
 ///    Available since: 1.1.0
 ///
 /// The default value is `auto`.
 ///
-/// For the sake of backwards compatibility and convenience, this setting also
-/// accepts boolean true and false values. If set to `true`, this is equivalent
-/// to `auto`. If set to `false`, this is equivalent to `none`.
-/// This is convenient for users who live primarily on systems that don't
-/// differentiate between client and server-side decorations (e.g. macOS and
-/// Windows).
+/// This setting also accepts boolean true and false values. If set to `true`,
+/// this is equivalent to `auto`. If set to `false`, this is equivalent to
+/// `none`.
 ///
-/// macOS: To hide the titlebar without removing the native window borders
-///        or rounded corners, use `macos-titlebar-style = hidden` instead.
+/// To hide the titlebar without removing the native window borders or
+/// rounded corners, use `macos-titlebar-style = hidden` instead.
 @"window-decoration": WindowDecoration = .auto,
 
 /// The font that will be used for the application's window and tab titles.
@@ -2059,7 +1985,7 @@ keybind: Keybinds = .{},
 /// Note: any font available on the system may be used, this font is not
 /// required to be a fixed-width font.
 ///
-/// Available since: 1.0.0 on macOS, 1.1.0 on GTK
+/// Available since: 1.0.0
 @"window-title-font-family": ?[:0]const u8 = null,
 
 /// The theme to use for the windows. Valid values:
@@ -2071,15 +1997,13 @@ keybind: Keybinds = .{},
 ///   * `system` - Use the system theme.
 ///   * `light` - Use the light theme regardless of system theme.
 ///   * `dark` - Use the dark theme regardless of system theme.
-///   * `ghostty` - Use the background and foreground colors specified in the
-///     Nubb configuration. This is only supported on Linux builds.
+///   * `ghostty` - Same as `system`. Kept so existing configurations still
+///     parse.
 ///
-/// On macOS, if `macos-titlebar-style` is `tabs` or `transparent`, the window theme will be
+/// If `macos-titlebar-style` is `tabs` or `transparent`, the window theme will be
 /// automatically set based on the luminosity of the terminal background color.
 /// This only applies to terminal windows. This setting will still apply to
 /// non-terminal windows within Nubb.
-///
-/// This is currently only supported on macOS and Linux.
 @"window-theme": WindowTheme = .auto,
 
 /// The color space to use when interpreting terminal colors. "Terminal colors"
@@ -2115,11 +2039,6 @@ keybind: Keybinds = .{},
 /// value will not affect the size of the window after it has been created. This
 /// is only used for the initial size.
 ///
-/// BUG: On Linux with GTK, the calculated window size will not properly take
-/// into account window decorations. As a result, the grid dimensions will not
-/// exactly match this configuration. If window decorations are disabled (see
-/// `window-decoration`), then this will work as expected.
-///
 /// Windows smaller than 10 wide by 4 high are not allowed.
 @"window-height": u32 = 0,
 @"window-width": u32 = 0,
@@ -2143,10 +2062,6 @@ keybind: Keybinds = .{},
 /// On macOS, the window position is relative to the top-left corner of
 /// the visible screen area. This means that if the menu bar is visible, the
 /// window will be placed below the menu bar.
-///
-/// Note: this is only supported on macOS. The GTK runtime does not support
-/// setting the window position, as windows are only allowed position
-/// themselves in X11 and not Wayland.
 @"window-position-x": ?i16 = null,
 @"window-position-y": ?i16 = null,
 
@@ -2178,8 +2093,6 @@ keybind: Keybinds = .{},
 /// saves state on exit if this is enabled.
 ///
 /// The default value is `default`.
-///
-/// This is currently only supported on macOS. This has no effect on Linux.
 @"window-save-state": WindowSaveState = .default,
 
 /// Resize the window in discrete increments of the focused surface's cell size.
@@ -2208,11 +2121,8 @@ keybind: Keybinds = .{},
 ///
 ///    Automatically show and hide the drag handle.
 ///
-///    On Linux, the handle is only shown when there are two or
-///    more splits present.
-///
-///    On macOS, the handle is only hidden when there's one split
-///    in **fullscreen** mode, otherwise it's shown when hovered.
+///    The handle is only hidden when there's one split in
+///    **fullscreen** mode, otherwise it's shown when hovered.
 ///
 ///  - `never`
 ///
@@ -2373,13 +2283,14 @@ keybind: Keybinds = .{},
 ///
 /// * `none` - Do not copy selected text automatically.
 ///
-/// * `primary` - On Linux, copy to the selection clipboard only. This has no
-///   effect on macOS. (Available since: 1.4.0)
+/// * `primary` - Copy to Nubb's selection clipboard only. Paste it with
+///   the middle mouse button or `paste_from_selection`.
+///   (Available since: 1.4.0)
 ///
 /// * `clipboard` - Copy text to the system clipboard only.
 ///
-/// * `both` - Copy to both clipboards on Linux, and only the system clipboard
-///   on macOS. (Available since: 1.4.0)
+/// * `both` - Copy to both the system clipboard and the selection clipboard.
+///   (Available since: 1.4.0)
 ///
 /// For backward compatibility and convenience, a value of `true` is the same as
 /// `clipboard`, and `false` is an alias for `none`.
@@ -2403,8 +2314,7 @@ keybind: Keybinds = .{},
 /// The action to take when the user middle-clicks on the terminal surface.
 ///
 /// Valid values:
-///   * `primary-paste` - Paste from the selection clipboard on Linux.
-///      Does nothing on macOS.
+///   * `primary-paste` - Paste from Nubb's selection clipboard.
 ///   * `clipboard-paste` - Paste from the system clipboard.
 ///   * `ignore` - Do nothing, ignore the middle click.
 ///
@@ -2474,7 +2384,7 @@ keybind: Keybinds = .{},
 @"quit-after-last-window-closed": bool = false,
 
 /// This controls whether an initial window is created when Nubb
-/// is run. Only implemented on Linux and macOS.
+/// is run.
 @"initial-window": bool = true,
 
 /// The duration that undo operations remain available. After this
@@ -2517,10 +2427,6 @@ keybind: Keybinds = .{},
 /// Units can be repeated and will be added together. This means that
 /// `1h1h` is equivalent to `2h`. This is confusing and should be avoided.
 /// A future update may disallow this.
-///
-/// This configuration is only supported on macOS. Linux doesn't
-/// support undo operations at all so this configuration has no
-/// effect.
 ///
 /// Available since: 1.2.0
 @"undo-timeout": Duration = .{ .duration = 5 * std.time.ns_per_s },
@@ -2884,33 +2790,16 @@ keybind: Keybinds = .{},
 ///  * `system`
 ///
 ///    Instruct the system to notify the user using built-in system functions.
-///    This could result in an audiovisual effect, a notification, or something
-///    else entirely. Changing these effects require altering system settings:
-///    for instance under the "Sound > Alert Sound" setting in GNOME,
-///    or the "Accessibility > System Bell" settings in KDE Plasma.
-///
-///    On macOS, this plays the system alert sound.
+///    This plays the system alert sound.
 ///
 ///  * `audio`
 ///
-///    Play a custom sound. (Available since 1.3.0 on macOS)
+///    Play a custom sound. (Available since 1.3.0)
 ///
 ///  * `attention` *(enabled by default)*
 ///
 ///    Request the user's attention when Nubb is unfocused, until it has
-///    received focus again. On macOS, this will bounce the app icon in the
-///    dock once. On Linux, the behavior depends on the desktop environment
-///    and/or the window manager/compositor:
-///
-///    - On KDE, the background of the desktop icon in the task bar would be
-///      highlighted;
-///
-///    - On GNOME, you may receive a notification that, when clicked, would
-///      bring the Nubb window into focus;
-///
-///    - On Sway, the window may be decorated with a distinctly colored border;
-///
-///    - On other systems this may have no effect at all.
+///    received focus again. This bounces the app icon in the dock once.
 ///
 ///  * `title` *(enabled by default)*
 ///
@@ -2922,7 +2811,7 @@ keybind: Keybinds = .{},
 ///    Display a border around the alerted surface until the terminal is
 ///    re-focused or interacted with (such as on keyboard input).
 ///
-///    Available since: 1.2.0 on GTK, 1.2.1 on macOS
+///    Available since: 1.2.1
 ///
 /// Example: `audio`, `no-audio`, `system`, `no-system`
 ///
@@ -2935,14 +2824,14 @@ keybind: Keybinds = .{},
 /// directory if this is used as a CLI flag. The path may be prefixed with `~/`
 /// to reference the user's home directory.
 ///
-/// Available since: 1.2.0 on GTK, 1.3.0 on macOS.
+/// Available since: 1.3.0
 @"bell-audio-path": ?Path = null,
 
 /// If `audio` is an enabled bell feature, this is the volume to play the audio
 /// file at (relative to the system volume). This is a floating point number
 /// ranging from 0.0 (silence) to 1.0 (as loud as possible). The default is 0.5.
 ///
-/// Available since: 1.2.0 on GTK, 1.3.0 on macOS.
+/// Available since: 1.3.0
 @"bell-audio-volume": f64 = 0.5,
 
 /// If anything other than false, fullscreen mode on macOS will not use the
@@ -7682,15 +7571,13 @@ pub const CopyOnSelect = enum {
     none,
 
     /// Copy on select is enabled, but goes to the selection clipboard.
-    /// This is not supported on platforms such as macOS. This is the default
-    /// on Linux.
     primary,
 
     /// Copy on select is enabled and goes to the system clipboard.
     clipboard,
 
     /// Copy on select is enabled and goes to both the system clipboard
-    /// and the selection clipboard (for Linux).
+    /// and the selection clipboard.
     both,
 };
 
@@ -8383,8 +8270,6 @@ pub const BackgroundBlur = union(enum) {
             .radius => |v| v > 0,
 
             // We treat these as true because they both imply some blur!
-            // This has the effect of making the standard blur happen on
-            // Linux.
             .@"macos-glass-regular", .@"macos-glass-clear" => true,
         };
     }

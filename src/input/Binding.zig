@@ -530,8 +530,7 @@ pub const Action = union(enum) {
     ///
     ///     Open the file in the default OS editor for text files.
     ///
-    ///     The default OS editor is determined by using `open` on macOS
-    ///     and `xdg-open` on Linux.
+    ///     The default OS editor is determined by using `open`.
     ///
     write_scrollback_file: WriteScreen,
 
@@ -667,9 +666,8 @@ pub const Action = union(enum) {
     ///
     /// * `os_open`: Use the OS's default editor to edit the configuration file.
     ///   This is the default action. (Available since 1.4.0)
-    /// * `new_window`: Launch the editor specified in `$EDITOR` or `$VISUAL` in
-    ///   a new Nubb window to edit the configuration file. GTK only. (Available
-    ///   since 1.4.0.)
+    /// * `new_window`: Same as `os_open`. Kept so existing configurations
+    ///   still parse. (Available since 1.4.0.)
     open_config: OpenConfig,
 
     /// Reload the configuration.
@@ -713,9 +711,8 @@ pub const Action = union(enum) {
 
     /// Close all windows.
     ///
-    /// WARNING: This action has been deprecated and has no effect on either
-    /// Linux or macOS. Users are instead encouraged to use `all:close_window`
-    /// instead.
+    /// This might trigger a close confirmation popup, depending on the value
+    /// of the `confirm-close-surface` configuration setting.
     close_all_windows,
 
     /// Maximize or unmaximize the current window.
@@ -762,9 +759,6 @@ pub const Action = union(enum) {
     /// The command palette is a popup that lets you see what actions
     /// you can perform, their associated keybindings (if any), a search bar
     /// to filter the actions, and the ability to then execute the action.
-    ///
-    /// This requires libadwaita 1.5 or newer on Linux. The current libadwaita
-    /// version can be found by running `nubb +version`.
     toggle_command_palette,
 
     /// Show or hide all windows. If all windows become shown, we also ensure
@@ -1984,7 +1978,7 @@ pub const Set = struct {
     /// Performable triggers are also not present in the reverse map. This
     /// is so that GUI toolkits don't register performable triggers as
     /// menu shortcuts (the primary use case of the reverse map). GUI toolkits
-    /// such as GTK handle menu shortcuts too early in the event lifecycle
+    /// such as AppKit handle menu shortcuts too early in the event lifecycle
     /// for performable to work so this is a conscious decision to ease the
     /// integration with GUI toolkits.
     reverse: ReverseMap = .{},
