@@ -9,11 +9,5 @@ zig-cache/
 zig-pkg/
 zig-out/
 build.zig.zon.bak
-test/cases/**/*.actual.png
-
-/Box_test.ppm
-/Box_test_diff.ppm
-
-vgcore.*
 
 /sprite_face_test*

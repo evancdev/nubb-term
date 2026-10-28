@@ -26,8 +26,6 @@ identifier_name:
 type_name:
   min_length: 2
   allowed_symbols: ["_"]
-  excluded:
-    - iOS_.*
 
 function_parameter_count:
   warning: 6

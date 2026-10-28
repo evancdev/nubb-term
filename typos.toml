@@ -15,13 +15,8 @@ extend-exclude = [
   # Fonts
   "*.ttf",
   "*.otf",
-  "*.bdf",
   # Images
   "*.png",
-  "*.ico",
-  "*.icns",
-  # Valgrind nonsense
-  "valgrind.supp",
   # Fuzz corpus (binary test inputs)
   "test/fuzz-libnubb/corpus/*",
   # Other
