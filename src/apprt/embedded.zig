@@ -20,7 +20,6 @@ const CoreApp = @import("../App.zig");
 const CoreSurface = @import("../Surface.zig");
 const configpkg = @import("../config.zig");
 const Config = configpkg.Config;
-const String = @import("../main_c.zig").String;
 
 const log = std.log.scoped(.embedded_window);
 
@@ -1637,23 +1636,6 @@ pub const CAPI = struct {
             .cell_width_px = surface.core_surface.size.cell.width,
             .cell_height_px = surface.core_surface.size.cell.height,
         };
-    }
-
-    /// Returns the PID of the foreground process for the surface PTY.
-    export fn nubb_surface_foreground_pid(surface: *Surface) u64 {
-        return surface.core_surface.getProcessInfo(.foreground_pid) orelse 0;
-    }
-
-    /// Returns the PTY name for the surface. The returned string must be
-    /// freed by the caller via nubb_string_free.
-    export fn nubb_surface_tty_name(surface: *Surface) String {
-        const tty_name = surface.core_surface.getProcessInfo(.tty_name) orelse return .empty;
-        const copy = surface.app.core_app.alloc.dupeSentinel(u8, tty_name, 0) catch |err| {
-            log.err("error allocating tty name err={}", .{err});
-            return .empty;
-        };
-
-        return .fromSlice(copy);
     }
 
     /// Update the color scheme of the surface.

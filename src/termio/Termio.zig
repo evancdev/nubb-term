@@ -16,7 +16,6 @@ const xev = global.xev;
 const renderer = @import("../renderer.zig");
 const apprt = @import("../apprt.zig");
 const configpkg = @import("../config.zig");
-const ProcessInfo = @import("../pty.zig").ProcessInfo;
 const compat_file = @import("../lib/compat/file.zig");
 
 const log = std.log.scoped(.io_exec);
@@ -820,10 +819,3 @@ pub const ThreadData = struct {
         self.* = undefined;
     }
 };
-
-/// Get information about the process(es) attached to the backend. Returns
-/// `null` if there was an error getting the information or the information is
-/// not available on a particular platform.
-pub fn getProcessInfo(self: *Termio, comptime info: ProcessInfo) ?ProcessInfo.Type(info) {
-    return self.backend.getProcessInfo(info);
-}

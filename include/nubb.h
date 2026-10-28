@@ -1075,8 +1075,6 @@ NUBB_API void nubb_surface_set_focus(nubb_surface_t, bool);
 NUBB_API void nubb_surface_set_occlusion(nubb_surface_t, bool);
 NUBB_API void nubb_surface_set_size(nubb_surface_t, uint32_t, uint32_t);
 NUBB_API nubb_surface_size_s nubb_surface_size(nubb_surface_t);
-NUBB_API uint64_t nubb_surface_foreground_pid(nubb_surface_t);
-NUBB_API nubb_string_s nubb_surface_tty_name(nubb_surface_t);
 NUBB_API void nubb_surface_set_color_scheme(nubb_surface_t,
                                                      nubb_color_scheme_e);
 NUBB_API nubb_input_mods_e nubb_surface_key_translation_mods(nubb_surface_t,

@@ -1,7 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const posix = std.posix;
-const assert = @import("quirks.zig").inlineAssert;
 
 const log = std.log.scoped(.pty);
 
@@ -32,21 +31,6 @@ pub const Mode = packed struct {
 
     /// ECHO on POSIX
     echo: bool = true,
-};
-
-pub const ProcessInfo = enum {
-    /// The PID of the process that controls the PTY.
-    foreground_pid,
-    /// Gets the name of the slave PTY. Returned name points to an internal buffer
-    /// so it should not be modified or freed.
-    tty_name,
-
-    pub fn Type(comptime info: ProcessInfo) type {
-        return switch (info) {
-            .foreground_pid => u64,
-            .tty_name => [:0]const u8,
-        };
-    }
 };
 
 // A pty implementation that does nothing.
@@ -92,13 +76,6 @@ const NullPty = struct {
     pub fn childPreExec(self: Pty) ChildPreExecError!void {
         _ = self;
     }
-
-    /// Get information about the process(es) attached to the PTY. Returns
-    /// `null` if there was an error getting the information or the information
-    /// is not available on a particular platform.
-    pub fn getProcessInfo(_: *Pty, comptime info: ProcessInfo) ?ProcessInfo.Type(info) {
-        return null;
-    }
 };
 
 /// Posix PTY creation and management. This is just a thin layer on top
@@ -117,14 +94,6 @@ const PosixPty = struct {
     /// go wrong.
     master: Fd,
     slave: Fd,
-
-    /// Buffer for storage of slave tty name so that we don't have to recompute
-    /// it every time we need it.
-    tty_name_buf: [std.Io.Dir.max_path_bytes:0]u8 = undefined,
-    /// The name of slave tty. If `null` it has not yet been computed or
-    /// may not be available. Should not be accessed directly, but through
-    /// `self.getProcessInfo(.tty_name)`
-    tty_name: ?[:0]const u8 = null,
 
     pub const OpenError = error{OpenptyFailed};
 
@@ -179,8 +148,6 @@ const PosixPty = struct {
         return .{
             .master = master_fd,
             .slave = slave_fd,
-            .tty_name_buf = undefined,
-            .tty_name = null,
         };
     }
 
@@ -262,43 +229,6 @@ const PosixPty = struct {
         _ = posix.system.close(self.slave);
         _ = posix.system.close(self.master);
     }
-
-    /// Get information about the process(es) attached to the PTY. Returns
-    /// `null` if there was an error getting the information or the information
-    /// is not available on a particular platform.
-    pub fn getProcessInfo(self: *PosixPty, comptime info: ProcessInfo) ?ProcessInfo.Type(info) {
-        return switch (info) {
-            .foreground_pid => {
-                const rc = c.tcgetpgrp(self.master);
-                if (rc < 0) return null;
-                return @intCast(rc);
-            },
-            .tty_name => {
-                if (self.tty_name) |tty_name| return tty_name;
-
-                switch (builtin.target.os.tag) {
-                    .macos => {
-                        // The macOS TIOCPTYGNAME ioctl does not allow us to
-                        // specify the length of the buffer passed to it, but
-                        // expects it to be at least 128 bytes long.
-                        assert(self.tty_name_buf.len >= 128);
-                        switch (posix.errno(c.ioctl(self.master, c.TIOCPTYGNAME, @intFromPtr(&self.tty_name_buf)))) {
-                            .SUCCESS => {
-                                const tty_name: [:0]const u8 = std.mem.sliceTo(&self.tty_name_buf, 0);
-                                self.tty_name = tty_name;
-                                return tty_name;
-                            },
-                            else => |err| {
-                                log.err("error getting name of slave PTY errno={t}", .{err});
-                                return null;
-                            },
-                        }
-                    },
-                    else => return null,
-                }
-            },
-        };
-    }
 };
 
 test {
@@ -320,9 +250,4 @@ test {
     ws.ws_row *= 2;
     try pty.setSize(ws);
     try testing.expectEqual(ws, try pty.getSize());
-
-    switch (builtin.target.os.tag) {
-        .macos => try testing.expect(std.mem.startsWith(u8, pty.getProcessInfo(.tty_name).?, "/dev/")),
-        else => try testing.expect(pty.getProcessInfo(.tty_name) == null),
-    }
 }

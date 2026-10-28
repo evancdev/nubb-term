@@ -273,7 +273,10 @@ removed: `macos-applescript`.
 ### App Intents (Shortcuts)
 
 Shortcuts and Spotlight actions to create terminals and send text or keys.
-Config option removed: `macos-shortcuts`.
+Config option removed: `macos-shortcuts`. The C API functions
+`ghostty_surface_foreground_pid` and `ghostty_surface_tty_name`, which only
+App Intents and AppleScript read, went later along with the PTY process info
+code behind them.
 
 - `macos/Sources/Features/App Intents/`
 - `macos/Sources/Helpers/PermissionRequest.swift`

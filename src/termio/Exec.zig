@@ -25,7 +25,6 @@ const ptypkg = @import("../pty.zig");
 const Pty = ptypkg.Pty;
 const EnvMap = std.process.Environ.Map;
 const PasswdEntry = internal_os.passwd.Entry;
-const ProcessInfo = @import("../pty.zig").ProcessInfo;
 const compat_fd = @import("../lib/compat/fd.zig");
 
 const log = std.log.scoped(.io_exec);
@@ -1060,14 +1059,6 @@ const Subprocess = struct {
             return pgid;
         }
     }
-
-    /// Get information about the process(es) running within the subprocess.
-    /// Returns `null` if there was an error getting the information or the
-    /// information is not available on a particular platform.
-    pub fn getProcessInfo(self: *Subprocess, comptime info: ProcessInfo) ?ProcessInfo.Type(info) {
-        const pty = &(self.pty orelse return null);
-        return pty.getProcessInfo(info);
-    }
 };
 
 /// The read thread works with a companion gather thread to form a two-stage
@@ -1751,13 +1742,6 @@ fn appendEnv(
         std.fs.path.delimiter,
         value,
     });
-}
-
-/// Get information about the process(es) running within the backend. Returns
-/// `null` if there was an error getting the information or the information is
-/// not available on a particular platform.
-pub fn getProcessInfo(self: *Exec, comptime info: ProcessInfo) ?ProcessInfo.Type(info) {
-    return self.subprocess.getProcessInfo(info);
 }
 
 test "execCommand darwin: shell command" {
