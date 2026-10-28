@@ -1632,14 +1632,6 @@ extension Nubb {
             }
         }
 
-        @IBAction func pasteAsPlainText(_ sender: Any?) {
-            guard let surface = self.surface else { return }
-            let action = "paste_from_clipboard"
-            if !nubb_surface_binding_action(surface, action, UInt(action.lengthOfBytes(using: .utf8))) {
-                AppDelegate.logger.warning("action failed action=\(action, privacy: .public)")
-            }
-        }
-
         @IBAction func pasteSelection(_ sender: Any?) {
             guard let surface = self.surface else { return }
             let action = "paste_from_selection"

@@ -373,10 +373,6 @@ extension Nubb.Notification {
     /// Notification sent to toggle split maximize/unmaximize.
     static let didToggleSplitZoom = Notification.Name("com.evancdev.nubb.didToggleSplitZoom")
 
-    /// Notification
-    static let didReceiveInitialWindowFrame = Notification.Name("com.evancdev.nubb.didReceiveInitialWindowFrame")
-    static let FrameKey = "com.evancdev.nubb.frame"
-
     /// Notification sent to the active split view to resize the split.
     static let didResizeSplit = Notification.Name("com.evancdev.nubb.didResizeSplit")
     static let ResizeSplitDirectionKey = didResizeSplit.rawValue + ".direction"

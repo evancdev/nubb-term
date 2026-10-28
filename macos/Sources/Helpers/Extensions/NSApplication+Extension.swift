@@ -32,13 +32,3 @@ extension NSApplication.PresentationOptions.Element: @retroactive Hashable {
         hasher.combine(rawValue)
     }
 }
-
-// MARK: Frontmost
-
-extension NSApplication {
-    /// True if the application is frontmost. This isn't exactly the same as isActive because
-    /// an app can be active but not be frontmost if the window with activity is an NSPanel.
-    var isFrontmost: Bool {
-        NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier
-    }
-}

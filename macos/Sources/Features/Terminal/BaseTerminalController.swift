@@ -312,21 +312,6 @@ class BaseTerminalController: NSWindowController,
         return newView
     }
 
-    /// Move focus to a surface view.
-    func focusSurface(_ view: Nubb.SurfaceView) {
-        // Check if target surface is in our tree
-        guard surfaceTree.contains(view) else { return }
-
-        // Move focus to the target surface and activate the window/app
-        DispatchQueue.main.async {
-            Nubb.moveFocus(to: view)
-            view.window?.makeKeyAndOrderFront(nil)
-            if !NSApp.isActive {
-                NSApp.activate(ignoringOtherApps: true)
-            }
-        }
-    }
-
     /// Called when the surfaceTree variable changed.
     ///
     /// Subclasses should call super first.
@@ -449,15 +434,6 @@ class BaseTerminalController: NSWindowController,
                 self.titleOverride = newTitle
             }
         }
-    }
-
-    /// Close a surface from a view.
-    func closeSurface(
-        _ view: Nubb.SurfaceView,
-        withConfirmation: Bool = true
-    ) {
-        guard let node = surfaceTree.root?.node(view: view) else { return }
-        closeSurface(node, withConfirmation: withConfirmation)
     }
 
     /// Close a surface node (which may contain splits), requesting confirmation if necessary.

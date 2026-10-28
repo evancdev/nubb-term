@@ -137,124 +137,6 @@ extension Nubb.Input {
         init(cFlags: nubb_binding_flags_e) {
             self.rawValue = cFlags.rawValue
         }
-
-        var cFlags: nubb_binding_flags_e {
-            nubb_binding_flags_e(rawValue)
-        }
-    }
-}
-
-// MARK: Nubb.Input.KeyEvent
-
-extension Nubb.Input {
-    /// `nubb_input_key_s`
-    struct KeyEvent {
-        let action: Action
-        let key: Key
-        let text: String?
-        let composing: Bool
-        let mods: Mods
-        let consumedMods: Mods
-        let unshiftedCodepoint: UInt32
-
-        init(
-            key: Key,
-            action: Action = .press,
-            text: String? = nil,
-            composing: Bool = false,
-            mods: Mods = [],
-            consumedMods: Mods = [],
-            unshiftedCodepoint: UInt32 = 0
-        ) {
-            self.key = key
-            self.action = action
-            self.text = text
-            self.composing = composing
-            self.mods = mods
-            self.consumedMods = consumedMods
-            self.unshiftedCodepoint = unshiftedCodepoint
-        }
-
-        init?(cValue: nubb_input_key_s) {
-            // Convert action
-            switch cValue.action {
-            case NUBB_ACTION_PRESS: self.action = .press
-            case NUBB_ACTION_RELEASE: self.action = .release
-            case NUBB_ACTION_REPEAT: self.action = .repeat
-            default: self.action = .press
-            }
-
-            // Convert key from keycode
-            guard let key = Key(keyCode: UInt16(cValue.keycode)) else { return nil }
-            self.key = key
-
-            // Convert text
-            if let textPtr = cValue.text {
-                self.text = String(cString: textPtr)
-            } else {
-                self.text = nil
-            }
-
-            // Set composing state
-            self.composing = cValue.composing
-
-            // Convert modifiers
-            self.mods = Mods(cMods: cValue.mods)
-            self.consumedMods = Mods(cMods: cValue.consumed_mods)
-
-            // Set unshifted codepoint
-            self.unshiftedCodepoint = cValue.unshifted_codepoint
-        }
-
-        /// Executes a closure with a temporary C representation of this KeyEvent.
-        ///
-        /// This method safely converts the Swift KeyEntity to a C `nubb_input_key_s` struct
-        /// and passes it to the provided closure. The C struct is only valid within the closure's
-        /// execution scope. The text field's C string pointer is managed automatically and will
-        /// be invalid after the closure returns.
-        ///
-        /// - Parameter execute: A closure that receives the C struct and returns a value
-        /// - Returns: The value returned by the closure
-        @discardableResult
-        func withCValue<T>(execute: (nubb_input_key_s) -> T) -> T {
-            var keyEvent = nubb_input_key_s()
-            keyEvent.action = action.cAction
-            keyEvent.keycode = UInt32(key.keyCode ?? 0)
-            keyEvent.composing = composing
-            keyEvent.mods = mods.cMods
-            keyEvent.consumed_mods = consumedMods.cMods
-            keyEvent.unshifted_codepoint = unshiftedCodepoint
-
-            // Handle text with proper memory management
-            if let text = text {
-                return text.withCString { textPtr in
-                    keyEvent.text = textPtr
-                    return execute(keyEvent)
-                }
-            } else {
-                keyEvent.text = nil
-                return execute(keyEvent)
-            }
-        }
-    }
-}
-
-// MARK: Nubb.Input.Action
-
-extension Nubb.Input {
-    /// `nubb_input_action_e`
-    enum Action: String, CaseIterable {
-        case release
-        case press
-        case `repeat`
-
-        var cAction: nubb_input_action_e {
-            switch self {
-            case .release: NUBB_ACTION_RELEASE
-            case .press: NUBB_ACTION_PRESS
-            case .repeat: NUBB_ACTION_REPEAT
-            }
-        }
     }
 }
 
@@ -275,36 +157,6 @@ extension Nubb.Input {
             self.action = action
             self.button = button
             self.mods = mods
-        }
-
-        /// Creates a MouseEvent from C enum values.
-        ///
-        /// This initializer converts C-style mouse input enums to Swift types.
-        /// Returns nil if any of the C enum values are invalid or unsupported.
-        ///
-        /// - Parameters:
-        ///   - state: The mouse button state (press/release)
-        ///   - button: The mouse button that was pressed/released
-        ///   - mods: The modifier keys held during the mouse event
-        init?(state: nubb_input_mouse_state_e, button: nubb_input_mouse_button_e, mods: nubb_input_mods_e) {
-            // Convert state
-            switch state {
-            case NUBB_MOUSE_RELEASE: self.action = .release
-            case NUBB_MOUSE_PRESS: self.action = .press
-            default: return nil
-            }
-
-            // Convert button
-            switch button {
-            case NUBB_MOUSE_UNKNOWN: self.button = .unknown
-            case NUBB_MOUSE_LEFT: self.button = .left
-            case NUBB_MOUSE_RIGHT: self.button = .right
-            case NUBB_MOUSE_MIDDLE: self.button = .middle
-            default: return nil
-            }
-
-            // Convert modifiers
-            self.mods = Mods(cMods: mods)
         }
     }
 
@@ -426,17 +278,6 @@ extension Nubb.Input {
     struct ScrollMods {
         let rawValue: Int32
 
-        /// True if this is a high-precision scroll event (e.g., trackpad, Magic Mouse)
-        var precision: Bool {
-            rawValue & 0b0000_0001 != 0
-        }
-
-        /// The momentum phase of the scroll event for inertial scrolling
-        var momentum: Momentum {
-            let momentumBits = (rawValue >> 1) & 0b0000_0111
-            return Momentum(rawValue: UInt8(momentumBits)) ?? .none
-        }
-
         init(precision: Bool = false, momentum: Momentum = .none) {
             var value: Int32 = 0
             if precision {
@@ -468,18 +309,6 @@ extension Nubb.Input {
         case ended = 4
         case cancelled = 5
         case mayBegin = 6
-
-        var cMomentum: nubb_input_mouse_momentum_e {
-            switch self {
-            case .none: NUBB_MOUSE_MOMENTUM_NONE
-            case .began: NUBB_MOUSE_MOMENTUM_BEGAN
-            case .stationary: NUBB_MOUSE_MOMENTUM_STATIONARY
-            case .changed: NUBB_MOUSE_MOMENTUM_CHANGED
-            case .ended: NUBB_MOUSE_MOMENTUM_ENDED
-            case .cancelled: NUBB_MOUSE_MOMENTUM_CANCELLED
-            case .mayBegin: NUBB_MOUSE_MOMENTUM_MAY_BEGIN
-            }
-        }
     }
 }
 
@@ -532,10 +361,6 @@ extension Nubb.Input {
 
         init(nsFlags: NSEvent.ModifierFlags) {
             self.init(cMods: Nubb.nubbMods(nsFlags))
-        }
-
-        var nsFlags: NSEvent.ModifierFlags {
-            Nubb.eventModifierFlags(mods: cMods)
         }
     }
 }

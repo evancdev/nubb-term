@@ -5,10 +5,6 @@ import SwiftUI
 class Cursor {
     private static var counter: UInt = 0
 
-    static var isVisible: Bool {
-        counter == 0
-    }
-
     static func hide() {
         counter += 1
         NSCursor.hide()

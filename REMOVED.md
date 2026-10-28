@@ -3,7 +3,7 @@
 Nubb started from [ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 at commit `08a9518340e19487bd5fdf96963583fb32f0c41f` (2026-10-22). This file
 lists everything Nubb removed from that tree, so any of it can be found or
-brought back later. So far that is 1,113 files and about 280,000 lines of text.
+brought back later. So far that is 1,122 files and about 280,000 lines of text.
 
 Paths below are upstream paths at that commit. A path ending in `/` is a
 whole directory. Renamed files (ghostty to nubb) are not listed.
@@ -204,6 +204,15 @@ Nothing in the build, CI, or tests read these.
   Mono imports went too.
 - `test/README.md`, `test/ucs-detect.sh` (ucs-detect needs a live terminal
   window, so it cannot run headless)
+- `macos/Sources/Ghostty/Ghostty.Event.swift`,
+  `macos/Sources/Helpers/MetalView.swift`,
+  `macos/Sources/Helpers/NonDraggableHostingView.swift`,
+  `macos/Sources/Helpers/Private/Dock.swift`, and the `NSAppleEventDescriptor`,
+  `NSImage`, `ObjectIdentifier`, `UUID` and `View` extensions in
+  `macos/Sources/Helpers/Extensions/` (Swift helpers nothing called). Unused
+  members of other Swift types went too, such as the `KeyEvent` and `Action`
+  input wrappers, `swatchImage`, `focusSurface`, `pasteAsPlainText` and a
+  view-hierarchy debug printer.
 
 ## macOS app
 

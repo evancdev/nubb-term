@@ -307,30 +307,6 @@ extension Nubb {
             }
         }
 
-        /// Returns the fullscreen mode for toggle actions (keybindings).
-        /// This is controlled by `macos-non-native-fullscreen` config.
-        var windowFullscreenMode: FullscreenMode {
-            let defaultValue: FullscreenMode = .native
-            guard let config = self.config else { return defaultValue }
-            var v: UnsafePointer<Int8>?
-            let key = "macos-non-native-fullscreen"
-            guard nubb_config_get(config, &v, key, UInt(key.lengthOfBytes(using: .utf8))) else { return defaultValue }
-            guard let ptr = v else { return defaultValue }
-            let str = String(cString: ptr)
-            return switch str {
-            case "false":
-                    .native
-            case "true":
-                    .nonNative
-            case "visible-menu":
-                    .nonNativeVisibleMenu
-            case "padded-notch":
-                    .nonNativePaddedNotch
-            default:
-                defaultValue
-            }
-        }
-
         var windowTitleFontFamily: String? {
             guard let config = self.config else { return nil }
             var v: UnsafePointer<Int8>?
@@ -619,15 +595,6 @@ extension Nubb.Config {
             }
         }
 
-        var isEnabled: Bool {
-            switch self {
-            case .disabled:
-                return false
-            default:
-                return true
-            }
-        }
-
         /// Returns true if this is a macOS glass style (regular or clear).
         var isGlassStyle: Bool {
             switch self {
@@ -635,18 +602,6 @@ extension Nubb.Config {
                 return true
             default:
                 return false
-            }
-        }
-
-        /// Returns the blur radius if applicable, nil for glass effects.
-        var radius: Int? {
-            switch self {
-            case .disabled:
-                return nil
-            case .radius(let r):
-                return r
-            case .macosGlassRegular, .macosGlassClear:
-                return nil
             }
         }
     }

@@ -10,14 +10,6 @@ extension View {
     var backport: Backport<Self> { Backport(content: self) }
 }
 
-extension Scene {
-    var backport: Backport<Self> { Backport(content: self) }
-}
-
-extension Backport where Content: Scene {
-    // None currently
-}
-
 /// Result type for backported onKeyPress handler
 enum BackportKeyPressResult {
     case handled
@@ -25,14 +17,6 @@ enum BackportKeyPressResult {
 }
 
 extension Backport where Content: View {
-    func pointerVisibility(_ v: BackportVisibility) -> some View {
-        if #available(macOS 15, *) {
-            return content.pointerVisibility(v.official)
-        } else {
-            return content
-        }
-    }
-
     func pointerStyle(_ style: BackportPointerStyle?) -> some View {
         if #available(macOS 15, *) {
             return content.pointerStyle(style?.official)
@@ -52,21 +36,6 @@ extension Backport where Content: View {
             })
         } else {
             return content
-        }
-    }
-}
-
-enum BackportVisibility {
-    case automatic
-    case visible
-    case hidden
-
-    @available(macOS 15, *)
-    var official: Visibility {
-        switch self {
-        case .automatic: return .automatic
-        case .visible: return .visible
-        case .hidden: return .hidden
         }
     }
 }

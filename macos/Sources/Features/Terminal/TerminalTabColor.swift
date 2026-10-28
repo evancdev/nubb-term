@@ -66,43 +66,6 @@ enum TerminalTabColor: Int, CaseIterable, Codable {
             return .systemGray
         }
     }
-
-    func swatchImage(selected: Bool) -> NSImage {
-        let size = NSSize(width: 18, height: 18)
-        return NSImage(size: size, flipped: false) { rect in
-            let circleRect = rect.insetBy(dx: 1, dy: 1)
-            let circlePath = NSBezierPath(ovalIn: circleRect)
-
-            if let fillColor = self.displayColor {
-                fillColor.setFill()
-                circlePath.fill()
-            } else {
-                NSColor.clear.setFill()
-                circlePath.fill()
-                NSColor.quaternaryLabelColor.setStroke()
-                circlePath.lineWidth = 1
-                circlePath.stroke()
-            }
-
-            if self == .none {
-                let slash = NSBezierPath()
-                slash.move(to: NSPoint(x: circleRect.minX + 2, y: circleRect.minY + 2))
-                slash.line(to: NSPoint(x: circleRect.maxX - 2, y: circleRect.maxY - 2))
-                slash.lineWidth = 1.5
-                NSColor.secondaryLabelColor.setStroke()
-                slash.stroke()
-            }
-
-            if selected {
-                let highlight = NSBezierPath(ovalIn: rect.insetBy(dx: 0.5, dy: 0.5))
-                highlight.lineWidth = 2
-                NSColor.controlAccentColor.setStroke()
-                highlight.stroke()
-            }
-
-            return true
-        }
-    }
 }
 
 // MARK: - Menu View

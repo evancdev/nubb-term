@@ -40,8 +40,3 @@ extension UTType {
     /// a way to look up a surface by ID.
     static let nubbSurfaceId = UTType(exportedAs: "com.evancdev.nubbSurfaceId")
 }
-
-extension NSPasteboard.PasteboardType {
-    /// Pasteboard type for dragging surface IDs.
-    static let nubbSurfaceId = NSPasteboard.PasteboardType(UTType.nubbSurfaceId.identifier)
-}

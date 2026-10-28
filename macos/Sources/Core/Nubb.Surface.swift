@@ -72,12 +72,6 @@ extension Nubb {
             return Input.BindingFlags(cFlags: flags)
         }
 
-        /// See `keyIsBinding(_ event: nubb_input_key_s)`.
-        @MainActor
-        func keyIsBinding(_ event: Input.KeyEvent) -> Input.BindingFlags? {
-            event.withCValue { keyIsBinding($0) }
-        }
-
         /// Whether the terminal has captured mouse input.
         ///
         /// When the mouse is captured, the terminal application is receiving mouse events

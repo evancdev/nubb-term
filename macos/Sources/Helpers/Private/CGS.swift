@@ -32,12 +32,7 @@ struct CGSSpaceMask: OptionSet {
     static let includesOthers = CGSSpaceMask(rawValue: 1 << 1)
     static let includesUser = CGSSpaceMask(rawValue: 1 << 2)
 
-    static let includesVisible = CGSSpaceMask(rawValue: 1 << 16)
-
-    static let currentSpace: CGSSpaceMask = [.includesUser, .includesCurrent]
-    static let otherSpaces: CGSSpaceMask = [.includesOthers, .includesCurrent]
     static let allSpaces: CGSSpaceMask = [.includesUser, .includesOthers, .includesCurrent]
-    static let allVisibleSpaces: CGSSpaceMask = [.includesVisible, .allSpaces]
 }
 
 /// Represents a unique identifier for a macOS Space (Desktop, Fullscreen, etc).

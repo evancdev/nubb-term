@@ -14,10 +14,6 @@ protocol TerminalRestorable: Codable {
     /// Pinning the name keeps old and new archives readable. `nil` keeps the
     /// runtime default.
     static var archivedClassName: String? { get }
-
-    /// Returns a base configuration to use when restoring terminal surfaces.
-    /// Override this to provide custom environment variables or other configuration.
-    var baseConfig: Nubb.SurfaceConfiguration? { get }
 }
 
 extension TerminalRestorable {
@@ -42,9 +38,6 @@ extension TerminalRestorable {
             "<\(ptr)>[version: \(Self.version)]"
         }
     }
-
-    /// Default implementation returns nil (no custom base config).
-    var baseConfig: Nubb.SurfaceConfiguration? { nil }
 
     init?(coder aDecoder: NSCoder) {
         // If the version doesn't match then we can't decode. In the future we can perform
@@ -259,4 +252,3 @@ class TerminalWindowRestoration: NSObject, NSWindowRestoration {
         }
     }
 }
-
