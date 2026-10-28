@@ -105,7 +105,8 @@ renderer's exported frame queue and presentation health reporting went too,
 since only the GTK app pulled frames out of the renderer. Later,
 the Linux and FreeBSD branches inside shared code went too: desktop
 environment detection, `xdg-terminal-exec` support, `xdg-open`, the Linux
-pty and `dup3` paths, and the Linux `madvise` path in the terminal core.
+pty and `dup3` paths, the Linux `madvise` path in the terminal core, and the
+Linux and FreeBSD include branches in `src/pty.c`.
 
 - `.github/workflows/flatpak.yml`, `.github/workflows/snap.yml`
 - `dist/linux/`, `flatpak/`, `snap/`
