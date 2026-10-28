@@ -225,12 +225,7 @@ pub const compatibility = std.StaticStringMap(
 /// adjusted their font size will retain their manually adjusted size.
 /// Otherwise, the font size of existing terminals will be updated on
 /// reload.
-@"font-size": f32 = switch (builtin.target.os.tag) {
-    // On macOS we default a little bigger since this tends to look better. This
-    // is purely subjective but this is easy to modify.
-    .macos => 13,
-    else => 12,
-},
+@"font-size": f32 = 13,
 
 /// A repeatable configuration to set one or more font variations values for
 /// a variable font. A variable font is a single font, usually with a filename
@@ -343,8 +338,7 @@ pub const compatibility = std.StaticStringMap(
 /// This affects the appearance of text and of any images with transparency.
 /// Additionally, custom shaders will receive colors in the configured space.
 ///
-/// On macOS the default is `native`, on all other platforms the default is
-/// `linear-corrected`.
+/// The default is `native`.
 ///
 /// Valid values:
 ///
@@ -362,11 +356,7 @@ pub const compatibility = std.StaticStringMap(
 ///   but without any of the darkening artifacts.
 ///
 /// Available since: 1.1.0
-@"alpha-blending": AlphaBlending =
-    if (builtin.target.os.tag == .macos)
-        .native
-    else
-        .@"linear-corrected",
+@"alpha-blending": AlphaBlending = .native,
 
 /// All of the configurations behavior adjust various metrics determined by the
 /// font. The values can be integers (1, -1, etc.) or a percentage (20%, -15%,
@@ -5425,31 +5415,7 @@ pub const Keybinds = struct {
                 .paste_from_clipboard,
             );
 
-            // On non-MacOS desktop envs (Windows, KDE, Gnome, Xfce), ctrl+insert is an
-            // alt keybinding for Copy and shift+ins is an alt keybinding for Paste
-            //
-            // The order of these blocks is important. The *last* added keybind for a given action is
-            // what will display in the menu. We want the more typical keybinds after this block to be
-            // the standard
-            if (!builtin.target.os.tag.isDarwin()) {
-                try self.set.put(
-                    alloc,
-                    .{ .key = .{ .physical = .insert }, .mods = .{ .ctrl = true } },
-                    .{ .copy_to_clipboard = .mixed },
-                );
-                try self.set.put(
-                    alloc,
-                    .{ .key = .{ .physical = .insert }, .mods = .{ .shift = true } },
-                    .{ .paste_from_clipboard = {} },
-                );
-            }
-
-            // On macOS we default to super but Linux ctrl+shift since
-            // ctrl+c is to kill the process.
-            const mods: inputpkg.Mods = if (builtin.target.os.tag.isDarwin())
-                .{ .super = true }
-            else
-                .{ .ctrl = true, .shift = true };
+            const mods: inputpkg.Mods = .{ .super = true };
 
             try self.set.putFlags(
                 alloc,
@@ -5571,220 +5537,10 @@ pub const Keybinds = struct {
             .{ .next_tab = {} },
         );
 
-        // Windowing
-        if (comptime !builtin.target.os.tag.isDarwin()) {
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'n' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .new_window = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'w' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .close_surface = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'q' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .quit = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .f4 }, .mods = .{ .alt = true } },
-                .{ .close_window = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 't' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .new_tab = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'w' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .close_tab = .this },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_left }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .previous_tab = {} },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_right }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .next_tab = {} },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .page_up }, .mods = .{ .ctrl = true } },
-                .{ .previous_tab = {} },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .page_down }, .mods = .{ .ctrl = true } },
-                .{ .next_tab = {} },
-                .{ .performable = true },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'o' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .new_split = .right },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'e' }, .mods = .{ .ctrl = true, .shift = true } },
-                .{ .new_split = .down },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .unicode = '[' }, .mods = .{ .ctrl = true, .super = true } },
-                .{ .goto_split = .previous },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .unicode = ']' }, .mods = .{ .ctrl = true, .super = true } },
-                .{ .goto_split = .next },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_up }, .mods = .{ .ctrl = true, .alt = true } },
-                .{ .goto_split = .up },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_down }, .mods = .{ .ctrl = true, .alt = true } },
-                .{ .goto_split = .down },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_left }, .mods = .{ .ctrl = true, .alt = true } },
-                .{ .goto_split = .left },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_right }, .mods = .{ .ctrl = true, .alt = true } },
-                .{ .goto_split = .right },
-                .{ .performable = true },
-            );
-
-            // Resizing splits
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_up }, .mods = .{ .super = true, .ctrl = true, .shift = true } },
-                .{ .resize_split = .{ .up, 10 } },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_down }, .mods = .{ .super = true, .ctrl = true, .shift = true } },
-                .{ .resize_split = .{ .down, 10 } },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_left }, .mods = .{ .super = true, .ctrl = true, .shift = true } },
-                .{ .resize_split = .{ .left, 10 } },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .arrow_right }, .mods = .{ .super = true, .ctrl = true, .shift = true } },
-                .{ .resize_split = .{ .right, 10 } },
-                .{ .performable = true },
-            );
-
-            // Viewport scrolling
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .home }, .mods = .{ .shift = true } },
-                .{ .scroll_to_top = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .end }, .mods = .{ .shift = true } },
-                .{ .scroll_to_bottom = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .page_up }, .mods = .{ .shift = true } },
-                .{ .scroll_page_up = {} },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .page_down }, .mods = .{ .shift = true } },
-                .{ .scroll_page_down = {} },
-            );
-
-            // Semantic prompts
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .arrow_up }, .mods = .{ .shift = true, .ctrl = true } },
-                .{ .jump_to_prompt = -1 },
-            );
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .arrow_down }, .mods = .{ .shift = true, .ctrl = true } },
-                .{ .jump_to_prompt = 1 },
-            );
-
-            // Move tab
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .page_up }, .mods = .{ .shift = true, .ctrl = true } },
-                .{ .move_tab = -1 },
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .page_down }, .mods = .{ .shift = true, .ctrl = true } },
-                .{ .move_tab = 1 },
-                .{ .performable = true },
-            );
-
-            // Search
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .unicode = 'f' }, .mods = .{ .ctrl = true, .shift = true } },
-                .start_search,
-                .{ .performable = true },
-            );
-            try self.set.putFlags(
-                alloc,
-                .{ .key = .{ .physical = .escape } },
-                .end_search,
-                .{ .performable = true },
-            );
-
-            // Terminal
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .unicode = 'a' }, .mods = .{ .shift = true, .ctrl = true } },
-                .{ .select_all = {} },
-            );
-
-            // Selection clipboard paste
-            try self.set.put(
-                alloc,
-                .{ .key = .{ .physical = .insert }, .mods = .{ .shift = true } },
-                .{ .paste_from_selection = {} },
-            );
-        }
         {
-            // On macOS we default to super but everywhere else
-            // is alt.
-            const mods: inputpkg.Mods = if (builtin.target.os.tag.isDarwin())
-                .{ .super = true }
-            else
-                .{ .alt = true };
+            const mods: inputpkg.Mods = .{ .super = true };
 
-            // Cmd/Alt+N for goto tab N
+            // Cmd+N for goto tab N
             const start: u21 = '1';
             const end: u21 = '8';
             comptime var i: u21 = start;
@@ -5806,12 +5562,11 @@ pub const Keybinds = struct {
                     },
                     .{ .goto_tab = (i - start) + 1 },
                     .{
-                        // On macOS we keep this not performable so that the
-                        // keyboard shortcuts in tabs work. In the future the
-                        // correct fix is to fix the reverse mapping lookup
-                        // to allow us to lookup performable keybinds
-                        // conditionally.
-                        .performable = !builtin.target.os.tag.isDarwin(),
+                        // Not performable so that the keyboard shortcuts in
+                        // tabs work. In the future the correct fix is to fix
+                        // the reverse mapping lookup to allow us to lookup
+                        // performable keybinds conditionally.
+                        .performable = false,
                     },
                 );
 
@@ -5827,7 +5582,7 @@ pub const Keybinds = struct {
                     },
                     .{ .goto_tab = (i - start) + 1 },
                     .{
-                        .performable = !builtin.target.os.tag.isDarwin(),
+                        .performable = false,
                     },
                 );
             }
@@ -5840,7 +5595,7 @@ pub const Keybinds = struct {
                 .{ .last_tab = {} },
                 .{
                     // See comment above with the numeric goto_tab
-                    .performable = !builtin.target.os.tag.isDarwin(),
+                    .performable = false,
                 },
             );
         }
@@ -5866,8 +5621,8 @@ pub const Keybinds = struct {
             .toggle_command_palette,
         );
 
-        // Mac-specific keyboard bindings.
-        if (comptime builtin.target.os.tag.isDarwin()) {
+        // Mac keyboard bindings.
+        {
             try self.set.put(
                 alloc,
                 .{ .key = .{ .unicode = 'q' }, .mods = .{ .super = true } },
