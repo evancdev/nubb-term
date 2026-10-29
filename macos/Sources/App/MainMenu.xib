@@ -43,6 +43,8 @@
                 <outlet property="menuNextSplit" destination="bD7-ei-wKU" id="LeT-xw-eh4"/>
                 <outlet property="menuOpenConfig" destination="BOF-NM-1cW" id="Nze-Go-glw"/>
                 <outlet property="menuAppearance" destination="Apr-Nc-001" id="Apr-Nc-003"/>
+                <outlet property="menuAppearanceTheme" destination="Apr-Nc-012" id="Apr-Nc-017"/>
+                <outlet property="menuAppearanceEffect" destination="Apr-Nc-014" id="Apr-Nc-018"/>
                 <outlet property="menuPaste" destination="i27-pK-umN" id="ICc-X2-gV3"/>
                 <outlet property="menuPasteSelection" destination="akq-ov-Jjh" id="GS8-aQ-hVw"/>
                 <outlet property="menuPreviousSplit" destination="Lic-px-1wg" id="Rto-CG-yRe"/>
@@ -91,11 +93,27 @@
                                     <action selector="openConfig:" target="bbz-4X-AYv" id="X65-fg-iWU"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Appearance…" keyEquivalent="," id="Apr-Nc-001">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                <connections>
-                                    <action selector="showAppearance:" target="bbz-4X-AYv" id="Apr-Nc-002"/>
-                                </connections>
+                            <menuItem title="Appearance" id="Apr-Nc-001">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Appearance" id="Apr-Nc-010">
+                                    <items>
+                                        <menuItem title="Theme" id="Apr-Nc-011">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Theme" id="Apr-Nc-012"/>
+                                        </menuItem>
+                                        <menuItem title="Effect" id="Apr-Nc-013">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Effect" id="Apr-Nc-014"/>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="Apr-Nc-015"/>
+                                        <menuItem title="Edit Colors…" keyEquivalent="," id="Apr-Nc-016">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="showAppearance:" target="bbz-4X-AYv" id="Apr-Nc-002"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="GOd-qX-exa"/>
                             <menuItem title="Reload Configuration" id="KKH-XX-5py">

@@ -167,6 +167,19 @@ extension Nubb {
             /// applied config will be updated in ``Self.configChange(_:target:v:)``
         }
 
+        /// Applies the config with the file at `overlay` loaded on top, without
+        /// saving anything. ``reloadConfig(soft:)`` goes back to the saved one.
+        func previewConfig(overlay: String) {
+            guard let app = self.app else { return }
+            let newConfig = Config(at: configPath, overlay: overlay)
+            guard newConfig.loaded else {
+                Nubb.logger.warning("failed to load preview configuration")
+                return
+            }
+
+            nubb_app_update_config(app, newConfig.config!)
+        }
+
         func reloadConfig(surface: nubb_surface_t, soft: Bool = false) {
             // Soft updates just call with our existing config
             if soft {

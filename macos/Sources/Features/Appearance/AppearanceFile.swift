@@ -291,11 +291,18 @@ struct ThemeChoice: Equatable {
     }
 }
 
-/// What the Appearance window manages: the `theme` line, plus any color
-/// lines an older version of the window wrote. Stored in `appearance.nubb`
-/// next to the main config file.
+/// What the Appearance menu and Edit Colors window manage: the `theme` line,
+/// the shader effect, plus any color lines an older version of the window
+/// wrote. Stored in `appearance.nubb` next to the main config file.
 struct AppearanceSettings: Equatable {
     var theme: ThemeChoice = .none
+
+    /// The path of the `custom-shader` file to use, or nil for no effect.
+    var effect: String?
+
+    /// False writes `custom-shader-animation = false`, so a shader that
+    /// doesn't use the clock doesn't make terminals redraw every frame.
+    var effectAnimates = true
 
     /// Colors set on top of the theme. The window no longer writes these.
     /// When it finds some, it folds them into a theme of your own.
@@ -306,9 +313,21 @@ struct AppearanceSettings: Equatable {
     init(parsing text: String) {
         for line in text.split(whereSeparator: \.isNewline) {
             guard let entry = NubbConfigLine.parse(String(line)) else { continue }
-            if entry.key == "theme" {
+            switch entry.key {
+            case "theme":
                 if let choice = ThemeChoice(configValue: entry.value) { theme = choice }
-            } else {
+            case "custom-shader":
+                // An empty value clears the shaders set so far.
+                effect = entry.value.isEmpty ? nil : entry.value
+            case "custom-shader-animation":
+                // Match the config loader: an empty value resets to the
+                // default, and a value it rejects leaves the last one.
+                switch entry.value {
+                case "", "true", "always": effectAnimates = true
+                case "false": effectAnimates = false
+                default: break
+                }
+            default:
                 overrides.apply(key: entry.key, value: entry.value)
             }
         }
@@ -320,6 +339,14 @@ struct AppearanceSettings: Equatable {
             "",
         ]
         if let value = theme.configValue { lines.append("theme = \(value)") }
+        // A path with a line break can't be written as one config line.
+        if let effect, !effect.contains(where: \.isNewline) {
+            // The empty line drops any shader the main config set, so the
+            // window's choice is the only effect.
+            lines.append("custom-shader =")
+            lines.append("custom-shader = \(effect)")
+            if !effectAnimates { lines.append("custom-shader-animation = false") }
+        }
         for key in ThemeColorKey.allCases {
             guard let color = overrides.values[key] else { continue }
             lines.append("\(key.rawValue) = \(color.hex)")

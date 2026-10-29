@@ -41,6 +41,13 @@ extension Nubb {
             self.init(config: Self.loadConfig(at: path, finalize: finalize))
         }
 
+        /// Loads the config, then the file at `overlay` on top of everything
+        /// else, so its values win. The Appearance menu uses this to preview
+        /// a theme or effect without saving it.
+        convenience init(at path: String?, overlay: String?) {
+            self.init(config: Self.loadConfig(at: path, finalize: true, overlay: overlay))
+        }
+
         convenience init(clone config: nubb_config_t) {
             self.init(config: nubb_config_clone(config))
         }
@@ -57,7 +64,7 @@ extension Nubb {
         /// - Parameters:
         ///   - path: An optional preferred config file path. Pass `nil` to load the default configuration files.
         ///   - finalize: Whether to finalize the configuration to populate default values.
-        static func loadConfig(at path: String?, finalize: Bool) -> nubb_config_t? {
+        static func loadConfig(at path: String?, finalize: Bool, overlay: String? = nil) -> nubb_config_t? {
             // Initialize the global configuration.
             guard let cfg = nubb_config_new() else {
                 logger.critical("nubb_config_new failed")
@@ -78,6 +85,12 @@ extension Nubb {
             }
 
             nubb_config_load_recursive_files(cfg)
+
+            // The overlay goes last so it wins over every other file. A
+            // missing file is skipped, like an optional `config-file`.
+            if let overlay, FileManager.default.fileExists(atPath: overlay) {
+                nubb_config_load_file(cfg, overlay)
+            }
 
             // TODO: we'd probably do some config loading here... for now we'd
             // have to do this synchronously. When we support config updating we can do

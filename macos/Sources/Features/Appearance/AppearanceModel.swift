@@ -28,6 +28,7 @@ final class AppearanceModel: ObservableObject {
     }
 
     @Published private(set) var themes: [ThemeEntry] = []
+    @Published private(set) var effects: [EffectEntry] = []
     @Published private(set) var settings = AppearanceSettings()
     @Published var namePrompt: NamePrompt?
     @Published private(set) var lastError: String?
@@ -39,6 +40,11 @@ final class AppearanceModel: ObservableObject {
     let userThemesURL: URL
 
     private let bundledThemesURL: URL?
+
+    /// Where your own shader effects go.
+    let userEffectsURL: URL
+
+    private let bundledEffectsURL: URL?
 
     /// The file this window owns, next to the main config.
     var appearanceURL: URL {
@@ -56,20 +62,27 @@ final class AppearanceModel: ObservableObject {
         configURL: URL,
         userThemesURL: URL = ThemeCatalog.userDirectory,
         bundledThemesURL: URL? = ThemeCatalog.bundledDirectory,
+        userEffectsURL: URL = EffectCatalog.userDirectory,
+        bundledEffectsURL: URL? = EffectCatalog.bundledDirectory,
         trash: @escaping (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) },
         reload: @escaping () -> Void
     ) {
         self.configURL = configURL
         self.userThemesURL = userThemesURL
         self.bundledThemesURL = bundledThemesURL
+        self.userEffectsURL = userEffectsURL
+        self.bundledEffectsURL = bundledEffectsURL
         self.trash = trash
         self.reload = reload
         refresh()
     }
 
-    /// Re-reads the theme folders and the appearance file.
+    /// Re-reads the theme and effect folders and the appearance file. A
+    /// change still waiting to save is written first, so it isn't lost.
     func refresh() {
+        if pendingSave != nil { saveNow() }
         reloadThemes()
+        effects = EffectCatalog.load(user: userEffectsURL, bundled: bundledEffectsURL)
         if let text = try? String(contentsOf: appearanceURL, encoding: .utf8) {
             settings = AppearanceSettings(parsing: text)
         } else {
@@ -117,6 +130,75 @@ final class AppearanceModel: ObservableObject {
         guard name != selectedName || hasLightDarkPair else { return }
         settings.theme = ThemeChoice(single: name)
         save()
+    }
+
+    // MARK: Effects
+
+    var userEffects: [EffectEntry] { effects.filter { $0.location == .user } }
+    var bundledEffects: [EffectEntry] { effects.filter { $0.location == .bundled } }
+
+    /// The effect in use, or nil for none or for a shader file the window
+    /// doesn't list.
+    var selectedEffect: EffectEntry? {
+        guard let path = settings.effect else { return nil }
+        return effects.first { $0.url.path == path }
+    }
+
+    /// Picks an effect by name, or none with nil. A still effect turns off
+    /// the redraw loop so idle terminals stay idle.
+    func selectEffect(_ name: String?) {
+        guard let name else {
+            guard settings.effect != nil else { return }
+            settings.effect = nil
+            settings.effectAnimates = true
+            save()
+            return
+        }
+
+        // Picking the same effect again still updates the animation line,
+        // in case the shader file changed since it was picked.
+        guard let entry = effects.first(where: { $0.name == name }),
+              settings.effect != entry.url.path || settings.effectAnimates != entry.animates else { return }
+        settings.effect = entry.url.path
+        settings.effectAnimates = entry.animates
+        save()
+    }
+
+    /// Opens your shaders folder in Finder, creating it first.
+    func openUserEffectsFolder() {
+        try? FileManager.default.createDirectory(at: userEffectsURL, withIntermediateDirectories: true)
+        NSWorkspace.shared.open(userEffectsURL)
+    }
+
+    // MARK: Previews
+
+    /// What `appearance.nubb` would say with `choice` picked, or nil when
+    /// picking it changes nothing or it isn't available. Saves nothing.
+    func previewText(for choice: AppearanceChoice) -> String? {
+        var preview = settings
+        switch choice {
+        case .theme(let name):
+            preview.theme = ThemeChoice(single: name)
+
+        case .effect(nil):
+            preview.effect = nil
+            preview.effectAnimates = true
+
+        case .effect(let name?):
+            guard let entry = effects.first(where: { $0.name == name }) else { return nil }
+            preview.effect = entry.url.path
+            preview.effectAnimates = entry.animates
+        }
+        return preview == settings ? nil : preview.serialized()
+    }
+
+    /// Picks `choice` and saves right away.
+    func commit(_ choice: AppearanceChoice) {
+        switch choice {
+        case .theme(let name): select(name)
+        case .effect(let name): selectEffect(name)
+        }
+        saveNow()
     }
 
     // MARK: Colors

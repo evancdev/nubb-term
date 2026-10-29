@@ -116,6 +116,17 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
         try steps.append(b.allocator, &install_step.step);
     }
 
+    // Shader effects the Appearance window lists for `custom-shader`.
+    {
+        const install_step = b.addInstallDirectory(.{
+            .source_dir = b.path("src/renderer/shaders/effects"),
+            .install_dir = .{ .custom = "share" },
+            .install_subdir = b.pathJoin(&.{ "nubb", "shaders" }),
+            .include_extensions = &.{".glsl"},
+        });
+        try steps.append(b.allocator, &install_step.step);
+    }
+
     // Fish shell completions
     {
         const run = b.addRunArtifact(build_data_exe);

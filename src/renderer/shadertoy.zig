@@ -489,5 +489,40 @@ test "shadertoy to glsl" {
     // log.warn("glsl={s}", .{glsl});
 }
 
+test "bundled effects compile to msl" {
+    const testing = std.testing;
+    const alloc = testing.allocator;
+
+    inline for (bundled_effects) |name| {
+        const src = try testGlslZ(alloc, @embedFile("shaders/effects/" ++ name));
+        defer alloc.free(src);
+
+        var buf: std.Io.Writer.Allocating = .init(alloc);
+        defer buf.deinit();
+        var errlog: SpirvLog = .{ .alloc = alloc };
+        defer errlog.deinit();
+        spirvFromGlsl(&buf.writer, &errlog, src) catch |err| {
+            std.log.err("effect {s} failed: {s}", .{ name, errlog.info });
+            return err;
+        };
+
+        var spvlist: std.ArrayListAligned(u8, .of(u32)) = .empty;
+        defer spvlist.deinit(alloc);
+        try spvlist.appendSlice(alloc, buf.written());
+
+        const msl = try mslFromSpv(alloc, spvlist.items);
+        defer alloc.free(msl);
+    }
+}
+
+/// The effects installed to `share/nubb/shaders`. Listed by hand because
+/// `@embedFile` needs names at compile time, so a new file needs a line here.
+const bundled_effects = [_][]const u8{
+    "CRT.glsl",
+    "Cursor Trail.glsl",
+    "Glow.glsl",
+    "Scanlines.glsl",
+};
+
 const test_crt = @embedFile("shaders/test_shadertoy_crt.glsl");
 const test_invalid = @embedFile("shaders/test_shadertoy_invalid.glsl");

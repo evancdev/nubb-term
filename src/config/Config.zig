@@ -485,8 +485,8 @@ pub const compatibility = std.StaticStringMap(
 /// themes from <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/ghostty>
 /// work if you copy them into the user themes directory.
 ///
-/// To browse and preview themes, open Nubb > Appearance. To list them, run
-/// `nubb +list-themes`.
+/// To preview themes, hover over them in Nubb > Appearance > Theme. To list
+/// them, run `nubb +list-themes`.
 ///
 /// A theme file is simply another Nubb configuration file. They share
 /// the same syntax and same configuration options. A theme can set any valid
@@ -2748,6 +2748,10 @@ keybind: Keybinds = .{},
 ///
 /// This can be repeated multiple times to load multiple shaders. The shaders
 /// will be run in the order they are specified.
+///
+/// Nubb ships a few effects in `Nubb.app/Contents/Resources/nubb/shaders`.
+/// Nubb > Appearance > Effect lists them along with any in
+/// `~/.config/nubb/shaders`, and hovering one previews it.
 ///
 /// This can be changed at runtime and will affect all open terminals.
 @"custom-shader": RepeatablePath = .{},

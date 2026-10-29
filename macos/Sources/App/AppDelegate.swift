@@ -21,6 +21,8 @@ class AppDelegate: NSObject,
     @IBOutlet private var menuServices: NSMenu?
     @IBOutlet private var menuOpenConfig: NSMenuItem?
     @IBOutlet private var menuAppearance: NSMenuItem?
+    @IBOutlet private var menuAppearanceTheme: NSMenu?
+    @IBOutlet private var menuAppearanceEffect: NSMenu?
     @IBOutlet private var menuReloadConfig: NSMenuItem?
     @IBOutlet private var menuSecureInput: NSMenuItem?
     @IBOutlet private var menuQuit: NSMenuItem?
@@ -109,6 +111,9 @@ class AppDelegate: NSObject,
     /// The observer for the app appearance.
     private var appearanceObserver: NSKeyValueObservation?
 
+    /// Fills Nubb > Appearance > Theme and Effect.
+    private var appearanceMenu: AppearanceMenu?
+
     /// Signals
     private var signals: [DispatchSourceSignal] = []
 
@@ -167,6 +172,11 @@ class AppDelegate: NSObject,
 
         // Initial config loading
         nubbConfigDidChange(config: nubb.config)
+
+        // The Appearance menu previews themes and effects on hover.
+        if let theme = menuAppearanceTheme, let effect = menuAppearanceEffect {
+            appearanceMenu = AppearanceMenu(app: nubb, themeMenu: theme, effectMenu: effect)
+        }
 
         // This registers the Nubb => Services menu to exist.
         NSApp.servicesMenu = menuServices
@@ -834,7 +844,7 @@ class AppDelegate: NSObject,
     }
 
     @IBAction func showAppearance(_ sender: Any?) {
-        AppearanceController.show(app: nubb)
+        AppearanceController.show(app: nubb, model: appearanceMenu?.model)
     }
 
     @IBAction func reloadConfig(_ sender: Any?) {
