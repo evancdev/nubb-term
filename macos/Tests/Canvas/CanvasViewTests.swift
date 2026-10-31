@@ -484,6 +484,9 @@ struct CanvasViewTests {
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: .darkAqua)
         window.contentView = container
+        // The canvas draws light unless set otherwise. Ask for dark here
+        // without touching the saved setting.
+        container.appearance = NSAppearance(named: .darkAqua)
         container.layoutSubtreeIfNeeded()
         canvas.fitToContent(animated: false)
         editor.select(["e0", "e3"])
@@ -527,6 +530,58 @@ struct CanvasViewTests {
         #expect(editor.history.undoStack.count == 1)
         editor.undo()
         #expect(editor.element("e0")?.strokeColor == Self.sampler().elements[0].strokeColor)
+    }
+
+    /// Canvases start light even in a dark window, as Excalidraw does. The
+    /// theme setting switches every open canvas live, and Match System
+    /// follows the window.
+    @Test func canvasThemeSettingOverridesTheWindow() throws {
+        let suite = "CanvasThemeTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        let saved = CanvasAppearance.defaults
+        CanvasAppearance.defaults = defaults
+        defer {
+            CanvasAppearance.defaults = saved
+            defaults.removePersistentDomain(forName: suite)
+        }
+
+        let editor = CanvasEditor(document: Self.sampler())
+        let canvas = CanvasView(editor: editor)
+        let container = CanvasContainerView(canvas: canvas)
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
+            styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.appearance = NSAppearance(named: .darkAqua)
+        window.contentView = container
+        defer { window.close() }
+
+        #expect(CanvasAppearance.current == .light)
+        #expect(canvas.theme == .light, "a dark window still gets a light canvas")
+        #expect(editor.ui.theme == .light)
+
+        CanvasAppearance.current = .dark
+        #expect(canvas.theme == .dark)
+        CanvasAppearance.current = .system
+        #expect(canvas.theme == .dark, "Match System follows the dark window")
+        window.appearance = NSAppearance(named: .aqua)
+        #expect(canvas.theme == .light)
+
+        CanvasAppearance.toggle(from: canvas)
+        #expect(CanvasAppearance.current == .dark)
+        #expect(canvas.theme == .dark)
+        #expect(defaults.string(forKey: CanvasAppearance.defaultsKey) == "dark", "the choice is saved")
+
+        let item = CanvasAppearanceMenu.shared.makeItem()
+        let options = item.submenu?.items.filter { !$0.isSeparatorItem } ?? []
+        #expect(options.map(\.title) == ["Light", "Dark", "Match System"])
+        for option in options { _ = CanvasAppearanceMenu.shared.validateMenuItem(option) }
+        #expect(options.map(\.state) == [.off, .on, .off])
+        CanvasAppearanceMenu.shared.choose(options[0])
+        #expect(canvas.theme == .light)
+        // The light canvas mustn't paint under the translucent sidebar and
+        // title bar next to it, which would tint them.
+        #expect(container.clipsToBounds && canvas.clipsToBounds)
     }
 
     /// The chrome in light mode, written next to the dark one for a look.

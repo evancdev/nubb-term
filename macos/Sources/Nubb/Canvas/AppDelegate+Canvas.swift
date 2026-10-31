@@ -72,5 +72,11 @@ extension AppDelegate {
         fileMenu.insertItem(openItem, at: anchor + 2)
         fileMenu.insertItem(revealItem, at: anchor + 3)
         fileMenu.insertItem(copyPathItem, at: anchor + 4)
+
+        // Canvas Theme in the View menu, after the tab sidebar item.
+        if let viewMenu = NSApp.mainMenu?.items.first(where: { $0.submenu?.title == "View" })?.submenu {
+            let after = viewMenu.items.firstIndex { $0.action == #selector(CanvasController.toggleTabSidebar(_:)) }
+            viewMenu.insertItem(CanvasAppearanceMenu.shared.makeItem(), at: after.map { $0 + 1 } ?? viewMenu.items.count)
+        }
     }
 }

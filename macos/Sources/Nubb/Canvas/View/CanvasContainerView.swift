@@ -8,10 +8,25 @@ final class CanvasContainerView: NSView {
     let canvas: CanvasView
 
     private var hostingViews: [NSView] = []
+    private var appearanceObserver: NSObjectProtocol?
 
     init(canvas: CanvasView) {
         self.canvas = canvas
         super.init(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+
+        // The canvas and its toolbar and panels take the canvas theme. The
+        // tab sidebar and title bar keep the app's.
+        appearance = CanvasAppearance.current.nsAppearance
+        appearanceObserver = NotificationCenter.default.addObserver(
+            forName: CanvasAppearance.didChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.appearance = CanvasAppearance.current.nsAppearance
+        }
+        // Views don't clip by default, and the canvas fills the whole area
+        // it's asked to redraw. The sidebar and title bar are translucent,
+        // so paint that strays under them would tint them with the canvas.
+        clipsToBounds = true
+        canvas.clipsToBounds = true
 
         canvas.translatesAutoresizingMaskIntoConstraints = false
         addSubview(canvas)
@@ -76,6 +91,10 @@ final class CanvasContainerView: NSView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        if let appearanceObserver { NotificationCenter.default.removeObserver(appearanceObserver) }
     }
 
     private func host<Content: View>(_ view: Content, passThrough: Bool = false) -> NSView {

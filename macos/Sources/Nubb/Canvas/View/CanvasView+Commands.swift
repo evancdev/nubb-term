@@ -76,6 +76,12 @@ extension CanvasView {
             return
         }
 
+        // Option-Shift-D switches light and dark, as in Excalidraw.
+        if option && shift && !control && event.keyCode == 0x02 {
+            CanvasAppearance.toggle(from: self)
+            return
+        }
+
         if control || option {
             super.keyDown(with: event)
             return
@@ -270,6 +276,8 @@ extension CanvasView: NSMenuItemValidation {
             menu.addItem(.separator())
             add("Zoom to Fit", #selector(zoomToFit(_:)))
             add("Copy as PNG", #selector(copyAsPNG(_:)))
+            menu.addItem(.separator())
+            menu.addItem(CanvasAppearanceMenu.shared.makeItem(title: "Theme"))
         } else {
             add("Cut", #selector(cut(_:)))
             add("Copy", #selector(copy(_:)))
