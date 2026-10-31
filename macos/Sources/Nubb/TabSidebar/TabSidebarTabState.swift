@@ -1,11 +1,11 @@
 import AppKit
 import Combine
 
-/// Per-tab sidebar data owned by each `TerminalController`: its working
-/// directory and git branch, its latest activity, and the sidebar model of the
-/// window it lives in.
+/// Per-tab sidebar data owned by each tab's controller: the working
+/// directory and git branch of terminals, the latest activity, and the
+/// sidebar model of the window the tab lives in.
 final class TabSidebarTabState {
-    private weak var controller: TerminalController?
+    private weak var controller: NSWindowController?
 
     /// The raw working directory of the focused surface.
     private(set) var directory: String?
@@ -36,7 +36,7 @@ final class TabSidebarTabState {
     private var surfaceCancellables: Set<AnyCancellable> = []
     private var controllerCancellables: Set<AnyCancellable> = []
 
-    init(controller: TerminalController) {
+    init(controller: NSWindowController) {
         self.controller = controller
         self.groupState = .restored()
     }
@@ -52,6 +52,18 @@ final class TabSidebarTabState {
     func attach() {
         guard let controller else { return }
         controllerCancellables = []
+
+        controller.window?.publisher(for: \.title)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                // Shells update the title after every command, which is also
+                // when a `git checkout` may have moved the branch.
+                self?.updateBranch()
+                self?.changes.send()
+            }
+            .store(in: &controllerCancellables)
+
+        guard let controller = controller as? TerminalController else { return }
 
         controller.$surfaceTree
             .map { _ in () }
@@ -70,16 +82,6 @@ final class TabSidebarTabState {
         .map { _ in () }
         .sink { [weak self] in self?.changes.send() }
         .store(in: &controllerCancellables)
-
-        controller.window?.publisher(for: \.title)
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                // Shells update the title after every command, which is also
-                // when a `git checkout` may have moved the branch.
-                self?.updateBranch()
-                self?.changes.send()
-            }
-            .store(in: &controllerCancellables)
     }
 
     /// Follow the working directory of the newly focused surface.
@@ -149,7 +151,7 @@ enum TabSidebarActivityRecorder {
     /// Clear the unseen marker of whatever tab is in front of the user.
     static func markKeyWindowSeen() {
         guard NSApp.isActive,
-              let controller = NSApp.keyWindow?.windowController as? TerminalController else { return }
+              let controller = NSApp.keyWindow?.windowController as? TabSidebarTab else { return }
         controller.tabSidebar.activity.markSeen()
     }
 }

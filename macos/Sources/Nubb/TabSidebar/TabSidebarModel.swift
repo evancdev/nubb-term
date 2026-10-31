@@ -15,6 +15,7 @@ struct TabSidebarItem: Identifiable, Equatable {
     let progress: Nubb.Action.ProgressReport?
     let isZoomed: Bool
     let hasBell: Bool
+    var symbol: String = "terminal"
 
     static func == (lhs: TabSidebarItem, rhs: TabSidebarItem) -> Bool {
         lhs.id == rhs.id &&
@@ -28,7 +29,8 @@ struct TabSidebarItem: Identifiable, Equatable {
             lhs.progress?.state == rhs.progress?.state &&
             lhs.progress?.progress == rhs.progress?.progress &&
             lhs.isZoomed == rhs.isZoomed &&
-            lhs.hasBell == rhs.hasBell
+            lhs.hasBell == rhs.hasBell &&
+            lhs.symbol == rhs.symbol
     }
 }
 
@@ -84,7 +86,7 @@ final class TabSidebarModel: ObservableObject {
     }
 
     /// The controller whose window hosts this sidebar.
-    private weak var controller: TerminalController?
+    private weak var controller: TabSidebarTab?
 
     private var cancellables: Set<AnyCancellable> = []
     private var observedControllers: [ObjectIdentifier: AnyCancellable] = [:]
@@ -93,7 +95,7 @@ final class TabSidebarModel: ObservableObject {
     private var refreshScheduled = false
 
     /// `controller` is nil only in tests: the model then has no rows.
-    init(controller: TerminalController?, groupState: TabSidebarGroupState) {
+    init(controller: TabSidebarTab?, groupState: TabSidebarGroupState) {
         self.controller = controller
         self.width = groupState.width
         self.presentation = TabSidebarPresentation(isCollapsed: groupState.isCollapsed)
@@ -158,31 +160,32 @@ final class TabSidebarModel: ObservableObject {
         let controllers = Self.tabControllers(of: window)
         observeControllers(controllers)
 
-        let config = controller.nubb.config
+        let config = (NSApp.delegate as? AppDelegate)?.nubb.config
         let labels = TabSidebarShortcuts.labels(
             tabCount: controllers.count,
-            gotoTab: { index in Self.label(config, "goto_tab:\(index)") },
-            lastTab: { Self.label(config, "last_tab") })
+            gotoTab: { index in config.flatMap { Self.label($0, "goto_tab:\(index)") } },
+            lastTab: { config.flatMap { Self.label($0, "last_tab") } })
         let selected = window.tabGroup?.selectedWindow ?? window
         let home = FileManager.default.homeDirectoryForCurrentUser.path
 
         let newItems: [TabSidebarItem] = controllers.enumerated().map { index, tab in
             let tabWindow = tab.window
             let info = tab.tabSidebar
-            let title = tab.titleOverride ?? tabWindow?.title ?? ""
-            let directory = info.directory.map { TabSidebarFormat.abbreviatedPath($0, home: home) }
+            let details = tab.tabSidebarDetails
+            let directory = details.directory.map { TabSidebarFormat.abbreviatedPath($0, home: home) }
             return TabSidebarItem(
                 id: ObjectIdentifier(tab),
-                title: TabSidebarFormat.displayTitle(title: title, directory: directory),
+                title: TabSidebarFormat.displayTitle(title: tab.tabSidebarTitle, directory: directory),
                 directory: directory,
-                branch: info.branch,
+                branch: details.branch,
                 tabColor: (tabWindow as? TerminalWindow)?.tabColor ?? .none,
                 isSelected: tabWindow === selected,
                 shortcut: labels[safe: index] ?? nil,
                 activity: info.activity,
-                progress: tab.surfaceTree.lazy.compactMap(\.progressReport).first,
-                isZoomed: tab.surfaceTree.zoomed != nil,
-                hasBell: tab.bell)
+                progress: details.progress,
+                isZoomed: details.isZoomed,
+                hasBell: details.hasBell,
+                symbol: tab.tabSidebarSymbol)
         }
 
         if newItems != items { items = newItems }
@@ -193,10 +196,10 @@ final class TabSidebarModel: ObservableObject {
         MainActor.assumeIsolated { config.keyboardShortcut(for: action)?.description }
     }
 
-    /// The terminal controllers of the window's tab group in tab order.
-    static func tabControllers(of window: NSWindow) -> [TerminalController] {
+    /// The tab controllers of the window's tab group in tab order.
+    static func tabControllers(of window: NSWindow) -> [TabSidebarTab] {
         let windows = window.tabGroup?.windows ?? [window]
-        return windows.compactMap { $0.windowController as? TerminalController }
+        return windows.compactMap { $0.windowController as? TabSidebarTab }
     }
 
     private func observeTabGroup(of window: NSWindow) {
@@ -210,21 +213,21 @@ final class TabSidebarModel: ObservableObject {
         }
     }
 
-    private func observeControllers(_ controllers: [TerminalController]) {
-        let ids = Set(controllers.map(ObjectIdentifier.init))
+    private func observeControllers(_ controllers: [TabSidebarTab]) {
+        let ids = Set(controllers.map { ObjectIdentifier($0) })
         for key in observedControllers.keys where !ids.contains(key) {
             observedControllers.removeValue(forKey: key)
         }
 
         for tab in controllers where observedControllers[ObjectIdentifier(tab)] == nil {
-            observedControllers[ObjectIdentifier(tab)] = tab.tabSidebar.changes
+            observedControllers[ObjectIdentifier(tab)] = tab.tabSidebarChanges
                 .sink { [weak self] in self?.setNeedsRefresh() }
         }
     }
 
     // MARK: Actions
 
-    private func controller(for id: ObjectIdentifier) -> TerminalController? {
+    private func controller(for id: ObjectIdentifier) -> TabSidebarTab? {
         guard let window = controller?.window else { return nil }
         return Self.tabControllers(of: window).first { ObjectIdentifier($0) == id }
     }
@@ -232,9 +235,7 @@ final class TabSidebarModel: ObservableObject {
     func select(_ id: ObjectIdentifier) {
         guard let target = controller(for: id), let window = target.window else { return }
         window.makeKeyAndOrderFront(nil)
-        if let surface = target.focusedSurface {
-            DispatchQueue.main.async { Nubb.moveFocus(to: surface, from: nil) }
-        }
+        DispatchQueue.main.async { target.focusTabContent() }
     }
 
     func close(_ id: ObjectIdentifier) {
@@ -250,7 +251,7 @@ final class TabSidebarModel: ObservableObject {
     }
 
     func newTab() {
-        controller?.newTab(nil)
+        controller?.openNewTab()
     }
 
     func setColor(_ color: TerminalTabColor, for id: ObjectIdentifier) {
@@ -260,7 +261,7 @@ final class TabSidebarModel: ObservableObject {
 
     func currentTitle(for id: ObjectIdentifier) -> String {
         guard let target = controller(for: id) else { return "" }
-        return target.titleOverride ?? target.window?.title ?? ""
+        return target.tabSidebarTitle
     }
 
     func beginRename(_ id: ObjectIdentifier) {
@@ -275,9 +276,9 @@ final class TabSidebarModel: ObservableObject {
             refocusTerminal()
         }
 
-        guard let title, let target = controller(for: id) else { return }
+        guard let title, var target = controller(for: id) else { return }
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        target.titleOverride = trimmed.isEmpty ? nil : trimmed
+        target.tabSidebarTitleOverride = trimmed.isEmpty ? nil : trimmed
         setNeedsRefresh()
     }
 
@@ -307,7 +308,7 @@ final class TabSidebarModel: ObservableObject {
         NSAnimationContext.endGrouping()
 
         // The tab group keeps the original selection; relabel shortcuts.
-        TerminalController.all.forEach { $0.relabelTabs() }
+        controller?.relabelTabs()
         setNeedsRefresh()
     }
 
@@ -340,7 +341,6 @@ final class TabSidebarModel: ObservableObject {
     }
 
     func refocusTerminal() {
-        guard let controller, let surface = controller.focusedSurface else { return }
-        controller.window?.makeFirstResponder(surface)
+        controller?.focusTabContent()
     }
 }

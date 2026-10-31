@@ -272,7 +272,7 @@ struct TabSidebarRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 9) {
-            Image(systemName: item.isZoomed ? "rectangle.inset.filled" : "terminal")
+            Image(systemName: item.isZoomed ? "rectangle.inset.filled" : item.symbol)
                 .font(.system(size: 13, weight: .regular))
                 .foregroundStyle(iconColor)
                 .frame(width: 16, height: 17)
