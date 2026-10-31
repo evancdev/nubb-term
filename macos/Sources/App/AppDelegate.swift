@@ -181,6 +181,9 @@ class AppDelegate: NSObject,
         // This registers the Nubb => Services menu to exist.
         NSApp.servicesMenu = menuServices
 
+        // New Canvas and Open Canvas in the File menu.
+        installCanvasMenuItems()
+
         // Setup a local event monitor for app-level keyboard shortcuts. See
         // localEventHandler for more info why.
         _ = NSEvent.addLocalMonitorForEvents(
@@ -317,7 +320,9 @@ class AppDelegate: NSObject,
             // is possible to have other windows in a few scenarios:
             //   - if we're opening a URL since `application(_:openFile:)` is called before this.
             //   - if we're restoring from persisted state
-            if TerminalController.all.isEmpty && derivedConfig.initialWindow && !Nubb.isUnitTestHost {
+            //   - if we're opening a drawing, which opens as a canvas window
+            if TerminalController.all.isEmpty && CanvasController.all.isEmpty
+                && derivedConfig.initialWindow && !Nubb.isUnitTestHost {
                 undoManager.disableUndoRegistration()
                 _ = TerminalController.newWindow(nubb)
                 undoManager.enableUndoRegistration()
@@ -395,6 +400,9 @@ class AppDelegate: NSObject,
             Self.logger.debug("ignoring command argument open-file event path=\(filename, privacy: .public)")
             return true
         }
+
+        // Drawings open as canvas tabs instead of running in a terminal.
+        if openCanvasFileIfNeeded(filename) { return true }
 
         // Nubb will validate as well but we can avoid creating an entirely new
         // surface by doing our own validation here. We can also show a useful error

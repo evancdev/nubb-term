@@ -1,7 +1,7 @@
 import AppKit
 import Combine
 
-/// A tab the sidebar can list. Terminals are the only kind so far.
+/// A tab the sidebar can list: terminals and canvases.
 ///
 /// The native tab group stays the source of truth. Every window in it has a
 /// controller that conforms to this, and the sidebar reads rows from them

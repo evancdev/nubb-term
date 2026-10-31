@@ -43,6 +43,18 @@
 				<string>public.unix-executable</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Excalidraw Drawing</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.excalidraw.drawing</string>
+			</array>
+		</dict>
 	</array>
 	<key>NubbBuild</key>
 	<string></string>
@@ -70,6 +82,26 @@
 			</array>
 			<key>UTTypeTagSpecification</key>
 			<dict/>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.excalidraw.drawing</string>
+			<key>UTTypeDescription</key>
+			<string>Excalidraw Drawing</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>excalidraw</string>
+				</array>
+			</dict>
 		</dict>
 	</array>
 </dict>

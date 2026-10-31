@@ -614,8 +614,11 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         // otherwise the accessory view doesn't matter.
         tabListenForFrame = window?.tabbedWindows?.count ?? 0 > 1
 
-        if let windows = window?.tabbedWindows as? [TerminalWindow] {
+        if let windows = window?.tabbedWindows {
             for (tab, window) in zip(1..., windows) {
+                // Canvas tabs have no shortcut label: the sidebar shows it.
+                guard let window = window as? TerminalWindow else { continue }
+
                 // We need to clear any windows beyond this because they have had
                 // a keyEquivalent set previously.
                 guard tab <= 9 else {
@@ -786,13 +789,14 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
 
         // Iterate through all tabs except the current one.
         for window in tabGroup.windows where window != self.window {
-            // We ignore any non-terminal tabs. They don't currently exist and we can't
-            // properly undo them anyways so I'd rather ignore them and get a bug report
-            // later if and when we introduce non-terminal tabs.
+            // Canvas tabs save as they go and can't be restored by undo, so
+            // they just close.
             if let controller = window.windowController as? TerminalController {
                 // We must not register a redo, because it messes with our own redo
                 // that we register later.
                 controller.closeTabImmediately(registerRedo: false)
+            } else if let canvas = window.windowController as? CanvasController {
+                canvas.closeImmediately()
             }
         }
 
@@ -836,6 +840,8 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         for (_, candidate) in tabsToClose {
             if let controller = candidate.windowController as? TerminalController {
                 controller.closeTabImmediately(registerRedo: false)
+            } else if let canvas = candidate.windowController as? CanvasController {
+                canvas.closeImmediately()
             }
         }
 
@@ -877,6 +883,9 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
                 if let controller = window.windowController as? TerminalController {
                     controller.cancelPendingInitialPresentation()
                     controller.surfaceTree = .init()
+                } else if let canvas = window.windowController as? CanvasController {
+                    // Save before the window goes away.
+                    canvas.store.flush()
                 }
 
                 window.close()

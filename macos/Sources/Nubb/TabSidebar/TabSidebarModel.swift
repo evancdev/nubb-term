@@ -154,6 +154,7 @@ final class TabSidebarModel: ObservableObject {
         let enabled = controller.isTabSidebarEnabled
         if enabled != isEnabled { isEnabled = enabled }
         (window as? TerminalWindow)?.syncNativeTabBarVisibility()
+        (window as? CanvasWindow)?.syncNativeTabBarVisibility()
 
         observeTabGroup(of: window)
 
