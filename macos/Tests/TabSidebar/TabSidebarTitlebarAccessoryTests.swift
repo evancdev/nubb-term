@@ -51,6 +51,26 @@ struct TabSidebarTitlebarAccessoryTests {
         #expect(model.presentation.isCollapsed == false)
     }
 
+    /// With the sidebar off the accessory's view must be hidden itself:
+    /// hiding only the controller left the buttons drawn over the title.
+    @MainActor @Test
+    func disabledSidebarHidesTheButtons() async throws {
+        let model = TabSidebarModel(
+            controller: nil,
+            groupState: TabSidebarGroupState(isCollapsed: false, width: TabSidebarMetrics.defaultWidth))
+        model.setEnabledForTesting(false)
+        let accessory = TabSidebarTitlebarAccessory(model: model, onNewTab: {})
+        accessory.loadView()
+        #expect(accessory.isHidden)
+        #expect(accessory.view.isHidden)
+
+        // The accessory updates on the main queue after the model changes.
+        model.setEnabledForTesting(true)
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(!accessory.isHidden)
+        #expect(!accessory.view.isHidden)
+    }
+
     @MainActor @Test
     func toggleAndPlusAreSeparateActions() throws {
         var newTabs = 0

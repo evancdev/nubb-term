@@ -145,7 +145,10 @@ final class TabSidebarTitlebarAccessory: NSTitlebarAccessoryViewController {
     }
 
     private func update() {
+        // Hiding only the controller leaves a leading accessory drawn over
+        // the title when it was hidden before it was installed.
         isHidden = !model.isEnabled
+        view.isHidden = !model.isEnabled
         let collapsed = model.presentation.isCollapsed
         button.toolTip = collapsed ? "Show Tab Sidebar" : "Hide Tab Sidebar"
         dot.isHidden = !(collapsed && model.hasBackgroundAttention)

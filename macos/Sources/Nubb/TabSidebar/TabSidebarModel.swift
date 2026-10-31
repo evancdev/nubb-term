@@ -125,6 +125,11 @@ final class TabSidebarModel: ObservableObject {
         tabGroupObservation?.invalidate()
     }
 
+    /// Sets `isEnabled` for a model without a controller, in tests.
+    func setEnabledForTesting(_ enabled: Bool) {
+        isEnabled = enabled
+    }
+
     // MARK: Refresh
 
     /// Coalesce bursts of changes (title updates, tab moves) into one refresh.
