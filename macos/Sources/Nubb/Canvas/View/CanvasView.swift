@@ -12,6 +12,8 @@ final class CanvasView: NSView {
     let editor: CanvasEditor
     let renderer = CanvasRenderer()
     let overlay = CanvasOverlayView()
+    /// The name label shown when the pointer rests on a named element.
+    let hover = CanvasHoverState()
 
     var viewport = CanvasViewport() {
         didSet {
@@ -24,6 +26,7 @@ final class CanvasView: NSView {
             overlay.needsDisplay = true
             editor.ui.set(\.zoom, viewport.zoom)
             layoutTextEditor()
+            if hover.shownID != nil || hover.pendingID != nil { hideHover() }
             onViewportChange?()
         }
     }
@@ -39,6 +42,7 @@ final class CanvasView: NSView {
             needsDisplay = true
             overlay.needsDisplay = true
             updateTextEditorStyle()
+            if !hover.label.isHidden { hover.label.set(hover.label.text, theme: theme) }
         }
     }
 
@@ -284,6 +288,8 @@ final class CanvasView: NSView {
         setNeedsDisplay(sceneRect: dirty)
 
         if textEditing != nil { layoutTextEditor() }
+        // An agent renamed or moved what the pointer rests on.
+        if hover.shownID != nil { refreshHover() }
     }
 
     // MARK: Tracking

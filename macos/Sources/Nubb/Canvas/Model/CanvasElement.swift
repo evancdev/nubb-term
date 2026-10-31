@@ -273,6 +273,23 @@ extension CanvasElement {
         set { extra["name"] = newValue.map(CanvasJSON.string) ?? .null }
     }
 
+    /// A name shown when the pointer rests on the element. It's kept in
+    /// `customData`, which Excalidraw saves as is, so the name survives
+    /// editing the file in Excalidraw or Obsidian.
+    var hoverName: String? {
+        get {
+            guard let name = extra["customData"]?["name"]?.stringValue else { return nil }
+            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        set {
+            var data = extra["customData"]?.objectValue ?? [:]
+            let trimmed = newValue?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            data["name"] = trimmed.isEmpty ? nil : .string(trimmed)
+            extra["customData"] = data.isEmpty ? nil : .object(data)
+        }
+    }
+
     /// An arrow drawn with right angles that Excalidraw routes around shapes.
     var isElbowArrow: Bool {
         type == .arrow && extra["elbowed"]?.boolValue == true

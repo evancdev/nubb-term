@@ -224,6 +224,41 @@ extension CanvasView: NSMenuItemValidation {
     @IBAction func groupSelection(_ sender: Any?) { editor.groupSelection() }
     @IBAction func ungroupSelection(_ sender: Any?) { editor.ungroupSelection() }
     @IBAction func toggleLockSelection(_ sender: Any?) { toggleLock() }
+
+    /// Asks for the name shown when the pointer rests on the selected
+    /// element. An empty name removes it.
+    @IBAction func nameSelection(_ sender: Any?) {
+        guard let target = nameTarget, let window else { return }
+        let alert = NSAlert()
+        alert.messageText = "Name"
+        alert.informativeText = "Shown when the pointer rests on it. Leave empty for none."
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        field.stringValue = target.hoverName ?? ""
+        field.placeholderString = "What this is"
+        alert.accessoryView = field
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        alert.window.initialFirstResponder = field
+        alert.beginSheetModal(for: window) { [weak self] response in
+            guard response == .alertFirstButtonReturn else { return }
+            self?.setName(field.stringValue, of: target.id)
+        }
+    }
+
+    /// Sets the hover name of `id` as one undo step.
+    func setName(_ name: String, of id: String) {
+        editor.perform { document in
+            CanvasOps.update(id, in: &document) { $0.hoverName = name }
+        }
+    }
+
+    /// The one selected element that can have a name: not a frame, which
+    /// has a title, and not a label, which names its container.
+    var nameTarget: CanvasElement? {
+        let targets = transformTargets
+        guard targets.count == 1, targets[0].type != .frame else { return nil }
+        return targets[0]
+    }
     @IBAction func zoomToFit(_ sender: Any?) { fitToContent(maxZoom: CanvasViewport.maxZoom) }
 
     // Nubb's View menu font size items zoom the canvas.
@@ -256,6 +291,8 @@ extension CanvasView: NSMenuItemValidation {
             return !editor.document.elements.isEmpty
         case #selector(copyAsPNG(_:)):
             return !editor.document.elements.isEmpty
+        case #selector(nameSelection(_:)):
+            return editable && nameTarget != nil
         default:
             return true
         }
@@ -286,6 +323,9 @@ extension CanvasView: NSMenuItemValidation {
             menu.addItem(.separator())
             add("Duplicate", #selector(duplicate(_:)))
             add("Delete", #selector(delete(_:)))
+            if let target = nameTarget {
+                add(target.hoverName == nil ? "Add Name…" : "Edit Name…", #selector(nameSelection(_:)))
+            }
             menu.addItem(.separator())
             add("Bring to Front", #selector(bringToFront(_:)))
             add("Bring Forward", #selector(bringForward(_:)))

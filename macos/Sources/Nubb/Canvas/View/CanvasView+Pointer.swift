@@ -39,6 +39,7 @@ extension CanvasView {
 
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
+        hideHover()
         if textEditing != nil {
             // A click outside the text being edited finishes it, like
             // Excalidraw. The click does nothing else.
@@ -211,14 +212,17 @@ extension CanvasView {
             updateBindingHighlight(for: id, at: scene)
         }
         updateCursor(at: screen)
+        updateHover(at: screen)
     }
 
     override func mouseExited(with event: NSEvent) {
         NSCursor.arrow.set()
+        hideHover()
     }
 
     override func rightMouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
+        hideHover()
         let scene = viewport.toScene(screenPoint(event))
         lastPointer = screenPoint(event)
         if let hit = element(at: scene), !editor.selection.contains(hit.id) {

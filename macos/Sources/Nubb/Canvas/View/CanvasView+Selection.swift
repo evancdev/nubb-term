@@ -171,6 +171,14 @@ extension CanvasView {
             context.restoreGState()
         }
 
+        // A faint outline ties the hover name to its element.
+        if let id = hover.shownID, !editor.selection.contains(id), let target = editor.element(id) {
+            context.saveGState()
+            context.concatenate(viewport.transform)
+            drawOutline(of: target, in: context, color: color.copy(alpha: 0.45) ?? color, width: 1.5 / viewport.zoom)
+            context.restoreGState()
+        }
+
         if case let .marquee(start, current, _) = drag {
             let rect = viewport.toScreen(CanvasGeometry.normalizedRect(start, current))
             context.setFillColor(color.copy(alpha: 0.08) ?? color)

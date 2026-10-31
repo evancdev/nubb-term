@@ -584,6 +584,76 @@ struct CanvasViewTests {
         #expect(container.clipsToBounds && canvas.clipsToBounds)
     }
 
+    /// Resting the pointer on a named element shows its name after a short
+    /// delay, at the same size at any zoom. Unnamed elements, frames, and
+    /// a press hide it. Naming by hand is one undo step.
+    @Test func hoverShowsNamesAndNamingIsUndoable() async throws {
+        var document = Self.sampler()
+        document.elements[0].hoverName = "Client: a browser"
+        document.elements[6].hoverName = "Request"
+        let editor = CanvasEditor(document: document)
+        let canvas = CanvasView(editor: editor)
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
+            styleMask: [.titled], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentView = canvas
+        defer { window.close() }
+        // The first layout fits the drawing; get it over with.
+        canvas.layoutSubtreeIfNeeded()
+        canvas.viewport = CanvasViewport(zoom: 1, offset: .zero)
+
+        func rest(at scene: CGPoint) async {
+            let screen = canvas.viewport.toScreen(scene)
+            canvas.lastPointer = screen
+            canvas.updateHover(at: screen)
+            try? await Task.sleep(nanoseconds: UInt64((CanvasView.hoverDelay + 0.15) * 1_000_000_000))
+        }
+
+        // Inside the first box (filled, so its inside counts).
+        await rest(at: CGPoint(x: 80, y: 50))
+        #expect(canvas.shownHoverName == "Client: a browser")
+        let small = canvas.hover.label.frame.size
+        #expect(small.height > 14 && small.height < 40, "one line in the system font")
+
+        // Same size zoomed out: the label isn't part of the drawing.
+        canvas.viewport = CanvasViewport(zoom: 0.25, offset: .zero)
+        #expect(canvas.shownHoverName == nil, "moving the camera hides it")
+        await rest(at: CGPoint(x: 80, y: 50))
+        #expect(canvas.shownHoverName == "Client: a browser")
+        #expect(canvas.hover.label.frame.size == small)
+
+        // An unnamed shape shows nothing; the named arrow does.
+        canvas.viewport = CanvasViewport(zoom: 1, offset: .zero)
+        await rest(at: CGPoint(x: 280, y: 50))
+        #expect(canvas.shownHoverName == nil)
+        let arrow = editor.document.elements[6]
+        await rest(at: arrow.toScene(arrow.points[1]))
+        #expect(canvas.shownHoverName == "Request")
+
+        // The label stays inside the view near the edges.
+        canvas.showHover("A long name that has to wrap because it is wider than the label allows at all", for: "e0", near: CGPoint(x: 790, y: 590))
+        #expect(canvas.bounds.contains(canvas.hover.label.frame))
+        #expect(canvas.hover.label.frame.width <= CanvasHoverLabel.maxWidth)
+
+        // A rename from outside (an agent) updates the shown label.
+        await rest(at: CGPoint(x: 80, y: 50))
+        var renamed = editor.document
+        CanvasOps.update("e0", in: &renamed) { $0.hoverName = "Renamed" }
+        editor.applyExternal(renamed)
+        #expect(canvas.shownHoverName == "Renamed")
+
+        // Naming by hand, then undo.
+        editor.select(["e1"])
+        #expect(canvas.nameTarget?.id == "e1")
+        canvas.setName("  Second box  ", of: "e1")
+        #expect(editor.element("e1")?.hoverName == "Second box")
+        editor.undo()
+        #expect(editor.element("e1")?.hoverName == nil)
+        canvas.setName("", of: "e0")
+        #expect(editor.element("e0")?.extra["customData"] == nil, "an empty name removes it")
+    }
+
     /// The chrome in light mode, written next to the dark one for a look.
     @Test func chromeInLightMode() throws {
         let editor = CanvasEditor(document: Self.sampler())
