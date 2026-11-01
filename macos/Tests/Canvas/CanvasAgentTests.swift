@@ -3,8 +3,8 @@ import Foundation
 import Testing
 @testable import Nubb
 
-/// The agent CLI end to end, in process: specs in, files out, and hand
-/// edits kept.
+/// The agent CLI end to end, in process: specs in, files out, hand edits
+/// kept, lint, and render.
 @Suite(.serialized)
 @MainActor
 struct CanvasAgentTests {
@@ -70,9 +70,9 @@ struct CanvasAgentTests {
 
     @Test func eightPanelLessonAppliesCleanly() throws {
         let box = try Sandbox()
-        let result = box.run("apply", "lesson.excalidraw", Self.lesson)
+        let result = box.run("apply", "lesson.excalidraw", Self.lesson, "--lint")
         #expect(result.exit == 0, "\(result.stdout)\(result.stderr)")
-        #expect(!result.stdout.contains("warnings"), "\(result.stdout)")
+        #expect(result.stdout.contains("lint: no problems"))
 
         let document = try box.document("lesson.excalidraw")
         let frames = document.elements.filter { $0.type == .frame }
@@ -165,8 +165,9 @@ struct CanvasAgentTests {
         document = try box.document("a.excalidraw")
         #expect(document.element(id: "p1b") == nil)
         #expect(document.element(id: "p1b:label") == nil)
-        // Arrows to it aren't drawn.
+        // Arrows to it aren't drawn, and lint has nothing to say.
         #expect(document.element(id: "p1x") == nil)
+        #expect(box.run("lint", "a.excalidraw").exit == 0)
     }
 
     // MARK: Hand edits
@@ -209,9 +210,10 @@ struct CanvasAgentTests {
         let arrow = document.element(id: "p1y")!
         #expect(arrow.startBinding?.elementId == "p1b")
         let start = arrow.toScene(arrow.points[0])
-        #expect(moved.hitTest(start, threshold: 12))
+        #expect(CanvasLint.distance(from: start, to: moved) < 12)
         // Apply put its title back; the person's label stays.
         #expect(document.element(id: "p1title")?.text == "Shards")
+        #expect(box.run("lint", "a.excalidraw", "--only", "loose-arrow,broken-ref").exit == 0)
 
         // When the agent changes the label itself, its text wins.
         box.run("set", "a.excalidraw", "p1a", "label=Laptop")
@@ -303,8 +305,170 @@ struct CanvasAgentTests {
         let after = document.element(id: "arrowXYZ")!
         let moved = document.element(id: "p1c")!
         #expect(after.endBinding?.elementId == "p1c")
-        #expect(moved.hitTest(after.toScene(after.points.last!), threshold: 12))
+        #expect(CanvasLint.distance(from: after.toScene(after.points.last!), to: moved) < 12)
         #expect(moved.boundElements?.contains { $0.id == "arrowXYZ" } == true)
+    }
+
+    // MARK: Lint
+
+    @Test func lintFindsABrokenParagraphWithIdAndPixels() throws {
+        let box = try Sandbox()
+        box.run("apply", "lesson.excalidraw", Self.lesson)
+        #expect(box.run("lint", "lesson.excalidraw").exit == 0)
+
+        // Too wide for its frame, which has a set width.
+        box.run("set", "lesson.excalidraw", "p3", "width=640")
+        #expect(box.run("lint", "lesson.excalidraw").exit == 0)
+        box.run("set", "lesson.excalidraw", "p3para", "width=900")
+        var result = box.run("lint", "lesson.excalidraw")
+        #expect(result.exit == 1)
+        #expect(result.stdout.contains("overflow  p3para: sticks out of frame \"3. Replication\" by"), "\(result.stdout)")
+        box.run("set", "lesson.excalidraw", "p3para", "width=null")
+        #expect(box.run("lint", "lesson.excalidraw").exit == 0)
+
+        // Text written into the file without updating its size.
+        var document = try box.document("lesson.excalidraw")
+        CanvasOps.update("p5para", in: &document) {
+            $0.text += " And then a much longer sentence was pasted in by a script that never measured anything at all."
+            $0.originalText = $0.text
+        }
+        try box.write(document, to: "lesson.excalidraw")
+        result = box.run("lint", "lesson.excalidraw", "--json")
+        #expect(result.exit == 1)
+        let issues = try CanvasJSON.parse(Data(result.stdout.utf8))["issues"]?.arrayValue ?? []
+        let overflow = issues.first { $0["kind"]?.stringValue == "overflow" && $0["id"]?.stringValue == "p5para" }
+        #expect(overflow != nil, "\(result.stdout)")
+        #expect((overflow?["px"]?.doubleValue ?? 0) > 100)
+        #expect(overflow?["frame"]?.stringValue == "5. Reads")
+        #expect(issues.contains { $0["kind"]?.stringValue == "stale-size" && $0["id"]?.stringValue == "p5para" })
+
+        // fix rewraps it.
+        box.run("fix", "lesson.excalidraw")
+        #expect(box.run("lint", "lesson.excalidraw", "--only", "stale-size,overflow").exit == 0)
+    }
+
+    @Test func lintFindsLooseArrowsOverlapsAndSmallText() throws {
+        let box = try Sandbox()
+        box.run("apply", "a.excalidraw", """
+        {"nodes": [
+          {"box": "A", "id": "a", "at": [0, 0]},
+          {"box": "B", "id": "b", "at": [300, 0]},
+          {"text": "Over here", "id": "t1", "at": [0, 200]},
+          {"text": "Over there", "id": "t2", "at": [20, 205]},
+          {"text": "tiny", "id": "t3", "size": 4, "at": [0, 400]},
+          {"type": "arrow", "id": "loose", "x": 120, "y": 25, "points": [[0, 0], [100, 0]]}
+        ]}
+        """)
+        let result = box.run("lint", "a.excalidraw")
+        #expect(result.stdout.contains("overlap  t1 and t2 overlap"), "\(result.stdout)")
+        #expect(result.stdout.contains("loose-arrow  loose:"), "\(result.stdout)")
+        #expect(result.stdout.contains("small-text  t3"), "\(result.stdout)")
+    }
+
+    @Test func lintIsFastOnBigDrawings() throws {
+        let box = try Sandbox()
+        // 25 panels of 15 elements each, about 10,000 px tall.
+        let panels = (1...25).map { Self.panel($0, title: "Panel \($0)") }
+        let spec = "{\"nodes\": [{\"stack\": [\(panels.joined(separator: ","))], \"id\": \"big\"}]}"
+        let started = Date()
+        #expect(box.run("apply", "big.excalidraw", spec).exit == 0)
+        let applied = Date().timeIntervalSince(started)
+        let document = try box.document("big.excalidraw")
+        #expect(document.elements.count >= 375)
+        #expect(CanvasRenderer.sceneBounds(of: document.elements).height > 9000)
+        let lintStart = Date()
+        let issues = CanvasLint.run(document)
+        let linted = Date().timeIntervalSince(lintStart)
+        #expect(issues.isEmpty, "\(issues.prefix(3))")
+        #expect(applied < 5)
+        #expect(linted < 1)
+    }
+
+    // MARK: Render
+
+    @Test func renderingAFrameMatchesTheViewer() throws {
+        let box = try Sandbox()
+        box.run("apply", "lesson.excalidraw", Self.lesson)
+        let result = box.run("render", "lesson.excalidraw", "--frame", "6", "--scale", "1", "-o", "p6.png")
+        #expect(result.exit == 0, "\(result.stderr)")
+        #expect(result.stdout.contains("\"6. Queues\""))
+        let image = try #require(NSImage(contentsOf: box.url("p6.png"))?.cgImage(forProposedRect: nil, context: nil, hints: nil))
+        let document = try box.document("lesson.excalidraw")
+        let frame = try #require(document.element(id: "p6"))
+        #expect(abs(Double(image.width) - (frame.width + 40)) <= 1)
+
+        // The same pixels as the renderer the viewer uses, on the same area.
+        var options = CanvasExport.Options()
+        options.scale = 1
+        options.only = CanvasOps.withFrameChildren(["p6"], in: document)
+        options.region = frame.sceneBounds.insetBy(dx: -20, dy: -20)
+        let direct = try CanvasExport.image(document, options: options)
+        let (a, b) = (Self.rgba(image), Self.rgba(direct))
+        #expect(a.count == b.count)
+        let differing = zip(a, b).filter { abs(Int($0) - Int($1)) > 2 }.count
+        #expect(differing == 0, "\(differing) of \(a.count) bytes differ")
+
+        // And what the viewer's own view draws: the same shapes, cached. A
+        // window is a whole number of points, so compare a whole area.
+        options.region = options.region!.integral
+        let editor = CanvasEditor(document: document)
+        let view = CanvasView(editor: editor)
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: options.region!.width, height: options.region!.height),
+            styleMask: [.borderless], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.appearance = NSAppearance(named: .aqua)
+        window.contentView = view
+        view.layoutSubtreeIfNeeded()
+        // After the first layout, which fits the drawing on screen.
+        view.viewport = CanvasViewport(zoom: 1, offset: CGPoint(x: -options.region!.minX, y: -options.region!.minY))
+        let rep = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+        view.cacheDisplay(in: view.bounds, to: rep)
+        window.close()
+        let viewer = try #require(rep.cgImage)
+        // The viewer draws at the screen's scale; render at the same one.
+        let scale = Double(viewer.width) / Double(options.region!.width)
+        var scaled = options
+        scaled.scale = scale
+        let reference = Self.rgba(try CanvasExport.image(document, options: scaled), width: viewer.width, height: viewer.height)
+        let viewerPixels = Self.rgba(viewer)
+        var close = 0, total = 0
+        for y in stride(from: 0, to: viewer.height, by: 2) {
+            for x in stride(from: 0, to: viewer.width, by: 2) {
+                let i = (y * viewer.width + x) * 4
+                total += 1
+                if (0..<3).allSatisfy({ abs(Int(reference[i + $0]) - Int(viewerPixels[i + $0])) <= 24 }) { close += 1 }
+            }
+        }
+        #expect(Double(close) / Double(total) > 0.995, "\(close) of \(total) sampled pixels match the viewer")
+        if let dump = ProcessInfo.processInfo.environment["NUBB_CANVAS_TEST_DUMP"] {
+            try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dump + "/viewer.png"))
+            try? FileManager.default.copyItem(at: box.url("p6.png"), to: URL(fileURLWithPath: dump + "/render.png"))
+        }
+
+        // SVG and PDF too.
+        #expect(box.run("render", "lesson.excalidraw", "--frame", "6. Queues", "-o", "p6.svg").exit == 0)
+        let svg = try String(contentsOf: box.url("p6.svg"), encoding: .utf8)
+        #expect(svg.hasPrefix("<svg"))
+        #expect(svg.contains("clipPath"))
+        #expect(box.run("render", "lesson.excalidraw", "--region", "0,0,400,300", "-o", "r.pdf").exit == 0)
+        #expect(try Data(contentsOf: box.url("r.pdf")).prefix(4) == Data("%PDF".utf8))
+        // Unknown frames list what there is.
+        #expect(box.run("render", "lesson.excalidraw", "--frame", "Nope").stderr.contains("frames: \"1. Shards\""))
+    }
+
+    /// The image as 8-bit sRGB RGBA bytes, scaled to `width` x `height`.
+    private static func rgba(_ image: CGImage, width: Int? = nil, height: Int? = nil) -> [UInt8] {
+        let width = width ?? image.width, height = height ?? image.height
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            guard let context = CGContext(
+                data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return }
+            context.interpolationQuality = .high
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        return bytes
     }
 
     // MARK: Excalidraw compatibility
@@ -358,6 +522,7 @@ struct CanvasAgentTests {
         for (p, q) in zip(arrow.points, arrow.points.dropFirst()) {
             #expect(abs(p.x - q.x) < 0.01 || abs(p.y - q.y) < 0.01)
         }
+        #expect(box.run("lint", "a.excalidraw", "--only", "loose-arrow").exit == 0)
     }
 
     // MARK: Reading
@@ -456,5 +621,12 @@ struct CanvasAgentTests {
         try box.write(document, to: "a.excalidraw")
         box.run("set", "a.excalidraw", "noteXYZ", "name=Mine")
         #expect(try box.document("a.excalidraw").element(id: "noteXYZ")?.hoverName == "Mine")
+
+        // SVG renders carry the names as tooltips, escaped.
+        box.run("set", "a.excalidraw", "api", "name=<API> & co")
+        #expect(box.run("render", "a.excalidraw", "-o", "a.svg").exit == 0)
+        let svg = try String(contentsOf: box.url("a.svg"), encoding: .utf8)
+        #expect(svg.contains("<title>&lt;API&gt; &amp; co</title>"))
+        #expect(svg.contains("<title>Primary Postgres</title>"))
     }
 }

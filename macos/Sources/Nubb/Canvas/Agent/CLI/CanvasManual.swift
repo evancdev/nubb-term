@@ -21,8 +21,9 @@ enum CanvasManual {
               "Requests enter at the edge and fan out to shards.",
               {"row": [{"box": "Edge", "id": "edge"}, {"box": "Shard", "id": "shard"}]},
               {"arrow": "routes", "from": "edge", "to": "shard"}]}]}
-      2. nubb +canvas apply notes.excalidraw spec.json
-      3. Open notes.excalidraw in Nubb to see it.
+      2. nubb +canvas apply notes.excalidraw spec.json --lint
+      3. nubb +canvas render notes.excalidraw --frame "1. Overview" -o p1.png
+         Read the PNG to check the result. It matches what the viewer draws.
       4. Change things by id: nubb +canvas set notes.excalidraw edge text="CDN edge"
          An open canvas updates in place without moving its camera.
       5. Before changing more, see what they did: nubb +canvas changes notes.excalidraw
@@ -33,6 +34,7 @@ enum CanvasManual {
                                - for stdin, or inline JSON. Creates the file.
                                Applying a node with an id that exists replaces
                                it in place; other nodes stay as they are.
+          --lint               Run lint afterwards (exit 1 on problems).
           --dry-run            Report what would change without writing.
           --json               Print the report as JSON: created, updated and
                                deleted ids, every node's box, and user changes.
@@ -52,6 +54,9 @@ enum CanvasManual {
                                show the spec again. Brings back parts the
                                person deleted.
       new <file> [--force]     Create an empty drawing.
+      fix <file> [--dry-run]   Remeasure every text, rewrap labels, and remove
+                               dangling references. Use it on files written by
+                               other tools or by hand.
 
     READ
       info <file> [--json]     Element counts, bounds, frames, and top-level nodes.
@@ -74,6 +79,35 @@ enum CanvasManual {
                                write: moved, edited, added, deleted, by id.
           --ack                Mark them as seen (apply does this too).
           --json               With old and new values of each field.
+
+    CHECK
+      render <file>            Draw to PNG (default), SVG or PDF and print the path.
+          -o, --out <path>     Output file or folder. The extension picks the
+                               format. Default: a file in $TMPDIR/nubb-canvas/.
+          --frame <name>       One frame: its name, a unique start of it like
+                               "6", or its id. Repeat for several.
+          --all-frames         One image per frame.
+          --region x,y,w,h     Exactly this area of the drawing.
+          --ids a,b            Only these elements (and what they contain).
+          --scale <n>          Pixels per drawing unit (default 1; 2 for retina).
+          --padding <px>       Space around the content (default 20).
+          --dark               Dark theme, as Excalidraw draws it.
+          --transparent        No background.
+          --format png|svg|pdf
+      lint <file>              Find problems, with ids and sizes in pixels.
+                               Exit 1 when there are any.
+          --frame <name>  --ids a,b   Only check part of the drawing.
+          --only k1,k2  --skip k1     Pick checks:
+                overflow        text wider or taller than its box or frame
+                overlap         text over other text
+                loose-arrow     arrow ends that don't touch a shape, or touch
+                                one without being attached
+                outside-frames  elements outside every frame
+                small-text      text under 9 pt when its frame fits the screen
+                stale-size      stored text size that doesn't match the text
+                broken-ref      ids that point at missing elements
+          --screen 1440x900  --min-size 9  --tolerance 1
+          --json
 
     SPEC
       A spec is {"nodes": [...]}, an array of nodes, or one node. Each node
@@ -101,14 +135,14 @@ enum CanvasManual {
       keep labels short ("API") and say more on hover ("Go service that
       validates requests and writes to Postgres"), or to make small or
       zoomed-out parts readable. Names are saved in the element's
-      customData, so Excalidraw keeps them. The person can add or edit one
-      with right-click > Name.
+      customData, so Excalidraw keeps them, and SVG renders show them as
+      tooltips. The person can add or edit one with right-click > Name.
 
     IDS
       Give top-level nodes and anything you'll change later an "id". Children
       without one get their parent's id and position: p1.0, p1.1. Parts of a
       node are <id>:<part>: b1:label, c1:code, p1:bg. Use the node id in
-      set, move, and delete.
+      set, move, delete, and render --ids.
 
     HAND EDITS
       The tool remembers what it wrote. Whatever the person changes by hand
@@ -119,7 +153,7 @@ enum CanvasManual {
 
     OUTPUT
       Results go to stdout, errors to stderr. Exit codes: 0 success,
-      1 failure, 2 usage or spec error. Spec errors
+      1 failure (or lint found problems), 2 usage or spec error. Spec errors
       list every problem with its path, like nodes[0].children[2].fill.
       State is kept in ~/Library/Application Support/com.evancdev.nubb/CanvasAgent
       (NUBB_CANVAS_STATE_DIR overrides it), never in the drawing.
@@ -130,6 +164,8 @@ enum CanvasManual {
         {"text": "Retries back off", "size": "l"},
         {"code": "delay = base * 2 ** attempt", "id": "p2code"}]}]}
       EOF
+      nubb +canvas lint notes.excalidraw --frame p2
+      nubb +canvas render notes.excalidraw --frame 2 --scale 2 -o /tmp/p2.png
       nubb +canvas set notes.excalidraw p2code code="delay = min(cap, base * 2 ** n)"
       nubb +canvas measure "Requests fan out to shards" --size 20 --width 240
 

@@ -25,9 +25,12 @@ enum CanvasCommands {
             case "spec": return try spec(rest, context)
             case "measure": return try measure(rest, context)
             case "changes": return try changes(rest, context)
+            case "render", "export": return try render(rest, context)
+            case "lint": return try lint(rest, context)
+            case "fix": return try fix(rest, context)
             default:
                 let commands = ["new", "apply", "set", "move", "delete", "reset", "info", "list", "get", "frames", "spec",
-                                "measure", "changes", "help"]
+                                "measure", "changes", "render", "lint", "fix", "help"]
                 let hint = CanvasSpecNames.suggestion(for: command, in: commands).map { " (did you mean \"\($0)\"?)" } ?? ""
                 throw CanvasAgentError.usage("unknown command \"\(command)\"\(hint); run `nubb +canvas help`")
             }
@@ -104,26 +107,30 @@ enum CanvasCommands {
         let spec = try context.json(from: args.positional[1], what: "the spec")
         let dryRun = args.flag("dry-run")
         let asJSON = args.flag("json")
+        let runLint = args.flag("lint")
         let quiet = args.flag("quiet")
         try args.finish(command: "apply", maxPositional: 2)
-        return try write(url, context, dryRun: dryRun, asJSON: asJSON, quiet: quiet) { file in
+        return try write(url, context, dryRun: dryRun, asJSON: asJSON, runLint: runLint, quiet: quiet) { file in
             try CanvasEngine.apply(spec, to: file)
         }
     }
 
     /// Runs a change on the drawing, saves it, and reports it.
     private static func write(
-        _ url: URL, _ context: CanvasCommandContext, dryRun: Bool = false, asJSON: Bool = false,
+        _ url: URL, _ context: CanvasCommandContext, dryRun: Bool = false, asJSON: Bool = false, runLint: Bool = false,
         quiet: Bool = false, create: Bool = true, _ change: (CanvasAgentDocument) throws -> CanvasApplyReport
     ) throws -> CanvasCommandResult {
-        let report = try CanvasAgentDocument.edit(url, create: create) { file -> CanvasApplyReport in
+        let (report, document) = try CanvasAgentDocument.edit(url, create: create) { file -> (CanvasApplyReport, CanvasDocument) in
             let report = try change(file)
             if !dryRun { try file.save() }
-            return report
+            return (report, file.document)
         }
+        var lintIssues: [CanvasLintIssue] = []
+        if runLint { lintIssues = CanvasLint.run(document) }
         if asJSON {
             var object = reportJSON(report, url: url, context: context)
             object["dryRun"] = .bool(dryRun)
+            if runLint { object["lint"] = .array(lintIssues.map(issueJSON)) }
             return json(.object(object))
         }
         var lines: [String] = []
@@ -149,7 +156,13 @@ enum CanvasCommands {
             lines.append("warnings:")
             lines.append(contentsOf: report.warnings.map { "  \($0)" })
         }
-        return .ok(lines.joined(separator: "\n"))
+        if runLint {
+            lines.append(lintIssues.isEmpty ? "lint: no problems" : "lint: \(lintIssues.count) problem\(lintIssues.count == 1 ? "" : "s"):")
+            lines.append(contentsOf: lintIssues.map { "  \($0.kind.rawValue)  \($0.message)" })
+        }
+        var result = CanvasCommandResult.ok(lines.joined(separator: "\n"))
+        if runLint, !lintIssues.isEmpty { result.exit = 1 }
+        return result
     }
 
     private static func reportJSON(_ report: CanvasApplyReport, url: URL, context: CanvasCommandContext) -> [String: CanvasJSON] {
@@ -221,10 +234,10 @@ enum CanvasCommands {
         }
         let id = args.positional[1]
         let fields = try fields(Array(args.positional[2...]), context)
-        let asJSON = args.flag("json"), quiet = args.flag("quiet")
+        let asJSON = args.flag("json"), runLint = args.flag("lint"), quiet = args.flag("quiet")
         try args.finish(command: "set", maxPositional: args.positional.count)
         let spec = CanvasJSON.object(["set": .object([id: .object(fields)])])
-        return try write(url, context, asJSON: asJSON, quiet: quiet, create: false) { file in
+        return try write(url, context, asJSON: asJSON, runLint: runLint, quiet: quiet, create: false) { file in
             try CanvasEngine.apply(spec, to: file)
         }
     }
@@ -270,6 +283,27 @@ enum CanvasCommands {
         return try write(url, context, asJSON: asJSON, quiet: quiet, create: false) { file in
             try CanvasEngine.reset(all ? [] : targets, in: file)
         }
+    }
+
+    private static func fix(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: [])
+        let url = try file(args, context, command: "fix")
+        let dryRun = args.flag("dry-run"), asJSON = args.flag("json")
+        try args.finish(command: "fix", maxPositional: 1)
+        var fixed: [String] = []
+        let result = try write(url, context, dryRun: dryRun, asJSON: asJSON, quiet: true, create: false) { file in
+            var report = try CanvasEngine.refresh(file)
+            fixed = CanvasLint.fix(&file.document)
+            report.updated = Array(Set(report.updated).union(fixed)).sorted()
+            return report
+        }
+        guard !asJSON else { return result }
+        let remaining = try CanvasAgentDocument(url: url, create: false)
+        let issues = CanvasLint.run(remaining.document)
+        var text = result.stdout
+        text += fixed.isEmpty ? "nothing to fix by remeasuring\n" : "remeasured \(fixed.count) element\(fixed.count == 1 ? "" : "s"): \(fixed.prefix(20).joined(separator: ", "))\n"
+        text += issues.isEmpty ? "lint: no problems\n" : "lint: \(issues.count) problem\(issues.count == 1 ? "" : "s") left to fix by hand (run `lint`)\n"
+        return .ok(text)
     }
 
     // MARK: Reading
@@ -543,5 +577,182 @@ enum CanvasCommands {
         }
         if !acknowledge { lines.append("the next apply keeps these; `reset <id>` drops them") }
         return .ok(lines.joined(separator: "\n"))
+    }
+
+    // MARK: Render and lint
+
+    private static func render(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: ["out", "frame", "region", "ids", "scale", "padding", "format"])
+        let url = try file(args, context, command: "render")
+        var options = CanvasExport.Options()
+        options.scale = try args.number("scale", range: 0.05...16) ?? 1
+        options.padding = try args.number("padding", range: 0...10_000) ?? 20
+        options.theme = args.flag("dark") ? .dark : .light
+        options.background = !args.flag("transparent")
+        let frameNames = args.values("frame")
+        let allFrames = args.flag("all-frames")
+        let regionText = args.value("region")
+        let only = ids(args.values("ids"))
+        let out = args.value("out")
+        let formatName = args.value("format")
+        let asJSON = args.flag("json")
+        try args.finish(command: "render", maxPositional: 1)
+
+        let document = try read(url, context).document
+        if let regionText { options.region = try region(regionText) }
+        if !only.isEmpty {
+            let missing = only.filter { document.element(id: $0) == nil }
+            if !missing.isEmpty { throw CanvasAgentError.failed("no elements \(missing.joined(separator: ", "))") }
+            options.only = CanvasOps.withFrameChildren(Set(only), in: document)
+        }
+
+        var targets: [(name: String?, options: CanvasExport.Options)] = []
+        let frames = allFrames ? CanvasQuery.frames(in: document) : try frameNames.map { name in
+            guard let frame = CanvasQuery.frame(named: name, in: document) else {
+                throw CanvasAgentError.failed("no frame named \"\(name)\"" + CanvasQuery.frameHint(name, in: document))
+            }
+            return frame
+        }
+        if allFrames, frames.isEmpty { throw CanvasAgentError.failed("the drawing has no frames") }
+        if frames.isEmpty {
+            targets.append((nil, options))
+        } else {
+            for frame in frames {
+                var frameOptions = options
+                frameOptions.only = CanvasOps.withFrameChildren([frame.id], in: document).union(options.only ?? [])
+                if options.region == nil {
+                    frameOptions.region = frame.sceneBounds.insetBy(dx: -options.padding, dy: -options.padding)
+                }
+                targets.append((CanvasRenderer.frameTitle(frame), frameOptions))
+            }
+        }
+
+        let format: CanvasExport.Format
+        if let formatName {
+            guard let value = CanvasExport.Format(rawValue: formatName.lowercased()) else {
+                throw CanvasAgentError.usage("--format takes png, svg, or pdf")
+            }
+            format = value
+        } else if let out, let value = CanvasExport.Format(path: out) {
+            format = value
+        } else {
+            format = .png
+        }
+
+        var written: [CanvasJSON] = []
+        var lines: [String] = []
+        let stem = url.deletingPathExtension().lastPathComponent
+        for (index, target) in targets.enumerated() {
+            let destination = try outputURL(out, name: OutputName(stem: stem, frame: target.name, index: index, count: targets.count), format: format, context: context)
+            _ = try CanvasExport.write(document, to: destination, format: format, options: target.options)
+            let area = CanvasExport.area(of: document, options: target.options) ?? .zero
+            let pixels = format == .png ? try CanvasExport.pixelSize(of: area, scale: target.options.scale) : (Int(area.width), Int(area.height))
+            written.append(.object([
+                "path": .string(destination.path), "frame": target.name.map(CanvasJSON.string) ?? .null,
+                "area": CanvasQuery.rectJSON(area), "width": .number(Double(pixels.0)), "height": .number(Double(pixels.1)),
+            ]))
+            lines.append("\(destination.path)  \(pixels.0)x\(pixels.1)\(format == .png ? " px" : "")"
+                + (target.name.map { "  \"\($0)\"" } ?? "") + "  area \(CanvasQuery.rect(area))")
+        }
+        if asJSON { return json(written.count == 1 ? written[0] : .array(written)) }
+        return .ok(lines.joined(separator: "\n"))
+    }
+
+    /// What a render's file is named after.
+    private struct OutputName {
+        var stem: String
+        var frame: String?
+        var index: Int
+        var count: Int
+    }
+
+    private static func outputURL(
+        _ out: String?, name output: OutputName, format: CanvasExport.Format, context: CanvasCommandContext
+    ) throws -> URL {
+        let (stem, frame, index, count) = (output.stem, output.frame, output.index, output.count)
+        func slug(_ text: String) -> String {
+            let allowed = text.lowercased().map { $0.isLetter || $0.isNumber ? $0 : "-" }
+            return String(allowed).split(separator: "-").joined(separator: "-").prefix(60).description
+        }
+        let name = stem + (frame.map { "-" + slug($0) } ?? "") + "." + format.rawValue
+        if let out {
+            let url = context.url(out)
+            var isDirectory = ObjCBool(false)
+            let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
+            if (exists && isDirectory.boolValue) || out.hasSuffix("/") {
+                return url.appendingPathComponent(name)
+            }
+            if count > 1 {
+                let base = url.deletingPathExtension().lastPathComponent
+                return url.deletingLastPathComponent().appendingPathComponent("\(base)-\(index + 1)-\(slug(frame ?? "")).\(format.rawValue)")
+            }
+            return url
+        }
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("nubb-canvas", isDirectory: true)
+        return directory.appendingPathComponent(name)
+    }
+
+    private static func issueJSON(_ issue: CanvasLintIssue) -> CanvasJSON {
+        var object: [String: CanvasJSON] = [
+            "kind": .string(issue.kind.rawValue), "id": .string(issue.id), "message": .string(issue.message),
+        ]
+        if let amount = issue.amount { object["px"] = .number((amount * 10).rounded() / 10) }
+        if let frame = issue.frame { object["frame"] = .string(frame) }
+        return .object(object)
+    }
+
+    private static func lint(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: ["only", "skip", "ids", "frame", "min-size", "screen", "tolerance"])
+        let url = try file(args, context, command: "lint")
+        var options = CanvasLint.Options()
+        let only = ids(args.values("only")), skip = ids(args.values("skip"))
+        for name in only + skip where CanvasLintIssue.Kind(rawValue: name) == nil {
+            throw CanvasAgentError.usage("unknown check \"\(name)\"; checks: " + CanvasLintIssue.Kind.allCases.map(\.rawValue).joined(separator: ", "))
+        }
+        options.kinds = Set((only.isEmpty ? CanvasLintIssue.Kind.allCases.map(\.rawValue) : only).compactMap(CanvasLintIssue.Kind.init))
+            .subtracting(skip.compactMap(CanvasLintIssue.Kind.init))
+        let targetIDs = ids(args.values("ids"))
+        let frameName = args.value("frame")
+        options.minReadable = try args.number("min-size", range: 1...100) ?? options.minReadable
+        options.tolerance = try args.number("tolerance", range: 0...100) ?? options.tolerance
+        if let screen = args.value("screen") {
+            let parts = screen.lowercased().split(separator: "x").compactMap { Double($0) }
+            guard parts.count == 2, parts[0] > 0, parts[1] > 0 else { throw CanvasAgentError.usage("--screen takes WIDTHxHEIGHT like 1440x900") }
+            options.screen = CGSize(width: parts[0], height: parts[1])
+        }
+        let asJSON = args.flag("json")
+        try args.finish(command: "lint", maxPositional: 1)
+        let document = try read(url, context).document
+        var scope = Set(targetIDs)
+        if let frameName {
+            guard let frame = CanvasQuery.frame(named: frameName, in: document) else {
+                throw CanvasAgentError.failed("no frame named \"\(frameName)\"" + CanvasQuery.frameHint(frameName, in: document))
+            }
+            scope.insert(frame.id)
+        }
+        if !scope.isEmpty { options.only = scope }
+        let started = Date()
+        let issues = CanvasLint.run(document, options: options)
+        let elapsed = Date().timeIntervalSince(started)
+        if asJSON {
+            var result = json(.object(["file": .string(url.path), "issues": .array(issues.map(issueJSON))]))
+            if !issues.isEmpty { result.exit = 1 }
+            return result
+        }
+        guard !issues.isEmpty else {
+            return .ok("no problems in \(document.elements.count) elements (\(Int((elapsed * 1000).rounded())) ms)")
+        }
+        var lines = ["\(issues.count) problem\(issues.count == 1 ? "" : "s"):"]
+        var lastFrame: String??
+        for issue in issues.sorted(by: { ($0.frame ?? "", $0.kind.rawValue, $0.id) < ($1.frame ?? "", $1.kind.rawValue, $1.id) }) {
+            if lastFrame == nil || lastFrame! != issue.frame {
+                lines.append(issue.frame.map { "[\($0)]" } ?? "[outside frames]")
+                lastFrame = .some(issue.frame)
+            }
+            lines.append("  \(issue.kind.rawValue)  \(issue.message)")
+        }
+        var result = CanvasCommandResult.ok(lines.joined(separator: "\n"))
+        result.exit = 1
+        return result
     }
 }
