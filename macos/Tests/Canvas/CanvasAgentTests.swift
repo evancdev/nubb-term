@@ -4,7 +4,7 @@ import Testing
 @testable import Nubb
 
 /// The agent CLI end to end, in process: specs in, files out, hand edits
-/// kept, lint, and render.
+/// kept, lint, render, and the live viewer.
 @Suite(.serialized)
 @MainActor
 struct CanvasAgentTests {
@@ -28,11 +28,12 @@ struct CanvasAgentTests {
 
         func url(_ name: String) -> URL { directory.appendingPathComponent(name) }
 
-        /// Runs `nubb +canvas <args>`.
+        /// Runs `nubb +canvas <args>` without a viewer.
         @discardableResult
         func run(_ args: String..., stdin: String = "") -> CanvasCommandResult {
             var context = CanvasCommandContext(cwd: directory)
             context.readStdin = { Data(stdin.utf8) }
+            context.live = nil
             return CanvasCommands.run(args, context: context)
         }
 
@@ -547,7 +548,17 @@ struct CanvasAgentTests {
         #expect(box.run("frobnicate").stderr.contains("unknown command"))
     }
 
-    // MARK: Hover names
+    // MARK: Live viewer
+
+    private static var app: Nubb.App? { (NSApp.delegate as? AppDelegate)?.nubb }
+
+    private static func wait(timeout: TimeInterval = 3, until condition: () -> Bool) async -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline {
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+        return condition()
+    }
 
     /// Hover names: set in the spec, written to customData, changed with
     /// `set`, kept when the person edits one, replaced when the agent
@@ -628,5 +639,96 @@ struct CanvasAgentTests {
         let svg = try String(contentsOf: box.url("a.svg"), encoding: .utf8)
         #expect(svg.contains("<title>&lt;API&gt; &amp; co</title>"))
         #expect(svg.contains("<title>Primary Postgres</title>"))
+    }
+
+    /// The open viewer shows a `set` without moving its camera, and a box
+    /// the person drags in it stays where they put it after the agent's
+    /// next change.
+    @Test func liveViewerKeepsCameraAndDrags() async throws {
+        guard let app = Self.app else { return }
+        let box = try Sandbox()
+        box.run("apply", "lesson.excalidraw", Self.lesson)
+        let url = box.url("lesson.excalidraw").standardizedFileURL.resolvingSymlinksInPath()
+        let controller = CanvasController.open(url, nubb: app, from: nil)
+        defer { controller.closeImmediately() }
+        controller.window?.orderOut(nil)
+        let view = controller.canvasView!
+        view.frame = NSRect(x: 0, y: 0, width: 1000, height: 700)
+        view.viewport = .fitting(controller.editor.document.element(id: "p6")!.sceneBounds, in: view.bounds.size, padding: 40, maxZoom: 4)
+        let camera = view.viewport
+
+        // The agent sets text through the same commands the CLI runs.
+        box.run("set", "lesson.excalidraw", "p6title", "text=Queues, revised")
+        controller.store.checkForChanges()
+        #expect(await Self.wait { controller.editor.document.element(id: "p6title")?.text == "Queues, revised" })
+        #expect(view.viewport == camera)
+
+        // The person drags the Router box 50 right in the viewer.
+        let router = controller.editor.document.element(id: "p6b")!
+        controller.editor.select(["p6b"])
+        controller.editor.beginInteraction()
+        controller.editor.updateInteraction { document in
+            let ids = CanvasOps.withBoundText(["p6b"], in: document)
+            for i in document.elements.indices where ids.contains(document.elements[i].id) {
+                document.elements[i].x += 50
+                CanvasOps.touch(&document.elements[i])
+            }
+            CanvasOps.updateRelations(changed: ids, in: &document)
+        }
+        controller.editor.endInteraction()
+        // The CLI asks the viewer to save before it reads.
+        _ = CanvasLiveCommands.handle(.object(["command": .string("flush"), "path": .string(url.path)]))
+        let changes = box.run("changes", "lesson.excalidraw")
+        #expect(changes.stdout.contains("p6b  moved by 50,0"), "\(changes.stdout)")
+
+        box.run("set", "lesson.excalidraw", "p6para", "text=Hot shards queue up while cold ones idle.")
+        controller.store.checkForChanges()
+        #expect(await Self.wait { controller.editor.document.element(id: "p6para")?.text.hasPrefix("Hot shards") == true })
+        let after = controller.editor.document.element(id: "p6b")!
+        #expect(abs(after.x - (router.x + 50)) < 0.01)
+        #expect(view.viewport == camera)
+
+        // Camera commands.
+        let reply = CanvasLiveCommands.handle(.object(["command": .string("view"), "path": .string(url.path), "frame": .string("2")]))
+        #expect(reply["ok"]?.boolValue == true)
+        #expect(view.viewport != camera)
+        let status = CanvasLiveCommands.handle(.object(["command": .string("status"), "path": .string(url.path)]))
+        #expect(status["open"]?.boolValue == true)
+        #expect(status["elements"]?.intValue == controller.editor.document.elements.count)
+    }
+
+    @Test func socketAnswersTheCLI() async throws {
+        let path = (NSTemporaryDirectory() as NSString).appendingPathComponent("nubb-canvas-test-\(getpid()).sock")
+        let server = CanvasLiveServer(path: path)
+        try server.start()
+        defer { server.stop() }
+        let client = CanvasLiveClient(sockets: [path])
+        // The server answers on the main thread, so the request goes out
+        // from another one while this test awaits.
+        let reply = await Task.detached {
+            client.send(["command": .string("status"), "path": .string("/nonexistent.excalidraw")], to: path)
+        }.value
+        #expect(reply?["ok"]?.boolValue == true)
+        #expect(reply?["open"]?.boolValue == false)
+
+        // Old binaries are told to match the app.
+        let stale = await Task.detached { () -> CanvasJSON? in
+            var message: [String: CanvasJSON] = ["command": .string("status")]
+            message["v"] = .number(99)
+            guard var address = CanvasLive.address(path) else { return nil }
+            let fd = socket(AF_UNIX, SOCK_STREAM, 0)
+            defer { close(fd) }
+            CanvasLive.configure(fd, timeout: 5)
+            let connected = withUnsafePointer(to: &address) {
+                $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { connect(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) }
+            }
+            guard connected == 0 else { return nil }
+            var data = CanvasJSON.object(message).compact()
+            data.append(0x0A)
+            _ = CanvasLive.writeAll(fd, data)
+            return CanvasLive.readLine(fd).flatMap { try? CanvasJSON.parse($0) }
+        }.value
+        #expect(stale?["ok"]?.boolValue == false)
+        #expect(stale?["error"]?.stringValue?.contains("doesn't match") == true)
     }
 }

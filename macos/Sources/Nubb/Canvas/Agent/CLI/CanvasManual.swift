@@ -24,9 +24,10 @@ enum CanvasManual {
       2. nubb +canvas apply notes.excalidraw spec.json --lint
       3. nubb +canvas render notes.excalidraw --frame "1. Overview" -o p1.png
          Read the PNG to check the result. It matches what the viewer draws.
-      4. Change things by id: nubb +canvas set notes.excalidraw edge text="CDN edge"
-         An open canvas updates in place without moving its camera.
-      5. Before changing more, see what they did: nubb +canvas changes notes.excalidraw
+      4. nubb +canvas open notes.excalidraw --frame p1     show it to the person
+      5. Change things by id: nubb +canvas set notes.excalidraw edge text="CDN edge"
+         The open viewer updates in place without moving its camera.
+      6. Before changing more, see what they did: nubb +canvas changes notes.excalidraw
          apply, set, move and delete keep their moves and edits.
 
     WRITE
@@ -35,6 +36,7 @@ enum CanvasManual {
                                Applying a node with an id that exists replaces
                                it in place; other nodes stay as they are.
           --lint               Run lint afterwards (exit 1 on problems).
+          --open               Show the drawing in Nubb afterwards.
           --dry-run            Report what would change without writing.
           --json               Print the report as JSON: created, updated and
                                deleted ids, every node's box, and user changes.
@@ -109,6 +111,24 @@ enum CanvasManual {
           --screen 1440x900  --min-size 9  --tolerance 1
           --json
 
+    VIEWER (needs Nubb running; starts it if not)
+      open <file>              Open the drawing in a Nubb tab.
+          --background         Don't switch to it.
+      view <file>              Move the open viewer's camera:
+          --frame <name>       to a frame
+          --ids a,b [--select] to elements (and select them)
+          --region x,y,w,h     to an area
+          --fit                to everything
+          --zoom <z>           to a zoom (1 = 100%), around the middle
+          --padding <px>       space around the target
+          --hover <id>         and show that element's name, as if the
+                               pointer rested on it, to point the person at it
+      status <file> [--json]   Whether it's open, the zoom, what's visible and
+                               selected, and whether the person is typing.
+      copy <file> [--frame <name>] [--ids a,b]
+                               Copy elements in Excalidraw's clipboard format,
+                               to paste into excalidraw.com.
+
     SPEC
       A spec is {"nodes": [...]}, an array of nodes, or one node. Each node
       has one kind key whose value is its content:
@@ -142,7 +162,7 @@ enum CanvasManual {
       Give top-level nodes and anything you'll change later an "id". Children
       without one get their parent's id and position: p1.0, p1.1. Parts of a
       node are <id>:<part>: b1:label, c1:code, p1:bg. Use the node id in
-      set, move, delete, and render --ids.
+      set, move, delete, render --ids and view --ids.
 
     HAND EDITS
       The tool remembers what it wrote. Whatever the person changes by hand
@@ -167,6 +187,7 @@ enum CanvasManual {
       nubb +canvas lint notes.excalidraw --frame p2
       nubb +canvas render notes.excalidraw --frame 2 --scale 2 -o /tmp/p2.png
       nubb +canvas set notes.excalidraw p2code code="delay = min(cap, base * 2 ** n)"
+      nubb +canvas view notes.excalidraw --ids p2code --select
       nubb +canvas measure "Requests fan out to shards" --size 20 --width 240
 
     """

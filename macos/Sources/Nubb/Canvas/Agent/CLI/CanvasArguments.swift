@@ -124,6 +124,8 @@ struct CanvasCommandResult {
 struct CanvasCommandContext {
     var cwd: URL
     var readStdin: () -> Data = { FileHandle.standardInput.readDataToEndOfFile() }
+    /// Talks to the running app, for the commands that need the viewer.
+    var live: CanvasLiveClient? = CanvasLiveClient.fromEnvironment()
 
     func url(_ path: String) -> URL {
         let expanded = (path as NSString).expandingTildeInPath

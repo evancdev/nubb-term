@@ -1,8 +1,9 @@
-import CoreGraphics
+import AppKit
 import Foundation
 
-/// The commands of `nubb +canvas`. They run in the CLI process on the file
-/// itself.
+/// The commands of `nubb +canvas`. Everything but the viewer commands runs
+/// in the CLI process on the file itself; the viewer commands talk to the
+/// running app.
 enum CanvasCommands {
     static func run(_ args: [String], context: CanvasCommandContext) -> CanvasCommandResult {
         guard let command = args.first, !["help", "--help", "-h"].contains(command) else {
@@ -28,9 +29,13 @@ enum CanvasCommands {
             case "render", "export": return try render(rest, context)
             case "lint": return try lint(rest, context)
             case "fix": return try fix(rest, context)
+            case "open": return try open(rest, context)
+            case "view": return try view(rest, context)
+            case "status": return try status(rest, context)
+            case "copy": return try copy(rest, context)
             default:
                 let commands = ["new", "apply", "set", "move", "delete", "reset", "info", "list", "get", "frames", "spec",
-                                "measure", "changes", "render", "lint", "fix", "help"]
+                                "measure", "changes", "render", "lint", "fix", "open", "view", "status", "copy", "help"]
                 let hint = CanvasSpecNames.suggestion(for: command, in: commands).map { " (did you mean \"\($0)\"?)" } ?? ""
                 throw CanvasAgentError.usage("unknown command \"\(command)\"\(hint); run `nubb +canvas help`")
             }
@@ -52,9 +57,11 @@ enum CanvasCommands {
         return url
     }
 
-    /// The drawing as it is now.
+    /// The drawing as it is now, with the viewer's unsaved edits written
+    /// first.
     private static func read(_ url: URL, _ context: CanvasCommandContext) throws -> CanvasAgentDocument {
-        try CanvasAgentDocument(url: url, create: false)
+        context.live?.flush(url)
+        return try CanvasAgentDocument(url: url, create: false)
     }
 
     private static func display(_ url: URL, _ context: CanvasCommandContext) -> String {
@@ -108,9 +115,10 @@ enum CanvasCommands {
         let dryRun = args.flag("dry-run")
         let asJSON = args.flag("json")
         let runLint = args.flag("lint")
+        let openViewer = args.flag("open")
         let quiet = args.flag("quiet")
         try args.finish(command: "apply", maxPositional: 2)
-        return try write(url, context, dryRun: dryRun, asJSON: asJSON, runLint: runLint, quiet: quiet) { file in
+        return try write(url, context, dryRun: dryRun, asJSON: asJSON, runLint: runLint, open: openViewer, quiet: quiet) { file in
             try CanvasEngine.apply(spec, to: file)
         }
     }
@@ -118,8 +126,9 @@ enum CanvasCommands {
     /// Runs a change on the drawing, saves it, and reports it.
     private static func write(
         _ url: URL, _ context: CanvasCommandContext, dryRun: Bool = false, asJSON: Bool = false, runLint: Bool = false,
-        quiet: Bool = false, create: Bool = true, _ change: (CanvasAgentDocument) throws -> CanvasApplyReport
+        open: Bool = false, quiet: Bool = false, create: Bool = true, _ change: (CanvasAgentDocument) throws -> CanvasApplyReport
     ) throws -> CanvasCommandResult {
+        let viewer = context.live?.flush(url)
         let (report, document) = try CanvasAgentDocument.edit(url, create: create) { file -> (CanvasApplyReport, CanvasDocument) in
             let report = try change(file)
             if !dryRun { try file.save() }
@@ -127,6 +136,10 @@ enum CanvasCommands {
         }
         var lintIssues: [CanvasLintIssue] = []
         if runLint { lintIssues = CanvasLint.run(document) }
+        var viewerNote: String?
+        if open, !dryRun {
+            viewerNote = try openInViewer(url, context, request: ["fit": .bool(viewer?.open != true)])
+        }
         if asJSON {
             var object = reportJSON(report, url: url, context: context)
             object["dryRun"] = .bool(dryRun)
@@ -160,6 +173,10 @@ enum CanvasCommands {
             lines.append(lintIssues.isEmpty ? "lint: no problems" : "lint: \(lintIssues.count) problem\(lintIssues.count == 1 ? "" : "s"):")
             lines.append(contentsOf: lintIssues.map { "  \($0.kind.rawValue)  \($0.message)" })
         }
+        if viewer?.editing == true {
+            lines.append("note: the user is editing text in the viewer; the change shows when they finish")
+        }
+        if let viewerNote { lines.append(viewerNote) }
         var result = CanvasCommandResult.ok(lines.joined(separator: "\n"))
         if runLint, !lintIssues.isEmpty { result.exit = 1 }
         return result
@@ -546,6 +563,7 @@ enum CanvasCommands {
         let url = try file(args, context, command: "changes")
         let asJSON = args.flag("json"), acknowledge = args.flag("ack")
         try args.finish(command: "changes", maxPositional: 1)
+        context.live?.flush(url)
         let found: (changes: [CanvasElementChange], baseline: Bool) = try CanvasAgentDocument.edit(url, create: false) { file in
             guard file.state.hasBaseline else { return ([], false) }
             if acknowledge {
@@ -754,5 +772,155 @@ enum CanvasCommands {
         var result = CanvasCommandResult.ok(lines.joined(separator: "\n"))
         result.exit = 1
         return result
+    }
+
+    // MARK: Viewer
+
+    private static func viewRequest(_ args: inout CanvasArguments) throws -> [String: CanvasJSON] {
+        var request: [String: CanvasJSON] = [:]
+        if let frame = args.value("frame") { request["frame"] = .string(frame) }
+        let selected = ids(args.values("ids"))
+        if !selected.isEmpty { request["ids"] = .array(selected.map(CanvasJSON.string)) }
+        if let regionText = args.value("region") {
+            let box = try region(regionText)
+            request["region"] = .array([box.minX, box.minY, box.width, box.height].map { .number(Double($0)) })
+        }
+        if args.flag("fit") { request["fit"] = .bool(true) }
+        if let zoom = try args.number("zoom", range: CanvasViewport.minZoom...CanvasViewport.maxZoom) { request["zoom"] = .number(zoom) }
+        if let padding = try args.number("padding", range: 0...2000) { request["padding"] = .number(padding) }
+        if args.flag("select") { request["select"] = .bool(true) }
+        if let hover = args.value("hover") { request["hover"] = .string(hover) }
+        return request
+    }
+
+    private static let viewOptions: Set<String> = ["frame", "ids", "region", "zoom", "padding", "hover"]
+
+    private static func open(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: viewOptions)
+        let url = try file(args, context, command: "open")
+        var request = try viewRequest(&args)
+        if args.flag("background") { request["background"] = .bool(true) }
+        let asJSON = args.flag("json")
+        try args.finish(command: "open", maxPositional: 1)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            try CanvasAgentStore.withLock(for: url) {
+                try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try CanvasDocument().encoded().write(to: url, options: .atomic)
+            }
+        }
+        let reply = try live(url, context, command: "open", request: request, launch: true)
+        return asJSON ? json(reply) : .ok("opened \(display(url, context)) in Nubb" + describeView(reply))
+    }
+
+    private static func view(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: viewOptions)
+        let url = try file(args, context, command: "view")
+        let request = try viewRequest(&args)
+        let asJSON = args.flag("json")
+        try args.finish(command: "view", maxPositional: 1)
+        guard !request.isEmpty else {
+            throw CanvasAgentError.usage("view needs where to look: --frame <name>, --ids a,b, --region x,y,w,h, --fit, --zoom <z>, or --hover <id>")
+        }
+        guard FileManager.default.fileExists(atPath: url.path) else { throw CanvasAgentError.failed("no drawing at \(url.path)") }
+        let reply = try live(url, context, command: "view", request: request, launch: true)
+        return asJSON ? json(reply) : .ok("showing" + describeView(reply))
+    }
+
+    private static func status(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: [])
+        let url = try file(args, context, command: "status")
+        let asJSON = args.flag("json")
+        try args.finish(command: "status", maxPositional: 1)
+        guard let client = context.live, let socket = client.target(for: url),
+              let reply = client.send(["command": .string("status"), "path": .string(url.path)], to: socket) else {
+            return asJSON ? json(.object(["running": .bool(false), "open": .bool(false)])) : .ok("Nubb isn't running")
+        }
+        if asJSON { return json(reply) }
+        guard reply["open"]?.boolValue == true else { return .ok("\(display(url, context)) isn't open in Nubb (`open` opens it)") }
+        var text = "\(display(url, context)) is open" + describeView(reply)
+        if reply["editing"]?.boolValue == true { text += "\nthe user is editing text" }
+        if let selected = reply["selected"]?.arrayValue?.compactMap(\.stringValue), !selected.isEmpty {
+            text += "\nselected: " + selected.joined(separator: ", ")
+        }
+        return .ok(text)
+    }
+
+    private static func describeView(_ reply: CanvasJSON) -> String {
+        guard let zoom = reply["zoom"]?.doubleValue, let visible = reply["visible"]?.arrayValue?.compactMap(\.doubleValue), visible.count == 4 else {
+            return ""
+        }
+        return ": zoom \(CanvasJSON.format((zoom * 100).rounded() / 100)), showing \(CanvasQuery.rect(CGRect(x: visible[0], y: visible[1], width: visible[2], height: visible[3])))"
+    }
+
+    /// Sends a viewer command, launching Nubb with the file when it isn't
+    /// running.
+    private static func live(_ url: URL, _ context: CanvasCommandContext, command: String, request: [String: CanvasJSON], launch: Bool) throws -> CanvasJSON {
+        var message = request
+        message["command"] = .string(command)
+        message["path"] = .string(url.path)
+        if let client = context.live, let socket = client.target(for: url), let reply = client.send(message, to: socket) {
+            if reply["ok"]?.boolValue == false {
+                throw CanvasAgentError.failed(reply["error"]?.stringValue ?? "Nubb couldn't do that")
+            }
+            return reply
+        }
+        guard launch else { throw CanvasAgentError.failed("Nubb isn't running") }
+        try launchApp(with: url)
+        let deadline = Date().addingTimeInterval(15)
+        while Date() < deadline {
+            usleep(200_000)
+            guard let client = CanvasLiveClient.fromEnvironment(), let socket = client.target(for: url) else { continue }
+            if let reply = client.send(message, to: socket), reply["ok"]?.boolValue == true { return reply }
+        }
+        throw CanvasAgentError.failed("started Nubb, but it didn't answer within 15 s")
+    }
+
+    private static func launchApp(with url: URL) throws {
+        let bundle = Bundle.main.bundleURL
+        guard bundle.pathExtension == "app" else { throw CanvasAgentError.failed("Nubb isn't running, and this nubb isn't inside Nubb.app to start it") }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-a", bundle.path, url.path]
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            throw CanvasAgentError.failed("can't start Nubb: \(error.localizedDescription)")
+        }
+    }
+
+    private static func openInViewer(_ url: URL, _ context: CanvasCommandContext, request: [String: CanvasJSON]) throws -> String {
+        let reply = try live(url, context, command: "open", request: request, launch: true)
+        return "opened in Nubb" + describeView(reply)
+    }
+
+    // MARK: Clipboard
+
+    private static func copy(_ raw: [String], _ context: CanvasCommandContext) throws -> CanvasCommandResult {
+        var args = try CanvasArguments(raw, valued: ["frame", "ids"])
+        let url = try file(args, context, command: "copy")
+        let frameName = args.value("frame")
+        let selected = ids(args.values("ids"))
+        try args.finish(command: "copy", maxPositional: 1)
+        let document = try read(url, context).document
+        var wanted: Set<String>?
+        if let frameName {
+            guard let frame = CanvasQuery.frame(named: frameName, in: document) else {
+                throw CanvasAgentError.failed("no frame named \"\(frameName)\"" + CanvasQuery.frameHint(frameName, in: document))
+            }
+            wanted = [frame.id]
+        }
+        if !selected.isEmpty { wanted = (wanted ?? []).union(selected) }
+        var elements = document.elements
+        if let wanted {
+            let ids = CanvasOps.withFrameChildren(CanvasOps.withBoundText(wanted, in: document), in: document)
+            elements = elements.filter { ids.contains($0.id) }
+        }
+        guard !elements.isEmpty else { throw CanvasAgentError.failed("nothing to copy") }
+        let data = CanvasDocument.clipboardData(elements: elements, files: document.files)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(String(bytes: data, encoding: .utf8) ?? "", forType: .string)
+        return .ok("copied \(elements.count) elements; paste them into excalidraw.com or a Nubb canvas")
     }
 }

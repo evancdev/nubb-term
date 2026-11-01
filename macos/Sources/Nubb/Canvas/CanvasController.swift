@@ -79,6 +79,8 @@ final class CanvasController: NSWindowController, NSWindowDelegate, TabSidebarTa
         setUpContent()
         session.open()
         updateTitle()
+        // Agents in any terminal can find the viewer once a drawing is open.
+        _ = CanvasLiveServer.shared
 
         NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)
             .sink { [weak self] _ in self?.store.flush() }

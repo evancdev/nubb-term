@@ -36,42 +36,6 @@ extension CanvasJSON {
     /// One-line JSON as text.
     var compactText: String { String(bytes: compact(), encoding: .utf8) ?? "" }
 
-    /// JSON on one line.
-    func compact() -> Data {
-        var out = ""
-        writeCompact(into: &out)
-        return Data(out.utf8)
-    }
-
-    private func writeCompact(into out: inout String) {
-        switch self {
-        case .null: out += "null"
-        case .bool(let value): out += value ? "true" : "false"
-        case .number(let value): out += CanvasJSON.format(value)
-        case .string(let value):
-            // The pretty writer's escaping, without its newline.
-            var text = CanvasJSON.string(value).text
-            text.removeLast()
-            out += text
-        case .array(let values):
-            out += "["
-            for (index, value) in values.enumerated() {
-                if index > 0 { out += "," }
-                value.writeCompact(into: &out)
-            }
-            out += "]"
-        case .object(let members):
-            out += "{"
-            for (index, key) in members.keys.sorted().enumerated() {
-                if index > 0 { out += "," }
-                CanvasJSON.string(key).writeCompact(into: &out)
-                out += ":"
-                members[key]!.writeCompact(into: &out)
-            }
-            out += "}"
-        }
-    }
-
     /// Equal, with numbers within a hundredth: layout rounds to hundredths.
     static func nearlyEqual(_ a: CanvasJSON, _ b: CanvasJSON) -> Bool {
         switch (a, b) {

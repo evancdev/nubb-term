@@ -366,7 +366,9 @@ extension Nubb {
             ) { [weak self] event in self?.localEventHandler(event) }
 
             // Setup our surface. This will also initialize all the terminal IO.
-            let surface_cfg = baseConfig ?? SurfaceConfiguration()
+            var surface_cfg = baseConfig ?? SurfaceConfiguration()
+            // Lets `nubb +canvas` in this terminal reach the app's viewer.
+            CanvasLiveServer.addEnvironment(to: &surface_cfg.environmentVariables)
             let surface = surface_cfg.withCValue(view: self) { surface_cfg_c in
                 nubb_surface_new(app, &surface_cfg_c)
             }
