@@ -2,6 +2,10 @@ import AppKit
 import Cocoa
 import NubbKit
 
+// `nubb +canvas ...` edits drawings without starting the app or the
+// terminal core, so agents can run it hundreds of times cheaply.
+CanvasCLI.runIfRequested()
+
 // Initialize Nubb global state. We do this once right away because the
 // CLI APIs require it and it lets us ensure it is done immediately for the
 // rest of the app.
