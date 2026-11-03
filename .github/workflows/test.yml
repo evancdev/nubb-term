@@ -282,3 +282,54 @@ jobs:
         run: pinact run --check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # The only check the main branch ruleset requires, so adding a job here
+  # doesn't mean editing the ruleset. It passes when every job in `needs`
+  # succeeded. `always()` keeps it from being skipped, because GitHub
+  # treats a skipped required check as passing.
+  required:
+    if: always()
+    needs:
+      - test
+      - build
+      - fuzz
+      - swiftlint
+      - zig-fmt
+      - prettier
+      - typos
+      - shellcheck
+      - pinact
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout workflow
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/workflows/test.yml
+          sparse-checkout-cone-mode: false
+
+      # A new job that isn't in `needs` could fail without blocking the
+      # merge. esctest is the one job that is report-only.
+      - name: Check every job is in needs
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          missing=$(yq -o=json '.jobs | keys' .github/workflows/test.yml \
+            | jq -r --argjson needs "$NEEDS" \
+              '. - ($needs | keys) - ["required", "esctest"] | join(", ")')
+          if [ -n "$missing" ]; then
+            echo "::error::Add to required.needs: $missing"
+            exit 1
+          fi
+
+      - name: Check job results
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          failed=$(jq -r '[to_entries[] | select(.value.result != "success")
+            | "\(.key) (\(.value.result))"] | join(", ")' <<< "$NEEDS")
+          if [ -n "$failed" ]; then
+            echo "::error::Didn't succeed: $failed"
+            exit 1
+          fi
+          echo "All $(jq length <<< "$NEEDS") jobs succeeded."
