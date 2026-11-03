@@ -27,6 +27,11 @@ struct CanvasControllerTests {
     /// Nothing but the window refers to its controller, and windows don't
     /// retain their controllers. The canvas must stay alive, saving and
     /// watching its file, until its window closes, and go away after.
+    ///
+    /// The window itself isn't checked: with the screen locked or no user
+    /// session, as on CI runners, AppKit keeps closed windows in
+    /// `NSApp.windows` for a while, even a plain one with no controller.
+    /// Releasing the controller is what frees the canvas.
     @Test func staysAliveWhileOpenAndIsReleasedAfterClosing() async throws {
         guard let app = Self.app else { return }
         let url = try Self.temporaryFile()
@@ -48,8 +53,13 @@ struct CanvasControllerTests {
         }
 
         #expect(await Self.wait { weakController == nil })
-        #expect(await Self.wait { weakWindow == nil })
         #expect(CanvasController.all.isEmpty)
+        // A window AppKit still holds is closed and no longer refers back.
+        if let window = weakWindow {
+            #expect(!window.isVisible)
+            #expect(window.windowController == nil)
+            #expect(window.delegate == nil)
+        }
     }
 
     /// Edits, merges an outside change, reopens, and closes. Kept apart so
