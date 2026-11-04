@@ -63,12 +63,21 @@ struct CanvasViewTests {
         }
 
         func key(_ characters: String, code: UInt16 = 0, flags: NSEvent.ModifierFlags = []) {
-            let event = NSEvent.keyEvent(
+            canvas.keyDown(with: keyEvent(characters, code: code, flags: flags))
+        }
+
+        /// A key press sent to whatever has keyboard focus, as AppKit does
+        /// once no menu item claims it.
+        func press(_ characters: String, code: UInt16 = 0, flags: NSEvent.ModifierFlags = []) {
+            window.firstResponder?.keyDown(with: keyEvent(characters, code: code, flags: flags))
+        }
+
+        private func keyEvent(_ characters: String, code: UInt16, flags: NSEvent.ModifierFlags) -> NSEvent {
+            NSEvent.keyEvent(
                 with: .keyDown, location: .zero, modifierFlags: flags,
                 timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
                 context: nil, characters: characters, charactersIgnoringModifiers: characters,
                 isARepeat: false, keyCode: code)!
-            canvas.keyDown(with: event)
         }
 
         func type(_ text: String) {
@@ -238,6 +247,61 @@ struct CanvasViewTests {
         #expect(h.editor.document.elements.map(\.id) == ["b"])
         h.editor.undo()
         #expect(h.editor.document.elements.count == 2)
+    }
+
+    // MARK: Undo keys
+
+    /// The Edit menu doesn't own Command-Z, so a terminal can pass it to
+    /// its program. The canvas handles the keys itself.
+    @Test func commandZUndoesAndShiftCommandZRedoes() {
+        let h = Harness(document: CanvasDocument(elements: [
+            Self.box("a", x: 0, y: 0), Self.box("b", x: 300, y: 0),
+        ]))
+        h.key("e")
+        h.drag([CGPoint(x: 50, y: 0), CGPoint(x: 50, y: 30)])
+        #expect(h.editor.document.elements.map(\.id) == ["b"])
+
+        h.press("z", code: 0x06, flags: .command)
+        #expect(h.editor.document.elements.map(\.id) == ["a", "b"])
+        h.press("Z", code: 0x06, flags: [.command, .shift])
+        #expect(h.editor.document.elements.map(\.id) == ["b"])
+        h.press("z", code: 0x06, flags: .command)
+        #expect(h.editor.document.elements.map(\.id) == ["a", "b"])
+        #expect(h.editor.tool == .eraser, "Z with Command isn't a tool key")
+    }
+
+    /// While a text is edited, the undo keys and the Edit menu undo typing,
+    /// not the drawing. The finished text is still one drawing step.
+    @Test func commandZUndoesTypingWhileEditingText() throws {
+        let h = Harness()
+        h.click(CGPoint(x: 200, y: 200), clicks: 2)
+        let id = try #require(h.canvas.textEditing?.id)
+        h.type("Hello")
+        #expect(h.editor.element(id)?.text == "Hello")
+
+        let undoItem = NSMenuItem(title: "Undo", action: #selector(CanvasView.undo(_:)), keyEquivalent: "")
+        let redoItem = NSMenuItem(title: "Redo", action: #selector(CanvasView.redo(_:)), keyEquivalent: "")
+        #expect(h.canvas.validateMenuItem(undoItem))
+        #expect(!h.canvas.validateMenuItem(redoItem))
+
+        h.press("z", code: 0x06, flags: .command)
+        #expect(h.canvas.textView?.string == "")
+        #expect(h.editor.element(id)?.text == "")
+        #expect(h.canvas.textEditing != nil, "still editing")
+        #expect(!h.canvas.validateMenuItem(undoItem))
+        #expect(h.canvas.validateMenuItem(redoItem))
+
+        h.press("Z", code: 0x06, flags: [.command, .shift])
+        #expect(h.editor.element(id)?.text == "Hello")
+        h.canvas.undo(nil)
+        #expect(h.editor.element(id)?.text == "", "Edit > Undo undoes typing too")
+        h.canvas.redo(nil)
+        #expect(h.editor.element(id)?.text == "Hello")
+
+        h.canvas.commitTextEditing()
+        #expect(h.editor.history.undoStack.count == 1)
+        h.press("z", code: 0x06, flags: .command)
+        #expect(h.editor.document.elements.isEmpty, "one undo removes the whole text")
     }
 
     // MARK: Selection

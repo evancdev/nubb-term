@@ -7,8 +7,16 @@ final class CanvasTextView: NSTextView {
     /// Undo inside the field stays separate from the drawing's undo.
     let localUndoManager = UndoManager()
 
+    /// The canvas the field edits text for.
+    weak var canvas: CanvasView?
+
     override var undoManager: UndoManager? { localUndoManager }
     override var acceptsFirstResponder: Bool { true }
+
+    override func keyDown(with event: NSEvent) {
+        if canvas?.performUndoKey(event) == true { return }
+        super.keyDown(with: event)
+    }
 }
 
 extension CanvasView {
@@ -113,6 +121,7 @@ extension CanvasView {
         field.isVerticallyResizable = false
         field.focusRingType = .none
         field.delegate = self
+        field.canvas = self
         return field
     }
 
