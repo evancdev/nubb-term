@@ -5,6 +5,7 @@ import AppKit
 extension CanvasView {
     override func keyDown(with event: NSEvent) {
         if keyBindingHandler?(event) == true { return }
+        if performUndoKey(event) { return }
 
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let shift = flags.contains(.shift)
@@ -165,8 +166,27 @@ extension CanvasView {
 // MARK: - Menu actions
 
 extension CanvasView: NSMenuItemValidation {
+    /// Undo for Command-Z, redo for Shift-Command-Z. The Edit menu items
+    /// have no shortcut, so that terminals can pass the keys to their
+    /// programs. The canvas and its text field handle the keys instead.
+    func performUndoKey(_ event: NSEvent) -> Bool {
+        guard event.charactersIgnoringModifiers?.lowercased() == "z" else { return false }
+        switch event.modifierFlags.intersection([.command, .shift, .option, .control]) {
+        case .command: undo(nil)
+        case [.command, .shift]: redo(nil)
+        default: return false
+        }
+        return true
+    }
+
+    /// While a text is edited, undo and redo apply to its typing. The field
+    /// doesn't always report those as changes, so the drawing syncs here.
     @IBAction func undo(_ sender: Any?) {
-        guard textEditing == nil else { return }
+        if textEditing != nil {
+            textView?.undoManager?.undo()
+            textEditorDidChange()
+            return
+        }
         if multipoint != nil || editor.isInteracting {
             escape()
             return
@@ -175,7 +195,12 @@ extension CanvasView: NSMenuItemValidation {
     }
 
     @IBAction func redo(_ sender: Any?) {
-        guard textEditing == nil, !editor.isInteracting else { return }
+        if textEditing != nil {
+            textView?.undoManager?.redo()
+            textEditorDidChange()
+            return
+        }
+        guard !editor.isInteracting else { return }
         editor.redo()
     }
 
@@ -271,8 +296,10 @@ extension CanvasView: NSMenuItemValidation {
         let editable = editor.isEditable && textEditing == nil
         switch item.action {
         case #selector(undo(_:)):
+            if textEditing != nil { return textView?.undoManager?.canUndo == true }
             return editable && (editor.canUndo || multipoint != nil)
         case #selector(redo(_:)):
+            if textEditing != nil { return textView?.undoManager?.canRedo == true }
             return editable && editor.canRedo
         case #selector(copy(_:)):
             return hasSelection
