@@ -80,6 +80,10 @@ been removed. Do not add them back.
   feat, fix, docs, refactor, test, chore, perf, build, ci, style,
   revert. Use `!` for breaking changes (removed config options, build
   flags, or CLI actions).
+- The scope names the feature, such as `canvas`, `tab-sidebar`,
+  `browser`, `splits`, `config` or `cli`. Never `macos`: Nubb only
+  runs on macOS, so it says nothing. Leave the scope out when no one
+  feature fits.
 - Body: one-line motivation, then bullets for decisions, trade-offs and
   invariants. The diff already shows what changed.
 - One coherent change per commit. Stage explicit paths, never
