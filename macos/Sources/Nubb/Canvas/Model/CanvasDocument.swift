@@ -8,7 +8,7 @@ struct CanvasDocument: Equatable {
     static let fileExtension = "excalidraw"
     static let fileType = "excalidraw"
     static let clipboardType = "excalidraw/clipboard"
-    static let source = "https://github.com/evancdev/nubb"
+    static let source = "https://github.com/evancdev/nubb-term"
 
     var elements: [CanvasElement] = []
 
