@@ -10,8 +10,8 @@ import Testing
 @Suite
 struct CanvasRoughGoldenTests {
     /// Read from the test bundle, which Xcode copies the fixture into.
-    /// Reading the source tree instead can block the run on a macOS prompt
-    /// for access to ~/Documents.
+    /// Reading the source tree instead can block the run on a macOS
+    /// prompt for access to the folder it is in.
     private static let golden: CanvasJSON = {
         let bundled = Bundle(for: BundleToken.self).url(forResource: "rough-golden", withExtension: "json")
         let url = bundled ?? URL(fileURLWithPath: #filePath)
