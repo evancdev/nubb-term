@@ -95,6 +95,17 @@ highway and simdutf.
 
 - `pkg/android-ndk/`
 
+### Highway CPU detection for non-Mac chips
+
+Macs use only arm64 (Apple Silicon) and x86_64 (Intel), so the runtime
+SIMD target probes for other CPUs and for Linux never ran. The x86 and
+Apple Silicon probes stay.
+
+- `pkg/highway/src/detect/aarch64_linux.zig`,
+  `pkg/highway/src/detect/linux.zig`
+- `pkg/highway/src/detect/loongarch.zig`, `pkg/highway/src/detect/ppc.zig`,
+  `pkg/highway/src/detect/riscv.zig`, `pkg/highway/src/detect/s390x.zig`
+
 ### Linux GTK app
 
 Nubb only ships the Mac app. Config options removed: all `gtk-*` options,
