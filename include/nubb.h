@@ -63,7 +63,6 @@ typedef void* nubb_surface_t;
 typedef enum {
   NUBB_PLATFORM_INVALID,
   NUBB_PLATFORM_MACOS,
-  NUBB_PLATFORM_IOS,
 } nubb_platform_e;
 
 typedef enum {
@@ -484,13 +483,8 @@ typedef struct {
   void* nsview;
 } nubb_platform_macos_s;
 
-typedef struct {
-  void* uiview;
-} nubb_platform_ios_s;
-
 typedef union {
   nubb_platform_macos_s macos;
-  nubb_platform_ios_s ios;
 } nubb_platform_u;
 
 typedef enum {

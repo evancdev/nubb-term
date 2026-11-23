@@ -36,7 +36,6 @@ pub fn open(
             .html => .{ .argv = &.{ "open", url } },
             .unknown, .osc8 => unreachable,
         },
-        .ios => return error.Unimplemented,
         else => @compileError("unsupported OS"),
     };
     // Ignore anything from stdout. This must be set before spawning the

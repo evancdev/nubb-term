@@ -342,7 +342,6 @@ pub const App = struct {
 /// Platform-specific configuration for libnubb.
 pub const Platform = union(PlatformTag) {
     macos: MacOS,
-    ios: IOS,
 
     // If our build target for libnubb is not darwin then we do
     // not include macos support at all.
@@ -351,20 +350,11 @@ pub const Platform = union(PlatformTag) {
         nsview: objc.Object,
     } else void;
 
-    pub const IOS = if (builtin.target.os.tag.isDarwin()) struct {
-        /// The view to render the surface on.
-        uiview: objc.Object,
-    } else void;
-
     // The C ABI compatible version of this union. The tag is expected
     // to be stored elsewhere.
     pub const C = extern union {
         macos: extern struct {
             nsview: ?*anyopaque,
-        },
-
-        ios: extern struct {
-            uiview: ?*anyopaque,
         },
     };
 
@@ -378,13 +368,6 @@ pub const Platform = union(PlatformTag) {
                     break :macos error.NSViewMustBeSet);
                 break :macos .{ .macos = .{ .nsview = nsview } };
             } else error.UnsupportedPlatform,
-
-            .ios => if (IOS != void) ios: {
-                const config = c_platform.ios;
-                const uiview = objc.Object.fromId(config.uiview orelse
-                    break :ios error.UIViewMustBeSet);
-                break :ios .{ .ios = .{ .uiview = uiview } };
-            } else error.UnsupportedPlatform,
         };
     }
 };
@@ -394,7 +377,6 @@ pub const PlatformTag = enum(c_int) {
     // from the C API.
 
     macos = 1,
-    ios = 2,
 };
 
 pub const EnvVar = extern struct {

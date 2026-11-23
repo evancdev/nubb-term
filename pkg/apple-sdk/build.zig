@@ -133,9 +133,6 @@ pub fn pathsForTarget(b: *std.Build, target: std.Target) !Cache.Value {
         // generic error but this was confusing a lot of community members.
         // It costs us nothing in the build script to return something better.
         .macos => error.XcodeMacOSSDKNotFound,
-        .ios => error.XcodeiOSSDKNotFound,
-        .tvos => error.XcodeTVOSSDKNotFound,
-        .watchos => error.XcodeWatchOSSDKNotFound,
         else => error.XcodeAppleSDKNotFound,
     };
 }

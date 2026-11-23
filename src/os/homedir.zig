@@ -13,10 +13,6 @@ const Error = error{
 pub inline fn home(io: std.Io, environ_map: *const std.process.Environ.Map, buf: []u8) !?[]const u8 {
     return switch (builtin.target.os.tag) {
         .macos => try homeUnix(io, environ_map, buf),
-
-        // iOS doesn't have a user-writable home directory
-        .ios => null,
-
         else => @compileError("unimplemented"),
     };
 }
@@ -97,10 +93,6 @@ pub fn expandHome(
 ) ExpandError![]const u8 {
     return switch (builtin.target.os.tag) {
         .macos => try expandHomeUnix(io, environ_map, path, buf),
-
-        // iOS doesn't have a user-writable home directory
-        .ios => return path,
-
         else => @compileError("unimplemented"),
     };
 }

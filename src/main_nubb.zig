@@ -209,23 +209,7 @@ pub const std_options: std.Options = .{
 
     .logFn = logFn,
 
-    // If are building for a non-MacOS Darwin target (e.g., iOS), we need to
-    // disable stack tracing for the time being. This is due to the fact that
-    // Zig switched to using _dyld_get_image_header_containing_address and some
-    // other (deprecated) calls to speed up stack unwinding; these calls are
-    // available on MacOS, but not on other platforms.
-    //
-    // A fix has already been submitted to exempt non-MacOS (but still Darwin)
-    // targets, so this can likely be removed in Zig 0.17.0, or a 0.16.x patch
-    // version if it releases beforehand.
-    //
-    // More details:
-    //   https://codeberg.org/ziglang/zig/commit/89f86e46d278a35a613bbc662cdd3f65ffc76ed7
-    //
-    .allow_stack_tracing = if (builtin.target.os.tag.isDarwin() and builtin.target.os.tag != .macos)
-        false
-    else
-        !builtin.strip_debug_info,
+    .allow_stack_tracing = !builtin.strip_debug_info,
 };
 
 test {

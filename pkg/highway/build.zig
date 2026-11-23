@@ -31,8 +31,7 @@ pub fn build(b: *std.Build) !void {
         module.addIncludePath(upstream.path(""));
     }
 
-    // Mainly for iOS simulators, but we add for all Darwin target for
-    // consistency.
+    // Point the build at the Apple SDK for libc and frameworks.
     if (target.result.os.tag.isDarwin()) {
         const apple_sdk = @import("apple_sdk");
         try apple_sdk.addPaths(b, lib);

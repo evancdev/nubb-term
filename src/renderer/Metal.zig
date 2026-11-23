@@ -59,7 +59,7 @@ pub fn init(
     opts: rendererpkg.Options,
 ) !Metal {
     comptime switch (builtin.target.os.tag) {
-        .macos, .ios => {},
+        .macos => {},
         else => @compileError("unsupported platform for Metal"),
     };
 
@@ -81,7 +81,6 @@ pub fn init(
             .scaleFactor = @floatCast(opts.rt_surface.content_scale.x),
             .view = switch (opts.rt_surface.platform) {
                 .macos => |v| v.nsview,
-                .ios => |v| v.uiview,
             },
         },
 
@@ -94,23 +93,13 @@ pub fn init(
     var layer = try IOSurfaceLayer.init();
     errdefer layer.release();
 
-    // Add our layer to the view.
-    //
-    // On macOS we do this by making the view "layer-hosting"
-    // by assigning it to the view's `layer` property BEFORE
-    // setting `wantsLayer` to `true`.
-    //
-    // On iOS, views are always layer-backed, and `layer`
-    // is readonly, so instead we add it as a sublayer.
+    // Add our layer to the view by making the view "layer-hosting":
+    // assign it to the view's `layer` property BEFORE setting
+    // `wantsLayer` to `true`.
     switch (comptime builtin.target.os.tag) {
         .macos => {
             info.view.setProperty("layer", layer.layer.value);
             info.view.setProperty("wantsLayer", true);
-        },
-
-        .ios => {
-            const view_layer = objc.Object.fromId(info.view.getProperty(?*anyopaque, "layer"));
-            view_layer.msgSend(void, objc.sel("addSublayer:"), .{layer.layer.value});
         },
 
         else => @compileError("unsupported target for Metal"),

@@ -41,11 +41,8 @@ pub fn init(alloc: std.mem.Allocator, options: Options) !*Device {
     errdefer device.release();
 
     // Grab metadata about the device.
-    const default_storage_mode: mtl.MTLResourceOptions.StorageMode = switch (comptime builtin.target.os.tag) {
-        // manage mode is not supported by iOS
-        .ios => .shared,
-        else => if (device.getProperty(bool, "hasUnifiedMemory")) .shared else .managed,
-    };
+    const default_storage_mode: mtl.MTLResourceOptions.StorageMode =
+        if (device.getProperty(bool, "hasUnifiedMemory")) .shared else .managed;
     const max_texture_size = queryMaxTextureSize(device);
     log.debug(
         "device properties default_storage_mode={} max_texture_size={}",
@@ -123,10 +120,6 @@ fn chooseDevice() error{NoMetalDevice}!objc.Object {
                 if (device.getProperty(bool, "isRemovable") or
                     device.getProperty(bool, "isLowPower")) break;
             }
-        },
-
-        .ios => {
-            chosen_device = objc.Object.fromId(mtl.MTLCreateSystemDefaultDevice());
         },
         else => @compileError("unsupported target for Metal"),
     }

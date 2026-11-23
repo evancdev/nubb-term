@@ -82,6 +82,15 @@ Nubb only targets macOS.
 - `src/os/wasm.zig`, `src/os/wasm/`, `src/os/windows.zig`
 - `src/terminal/kitty/windows.zig`
 
+### iOS and other Apple platforms
+
+Nubb only targets macOS.
+
+- C API: `GHOSTTY_PLATFORM_IOS`, `ghostty_platform_ios_s`, and the `ios`
+  member of `ghostty_platform_u`
+- The iOS, tvOS, and watchOS branches in shared code, including the
+  iOS-only null pty and the UIView-backed Metal layer setup
+
 ### Android NDK
 
 Only Android targets used it, to find the NDK's libc and C++ headers for
