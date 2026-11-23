@@ -1,7 +1,6 @@
 const SharedDeps = @This();
 
 const std = @import("std");
-const builtin = @import("builtin");
 
 const Config = @import("Config.zig");
 const HelpStrings = @import("HelpStrings.zig");
@@ -145,17 +144,6 @@ pub fn add(
     var static_libs: LazyPathList = .empty;
     errdefer static_libs.deinit(b.allocator);
 
-    // WARNING: This is a hack!
-    // If we're cross-compiling to Darwin then we don't add any deps.
-    // We don't support cross-compiling to Darwin but due to the way
-    // lazy dependencies work with Zig, we call this function. So we just
-    // bail. The build will fail but the build would've failed anyways.
-    if (!builtin.target.os.tag.isDarwin() and
-        self.config.target.result.os.tag.isDarwin())
-    {
-        return static_libs;
-    }
-
     // Every exe gets build options populated
     step.root_module.addOptions("build_options", self.options);
 
@@ -255,15 +243,8 @@ pub fn add(
     // C files
     step.root_module.link_libc = true;
 
-    // libcpp is required for various dependencies. On MSVC, we must
-    // not use linkLibCpp because Zig unconditionally passes -nostdinc++
-    // and then adds its bundled libc++/libc++abi include paths, which
-    // conflict with MSVC's own C++ runtime headers. The MSVC SDK
-    // include directories (already added via linkLibC above) contain
-    // both C and C++ headers, so linkLibCpp is not needed.
-    if (step.rootModuleTarget().abi != .msvc) {
-        step.root_module.link_libcpp = true;
-    }
+    // libcpp is required for various dependencies.
+    step.root_module.link_libcpp = true;
 
     // We always require the system SDK so that our system headers are available.
     // This makes things like `os/log.h` available for cross-compiling.

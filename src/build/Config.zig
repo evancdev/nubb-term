@@ -59,11 +59,9 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
     const target = target: {
         var result = b.standardTargetOptions(.{});
 
-        // If we're building for macOS and we're on macOS, we need to
-        // use a generic target to workaround compilation issues.
-        if (result.result.os.tag == .macos and
-            builtin.target.os.tag.isDarwin())
-        {
+        // If we're building for macOS, we need to use a generic target
+        // to workaround compilation issues.
+        if (result.result.os.tag == .macos) {
             result = genericMacOSTarget(b, result.query.cpu_arch);
         }
 
@@ -256,8 +254,7 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
         "emit-xcframework",
         "Build and install the xcframework for the macOS library.",
     ) orelse emit_xcfw: {
-        if (!builtin.target.os.tag.isDarwin() or target.result.os.tag != .macos)
-            break :emit_xcfw false;
+        if (target.result.os.tag != .macos) break :emit_xcfw false;
         if (config.is_dep) break :emit_xcfw false;
         break :emit_xcfw config.app_runtime == .none and
             (!config.emit_bench and

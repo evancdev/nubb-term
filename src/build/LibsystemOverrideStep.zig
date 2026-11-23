@@ -16,7 +16,6 @@
 //! already bound into the dylib at link time and cannot be repaired
 //! post-hoc. That needs an upstream Zig fix.
 const std = @import("std");
-const builtin = @import("builtin");
 
 pub const Result = struct {
     /// The step performing the override, or null if the override
@@ -26,19 +25,15 @@ pub const Result = struct {
     output: std.Build.LazyPath,
 };
 
-/// Post-process the given static archive on Darwin. Requires a Darwin
-/// host for the Apple toolchain (nmedit); in all other configurations
-/// this is a no-op and the input is returned unmodified, which is
-/// functional (the bundled compiler-rt symbols are used), just slower.
+/// Post-process the given static archive on Darwin. For any other target
+/// this is a no-op and the input is returned unmodified.
 pub fn create(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     input: std.Build.LazyPath,
     out_name: []const u8,
 ) Result {
-    if (!target.result.os.tag.isDarwin() or
-        comptime !builtin.target.os.tag.isDarwin())
-    {
+    if (!target.result.os.tag.isDarwin()) {
         return .{ .step = null, .output = input };
     }
 

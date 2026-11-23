@@ -75,9 +75,13 @@ and options removed: `dist`, `distcheck`, `-Demit-webdata`, `-Demit-docs`,
 
 ### Windows and WebAssembly
 
-Nubb only targets macOS.
+Nubb only targets macOS. Later, the Windows, MSVC, musl and FreeBSD
+branches in the vendored package builds and `src/build` went too, along
+with the build-host checks for a non-Mac host and the MRI-script archive
+combiner used off Darwin.
 
 - `dist/windows/`, `test/windows/`
+- `src/build/combine_archives.zig`
 - `src/apprt/browser.zig`, `src/main_wasm.zig`
 - `src/config/Wasm.zig`, `src/datastruct/wasm_page_pool.zig`
 - `src/font/face/web_canvas.zig`, `src/font/shaper/web_canvas.zig`

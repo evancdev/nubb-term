@@ -49,12 +49,7 @@ fn buildSpirvCross(
             .target = target,
             .optimize = optimize,
             .link_libc = true,
-            // On MSVC, we must not use linkLibCpp because Zig unconditionally
-            // passes -nostdinc++ and then adds its bundled libc++/libc++abi
-            // include paths, which conflict with MSVC's own C++ runtime
-            // headers. The MSVC SDK include directories (added via linkLibC)
-            // contain both C and C++ headers, so linkLibCpp is not needed.
-            .link_libcpp = target.result.abi != .msvc,
+            .link_libcpp = true,
         }),
         .linkage = .static,
     });
@@ -72,10 +67,6 @@ fn buildSpirvCross(
         "-fno-sanitize=undefined",
         "-fno-sanitize-trap=undefined",
     });
-
-    if (target.result.os.tag == .freebsd or target.result.abi == .musl) {
-        try flags.append(b.allocator, "-fPIC");
-    }
 
     if (b.lazyDependency("spirv_cross", .{})) |upstream| {
         lib.root_module.addIncludePath(upstream.path(""));

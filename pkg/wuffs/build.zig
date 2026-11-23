@@ -30,20 +30,15 @@ pub fn build(b: *std.Build) !void {
         .root_module = module,
     });
 
-    // Windows always has a libc available.
-    const windows = target.result.os.tag == .windows;
-
     translate: {
         const wuffs_dep = b.lazyDependency("wuffs", .{}) orelse break :translate;
-        const include_paths: []const std.Build.LazyPath = switch (windows) {
-            true => &.{wuffs_dep.path("release/c")},
-
-            // Wuffs only needs stdlib.h and string.h from libc, and only for
-            // a handful of declarations. We provide minimal versions of these
-            // headers so that wuffs can be translated and compiled without
-            // libc, notably for freestanding targets (wasm32) but this also
-            // avoids requiring an Apple SDK for translate-c on macOS.
-            false => &.{ b.path("include"), wuffs_dep.path("release/c") },
+        // Wuffs only needs stdlib.h and string.h from libc, and only for
+        // a handful of declarations. We provide minimal versions of these
+        // headers so that wuffs can be translated and compiled without
+        // libc, which avoids requiring an Apple SDK for translate-c.
+        const include_paths: []const std.Build.LazyPath = &.{
+            b.path("include"),
+            wuffs_dep.path("release/c"),
         };
 
         // Split up macro flags so that we can add them to translation
@@ -57,21 +52,9 @@ pub fn build(b: *std.Build) !void {
 
         // Larger flag set for C file build within module
         const c_flags = c_flags: {
-            var len: usize = macro_flags.len + 1;
-            if (windows) len += 2;
-            var flag_builder: std.ArrayList([]const u8) = try .initCapacity(b.allocator, len);
+            var flag_builder: std.ArrayList([]const u8) = try .initCapacity(b.allocator, macro_flags.len + 1);
 
             flag_builder.appendAssumeCapacity("-DWUFFS_IMPLEMENTATION");
-
-            // Disable ubsan on Windows to avoid undefined __ubsan_handle_*
-            // references: Zig's ubsan runtime can't be bundled on Windows
-            // (its /exclude-symbols directives break the MSVC linker), so
-            // these handlers would go unresolved. This affects both the
-            // MSVC and GNU ABIs.
-            if (windows) {
-                flag_builder.appendAssumeCapacity("-fno-sanitize=undefined");
-                flag_builder.appendAssumeCapacity("-fno-sanitize-trap=undefined");
-            }
 
             for (macro_flags) |f| flag_builder.appendAssumeCapacity(f);
 
@@ -86,7 +69,7 @@ pub fn build(b: *std.Build) !void {
             .target = target,
             .optimize = optimize,
             .include_paths = include_paths,
-            .link_libc = windows,
+            .link_libc = false,
             .extra_args = macro_flags,
         });
 

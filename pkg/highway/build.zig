@@ -82,31 +82,10 @@ pub fn build(b: *std.Build) !void {
         // Fixes linker issues for release builds missing ubsanitizer symbols
         "-fno-sanitize=undefined",
         "-fno-sanitize-trap=undefined",
+
+        "-fmath-errno",
+        "-fno-exceptions",
     });
-
-    if (target.result.os.tag == .freebsd or target.result.os.tag == .linux) {
-        try flags.append(b.allocator, "-fPIC");
-        lib.root_module.pic = true;
-    }
-
-    if (target.result.os.tag != .windows) {
-        try flags.appendSlice(b.allocator, &.{
-            "-fmath-errno",
-            "-fno-exceptions",
-        });
-    } else if (target.result.abi == .msvc) {
-        try flags.appendSlice(b.allocator, &.{
-            // -fno-autolink also drops UCRT's /alternatename fallback.
-            "-D_Avx2WmemEnabledWeakValue=_Avx2WmemEnabled",
-            "-fno-autolink",
-            "-fno-stack-protector",
-        });
-
-        // When the C stack protector is disabled we must also disable stack
-        // protection for the Zig code, since otherwise Zig will link to
-        // undefined security cookie symbols.
-        lib.root_module.stack_protector = false;
-    }
 
     lib.root_module.addCSourceFiles(.{ .flags = flags.items, .files = &.{
         "src/cpp/abort.cc",
