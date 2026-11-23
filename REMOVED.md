@@ -414,6 +414,16 @@ injects generated files. CLI action removed: `+boo`.
 - `src/build/framegen/`
 - `src/cli/boo.zig`
 
+### Benchmark C API
+
+Every app build exported a C entry point into the benchmark CLI, and its only
+caller was a disabled Swift test suite. The `nubb-bench` tool
+(`-Demit-bench`) stays. C API function removed: `nubb_benchmark_cli`
+(upstream `ghostty_benchmark_cli`).
+
+- `src/benchmark/CApi.zig`
+- `macos/Tests/BenchmarkTests.swift`
+
 ### Light and tinted themes
 
 Ghostty downloaded 771 themes from iTerm2-Color-Schemes at build time. Nubb

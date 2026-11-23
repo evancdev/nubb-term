@@ -1134,9 +1134,6 @@ NUBB_API bool nubb_surface_quicklook_word(nubb_surface_t, nubb_text_s*);
 // Don't use these unless you know what you're doing.
 NUBB_API void nubb_set_window_background_blur(nubb_app_t, void*);
 
-// Benchmark API, if available.
-NUBB_API bool nubb_benchmark_cli(const char*, const char*);
-
 #ifdef __cplusplus
 }
 #endif
