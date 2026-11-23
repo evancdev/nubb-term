@@ -314,7 +314,7 @@ fn setupFd(src: File.Handle, target: i32) !void {
     };
 
     switch (builtin.target.os.tag) {
-        .ios, .macos => {
+        .macos => {
             // Mac doesn't support dup3 so we use dup2. We purposely clear
             // CLO_ON_EXEC for this fd.
             const flags = try PosixCall.f(posix.system.fcntl, .{ src, posix.F.GETFD });

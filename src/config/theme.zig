@@ -38,15 +38,7 @@ pub const Location = enum {
                     &environ_map,
                     .{ .subdir = subdir },
                 ) catch |err| {
-                    // We need to do some comptime tricks to get the right
-                    // error set since some platforms don't support some
-                    // error types.
-                    const Error = @TypeOf(err) || switch (builtin.target.os.tag) {
-                        .ios => error{BufferTooSmall},
-                        else => error{},
-                    };
-
-                    switch (@as(Error, err)) {
+                    switch (err) {
                         error.OutOfMemory => return error.OutOfMemory,
                         error.BufferTooSmall => return error.OutOfMemory,
 

@@ -14,10 +14,7 @@ pub const winsize = extern struct {
     ws_ypixel: u16 = 600,
 };
 
-pub const Pty = switch (builtin.target.os.tag) {
-    .ios => NullPty,
-    else => PosixPty,
-};
+pub const Pty = PosixPty;
 
 /// The modes of a pty. Not all of these modes are supported on
 /// all platforms but all platforms share the same mode struct.
@@ -31,51 +28,6 @@ pub const Mode = packed struct {
 
     /// ECHO on POSIX
     echo: bool = true,
-};
-
-// A pty implementation that does nothing.
-//
-// TODO: This should be removed. This is only temporary until we have
-// a termio that doesn't use a pty. This isn't used in any user-facing
-// artifacts, this is just a stopgap to get compilation to work on iOS.
-const NullPty = struct {
-    pub const Error = OpenError || GetModeError || SetSizeError || ChildPreExecError;
-
-    pub const Fd = posix.fd_t;
-
-    master: Fd,
-    slave: Fd,
-
-    pub const OpenError = error{};
-
-    pub fn open(size: winsize) OpenError!Pty {
-        _ = size;
-        return .{ .master = 0, .slave = 0 };
-    }
-
-    pub fn deinit(self: *Pty) void {
-        _ = self;
-    }
-
-    pub const GetModeError = error{GetModeFailed};
-
-    pub fn getMode(self: Pty) GetModeError!Mode {
-        _ = self;
-        return .{};
-    }
-
-    pub const SetSizeError = error{};
-
-    pub fn setSize(self: *Pty, size: winsize) SetSizeError!void {
-        _ = self;
-        _ = size;
-    }
-
-    pub const ChildPreExecError = error{};
-
-    pub fn childPreExec(self: Pty) ChildPreExecError!void {
-        _ = self;
-    }
 };
 
 /// Posix PTY creation and management. This is just a thin layer on top
