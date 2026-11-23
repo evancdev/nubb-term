@@ -26,16 +26,10 @@ pub fn build(b: *std.Build) !void {
         b.installArtifact(test_exe.?);
     }
 
-    const lib: union(enum) {
-        system,
-        static: *std.Build.Step.Compile,
-    } = if (b.systemIntegrationOption("oniguruma", .{}))
-        .system
-    else
-        .{ .static = try buildLib(b, .{
-            .target = target,
-            .optimize = optimize,
-        }) };
+    const lib = try buildLib(b, .{
+        .target = target,
+        .optimize = optimize,
+    });
 
     try translate_c.addImportToModule(b, "oniguruma_c", module, .{
         .source = .{ .includes = .{
@@ -43,8 +37,7 @@ pub fn build(b: *std.Build) !void {
         } },
         .target = target,
         .optimize = optimize,
-        .link_system_libs = if (lib == .system) &.{"oniguruma"} else &.{},
-        .link_libs = if (lib == .static) &.{lib.static} else &.{},
+        .link_libs = &.{lib},
     });
 }
 

@@ -61,9 +61,11 @@ inside the xcframework, which stays. The `dist` source tarball (with its
 `VERSION` file) and the website reference data went too. Man pages needed
 pandoc, which the build never had, so the app only shipped an empty `man`
 folder and set `MANPATH` to it. The standalone `nubb` executable build (for
-GTK) and the NixOS patchelf step went too. Build steps and options removed:
-`dist`, `distcheck`, `-Demit-webdata`, `-Demit-docs`, `-Demit-exe`, `-Dpie`,
-`-Dpatch-interp`, `-Dpatch-rpath`.
+GTK) and the NixOS patchelf step went too, as did the `-fsys` options that
+let distro packagers link system copies of vendored libraries. Build steps
+and options removed: `dist`, `distcheck`, `-Demit-webdata`, `-Demit-docs`,
+`-Demit-exe`, `-Dpie`, `-Dpatch-interp`, `-Dpatch-rpath`, `-fsys=oniguruma`,
+`-fsys=glslang`, `-fsys=spirv-cross`, `-fsys=simdutf`, `-fsys=highway`.
 
 - `src/build/GhosttyDist.zig`, `src/build/GhosttyDocs.zig`,
   `src/build/GhosttyExe.zig`, `src/build/GhosttyWebdata.zig`,

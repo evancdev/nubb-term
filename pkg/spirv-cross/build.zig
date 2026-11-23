@@ -25,13 +25,7 @@ pub fn build(b: *std.Build) !void {
         // b.installArtifact(test_exe.?);
     }
 
-    const lib: union(enum) {
-        system,
-        static: *std.Build.Step.Compile,
-    } = if (b.systemIntegrationOption("spirv-cross", .{}))
-        .system
-    else
-        .{ .static = try buildSpirvCross(b, module, target, optimize) };
+    const lib = try buildSpirvCross(b, module, target, optimize);
 
     try translate_c.addImportToModule(b, "spirv_cross_c", module, .{
         .source = .{ .includes = .{
@@ -39,8 +33,7 @@ pub fn build(b: *std.Build) !void {
         } },
         .target = target,
         .optimize = optimize,
-        .link_system_libs = if (lib == .system) &.{"spirv-cross-c-shared"} else &.{},
-        .link_libs = if (lib == .static) &.{lib.static} else &.{},
+        .link_libs = &.{lib},
     });
 }
 

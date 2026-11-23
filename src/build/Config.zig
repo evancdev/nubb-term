@@ -271,44 +271,6 @@ pub fn init(b: *std.Build, appVersion: []const u8) !Config {
         "Build and install the macOS app bundle.",
     ) orelse !config.is_dep and config.emit_xcframework;
 
-    //---------------------------------------------------------------
-    // System Packages
-
-    // These are all our dependencies that can be used with system
-    // packages if they exist. We set them up here so that we can set
-    // their defaults early. The first call configures the integration and
-    // subsequent calls just return the configured value. This lets them
-    // show up properly in `--help`.
-
-    {
-        // These dependencies we want to default false if we're on macOS.
-        // On macOS we don't want to use system libraries because we
-        // generally want a fat binary. This can be overridden with the
-        // `-fsys` flag.
-        for (&[_][]const u8{
-            "oniguruma",
-        }) |dep| {
-            _ = b.systemIntegrationOption(
-                dep,
-                .{
-                    // If we're not on darwin we want to use whatever the
-                    // default is via the system package mode
-                    .default = if (target.result.os.tag.isDarwin()) false else null,
-                },
-            );
-        }
-
-        // These default to false because they're rarely available as
-        // system packages so we usually want to statically link them.
-        for (&[_][]const u8{
-            "glslang",
-            "spirv-cross",
-            "simdutf",
-        }) |dep| {
-            _ = b.systemIntegrationOption(dep, .{ .default = false });
-        }
-    }
-
     return config;
 }
 
