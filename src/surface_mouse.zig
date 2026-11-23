@@ -6,7 +6,6 @@
 const SurfaceMouse = @This();
 
 const std = @import("std");
-const builtin = @import("builtin");
 const input = @import("input.zig");
 const terminal = @import("terminal/main.zig");
 const MouseShape = terminal.MouseShape;
@@ -96,10 +95,7 @@ fn isMouseModeOverrideState(mods: input.Mods) bool {
 /// Returns true if our modifiers put us in a state where dragging
 /// should cause a rectangle select.
 pub fn isRectangleSelectState(mods: input.Mods) bool {
-    return if (comptime builtin.target.os.tag.isDarwin())
-        mods.alt
-    else
-        mods.ctrlOrSuper() and mods.alt;
+    return mods.alt;
 }
 
 test "keyToMouseShape" {

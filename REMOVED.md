@@ -126,7 +126,10 @@ pty and `dup3` paths, the Linux `madvise` path in the terminal core, the
 Linux and FreeBSD include branches in `src/pty.c`, and the Linux default
 keybinds and config defaults in `src/config/Config.zig` (ctrl+shift copy,
 paste, tabs and splits, alt+N tab switching, `font-size = 12`,
-`alpha-blending = linear-corrected`).
+`alpha-blending = linear-corrected`), and the remaining non-Darwin
+branches and test skips across `src/` and `test/` (the exit code check and
+message, ctrl as the primary modifier, the plain page allocator, the
+Windows fuzz `argv0`).
 
 - `.github/workflows/flatpak.yml`, `.github/workflows/snap.yml`
 - `dist/linux/`, `flatpak/`, `snap/`

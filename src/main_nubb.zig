@@ -124,7 +124,6 @@ fn logFn(
     //
     // macOS logging is thread safe so no need for locks/mutexes
     macos: {
-        if (comptime !builtin.target.os.tag.isDarwin()) break :macos;
         if (!global.logging().macos) break :macos;
 
         const prefix = if (scope == .default) "" else @tagName(scope) ++ ": ";
