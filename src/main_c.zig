@@ -39,10 +39,6 @@ comptime {
     // Any apprt-specific C API, mainly libnubb for apprt.embedded.
     if (@hasDecl(apprt.runtime, "CAPI")) _ = apprt.runtime.CAPI;
 
-    // Our benchmark API. We probably want to gate this on a build
-    // config in the future but for now we always just export it.
-    _ = @import("benchmark/main.zig").CApi;
-
     // Force-reference our memset override so its export is emitted.
     // See quirks_memset.zig for details on why this exists.
     _ = @import("quirks_memset.zig");
