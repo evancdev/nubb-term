@@ -59,10 +59,7 @@ pub fn resourcesDir(alloc: Allocator) !ResourcesDir {
 
     // This is the sentinel value we look for in the path to know
     // we've found the resources directory.
-    const sentinels = switch (comptime builtin.target.os.tag) {
-        .macos => .{"terminfo/78/xterm-ghostty"},
-        else => .{ "terminfo/g/ghostty", "terminfo/x/xterm-ghostty" },
-    };
+    const sentinels = .{"terminfo/78/xterm-ghostty"};
 
     // Get the path to our running binary
     var exe_buf: [std.Io.Dir.max_path_bytes]u8 = undefined;

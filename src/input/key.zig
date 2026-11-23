@@ -1,5 +1,4 @@
 const std = @import("std");
-const builtin = @import("builtin");
 const Allocator = std.mem.Allocator;
 
 pub const Mods = @import("key_mods.zig").Mods;
@@ -463,10 +462,7 @@ pub const Key = enum(c_int) {
     /// true if this key is one of the left or right versions of super (MacOS)
     /// or ctrl.
     pub fn ctrlOrSuper(self: Key) bool {
-        if (comptime builtin.target.os.tag.isDarwin()) {
-            return self == .meta_left or self == .meta_right;
-        }
-        return self == .control_left or self == .control_right;
+        return self == .meta_left or self == .meta_right;
     }
 
     /// true if this key is either left or right shift.
@@ -579,18 +575,11 @@ pub const Key = enum(c_int) {
     };
 };
 
-/// This sets either "ctrl" or "super" to true (but not both)
-/// on mods depending on if the build target is Mac or not. On
-/// Mac, we default to super (i.e. super+c for copy) and on
-/// non-Mac we default to ctrl (i.e. ctrl+c for copy).
+/// This sets "super" to true on mods, the Mac default for
+/// bindings like super+c for copy.
 pub fn ctrlOrSuper(mods: Mods) Mods {
     var copy = mods;
-    if (comptime builtin.target.os.tag.isDarwin()) {
-        copy.super = true;
-    } else {
-        copy.ctrl = true;
-    }
-
+    copy.super = true;
     return copy;
 }
 

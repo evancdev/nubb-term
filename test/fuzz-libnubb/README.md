@@ -26,8 +26,6 @@ between the slice path (SIMD fast-path) and the scalar path.
 Install AFL++ so that `afl-cc` and `afl-fuzz` are on your `PATH`.
 
 - **macOS (Homebrew):** `brew install afl++`
-- **Linux:** build from source or use your distro's package (e.g.
-  `apt install afl++` on Debian/Ubuntu).
 
 ## Building
 
@@ -110,16 +108,6 @@ AFL_NO_FORKSRV=1 afl-cmin.bash \
 `AFL_NO_FORKSRV=1` is required because the Python `afl-cmin` wrapper has
 a bug in AFL++ 4.35c. Use the `afl-cmin.bash` script instead (typically
 found in AFL++'s `libexec` directory).
-
-### Windows compatibility
-
-AFL++ output filenames contain colons (e.g., `id:000024,time:0,...`), which
-are invalid on Windows (NTFS). After running `afl-cmin`,
-rename the output files to replace colons with underscores before committing:
-
-```sh
-./corpus/sanitize-filenames.sh
-```
 
 ### Corpus directories
 

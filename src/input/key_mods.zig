@@ -141,10 +141,7 @@ pub const Mods = packed struct(Mods.Backing) {
 
     /// Checks to see if super is on (MacOS) or ctrl.
     pub fn ctrlOrSuper(self: Mods) bool {
-        if (comptime builtin.target.os.tag.isDarwin()) {
-            return self.super;
-        }
-        return self.ctrl;
+        return self.super;
     }
 
     // For our own understanding
@@ -158,8 +155,6 @@ pub const Mods = packed struct(Mods.Backing) {
     }
 
     test "translation macos-option-as-alt" {
-        if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
         const testing = std.testing;
 
         // Unset

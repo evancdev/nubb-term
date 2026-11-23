@@ -1,7 +1,6 @@
 const SharedDeps = @This();
 
 const std = @import("std");
-const builtin = @import("builtin");
 
 const Config = @import("Config.zig");
 const HelpStrings = @import("HelpStrings.zig");
@@ -145,17 +144,6 @@ pub fn add(
     var static_libs: LazyPathList = .empty;
     errdefer static_libs.deinit(b.allocator);
 
-    // WARNING: This is a hack!
-    // If we're cross-compiling to Darwin then we don't add any deps.
-    // We don't support cross-compiling to Darwin but due to the way
-    // lazy dependencies work with Zig, we call this function. So we just
-    // bail. The build will fail but the build would've failed anyways.
-    if (!builtin.target.os.tag.isDarwin() and
-        self.config.target.result.os.tag.isDarwin())
-    {
-        return static_libs;
-    }
-
     // Every exe gets build options populated
     step.root_module.addOptions("build_options", self.options);
 
@@ -209,15 +197,11 @@ pub fn add(
             "oniguruma",
             oniguruma_dep.module("oniguruma"),
         );
-        if (b.systemIntegrationOption("oniguruma", .{})) {
-            step.root_module.linkSystemLibrary("oniguruma", dynamic_link_opts);
-        } else {
-            step.root_module.linkLibrary(oniguruma_dep.artifact("oniguruma"));
-            try static_libs.append(
-                b.allocator,
-                oniguruma_dep.artifact("oniguruma").getEmittedBin(),
-            );
-        }
+        step.root_module.linkLibrary(oniguruma_dep.artifact("oniguruma"));
+        try static_libs.append(
+            b.allocator,
+            oniguruma_dep.artifact("oniguruma").getEmittedBin(),
+        );
     }
 
     // Glslang
@@ -226,19 +210,11 @@ pub fn add(
         .optimize = optimize,
     })) |glslang_dep| {
         step.root_module.addImport("glslang", glslang_dep.module("glslang"));
-        if (b.systemIntegrationOption("glslang", .{})) {
-            step.root_module.linkSystemLibrary("glslang", dynamic_link_opts);
-            step.root_module.linkSystemLibrary(
-                "glslang-default-resource-limits",
-                dynamic_link_opts,
-            );
-        } else {
-            step.root_module.linkLibrary(glslang_dep.artifact("glslang"));
-            try static_libs.append(
-                b.allocator,
-                glslang_dep.artifact("glslang").getEmittedBin(),
-            );
-        }
+        step.root_module.linkLibrary(glslang_dep.artifact("glslang"));
+        try static_libs.append(
+            b.allocator,
+            glslang_dep.artifact("glslang").getEmittedBin(),
+        );
     }
 
     // Spirv-cross
@@ -250,15 +226,11 @@ pub fn add(
             "spirv_cross",
             spirv_cross_dep.module("spirv_cross"),
         );
-        if (b.systemIntegrationOption("spirv-cross", .{})) {
-            step.root_module.linkSystemLibrary("spirv-cross-c-shared", dynamic_link_opts);
-        } else {
-            step.root_module.linkLibrary(spirv_cross_dep.artifact("spirv_cross"));
-            try static_libs.append(
-                b.allocator,
-                spirv_cross_dep.artifact("spirv_cross").getEmittedBin(),
-            );
-        }
+        step.root_module.linkLibrary(spirv_cross_dep.artifact("spirv_cross"));
+        try static_libs.append(
+            b.allocator,
+            spirv_cross_dep.artifact("spirv_cross").getEmittedBin(),
+        );
     }
 
     // Simd
@@ -271,15 +243,8 @@ pub fn add(
     // C files
     step.root_module.link_libc = true;
 
-    // libcpp is required for various dependencies. On MSVC, we must
-    // not use linkLibCpp because Zig unconditionally passes -nostdinc++
-    // and then adds its bundled libc++/libc++abi include paths, which
-    // conflict with MSVC's own C++ runtime headers. The MSVC SDK
-    // include directories (already added via linkLibC above) contain
-    // both C and C++ headers, so linkLibCpp is not needed.
-    if (step.rootModuleTarget().abi != .msvc) {
-        step.root_module.link_libcpp = true;
-    }
+    // libcpp is required for various dependencies.
+    step.root_module.link_libcpp = true;
 
     // We always require the system SDK so that our system headers are available.
     // This makes things like `os/log.h` available for cross-compiling.
@@ -401,39 +366,30 @@ pub fn addSimd(
 ) !void {
     const target = m.resolved_target.?;
     const optimize = m.optimize.?;
-    const system_highway = b.systemIntegrationOption("highway", .{ .default = false });
 
     // Simdutf
-    if (b.systemIntegrationOption("simdutf", .{})) {
-        m.linkSystemLibrary("simdutf", dynamic_link_opts);
-    } else {
-        if (b.lazyDependency("simdutf", .{
-            .target = target,
-            .optimize = optimize,
-            .no_libcxx = true,
-        })) |simdutf_dep| {
-            m.linkLibrary(simdutf_dep.artifact("simdutf"));
-            if (static_libs) |v| try v.append(
-                b.allocator,
-                simdutf_dep.artifact("simdutf").getEmittedBin(),
-            );
-        }
+    if (b.lazyDependency("simdutf", .{
+        .target = target,
+        .optimize = optimize,
+        .no_libcxx = true,
+    })) |simdutf_dep| {
+        m.linkLibrary(simdutf_dep.artifact("simdutf"));
+        if (static_libs) |v| try v.append(
+            b.allocator,
+            simdutf_dep.artifact("simdutf").getEmittedBin(),
+        );
     }
 
     // Highway
-    if (system_highway) {
-        m.linkSystemLibrary("libhwy", dynamic_link_opts);
-    } else {
-        if (b.lazyDependency("highway", .{
-            .target = target,
-            .optimize = optimize,
-        })) |highway_dep| {
-            m.linkLibrary(highway_dep.artifact("highway"));
-            if (static_libs) |v| try v.append(
-                b.allocator,
-                highway_dep.artifact("highway").getEmittedBin(),
-            );
-        }
+    if (b.lazyDependency("highway", .{
+        .target = target,
+        .optimize = optimize,
+    })) |highway_dep| {
+        m.linkLibrary(highway_dep.artifact("highway"));
+        if (static_libs) |v| try v.append(
+            b.allocator,
+            highway_dep.artifact("highway").getEmittedBin(),
+        );
     }
 
     // SIMD C++ files
@@ -471,15 +427,14 @@ pub fn addSimd(
         // Keep our SIMD sources in the same Highway header mode as the
         // vendored package build so HWY's inline dispatch/runtime helpers
         // have a consistent ABI.
-        if (!system_highway) try flags.append(
+        try flags.append(
             b.allocator,
             "-DHWY_NO_LIBCXX",
         );
 
-        // When using the vendored simdutf, build its headers in no-libcxx
-        // mode so we don't need C++ standard library headers at all.
-        // System simdutf headers may not support this define.
-        if (!b.systemIntegrationOption("simdutf", .{})) try flags.append(
+        // Build the vendored simdutf headers in no-libcxx mode so we
+        // don't need C++ standard library headers at all.
+        try flags.append(
             b.allocator,
             "-DSIMDUTF_NO_LIBCXX",
         );
@@ -495,11 +450,3 @@ pub fn addSimd(
         });
     }
 }
-
-// For dynamic linking, we prefer dynamic linking and to search by
-// mode first. Mode first will search all paths for a dynamic library
-// before falling back to static.
-const dynamic_link_opts: std.Build.Module.LinkSystemLibraryOptions = .{
-    .preferred_link_mode = .dynamic,
-    .search_strategy = .mode_first,
-};

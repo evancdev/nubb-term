@@ -297,15 +297,12 @@ fn kitty(
             // Determine if the Alt modifier should be treated as an actual
             // modifier (in which case it prevents associated text) or as
             // the macOS Option key, which does not prevent associated text.
-            const alt_prevents_text = if (comptime builtin.target.os.tag == .macos)
-                switch (opts.macos_option_as_alt) {
-                    .left => all_mods.sides.alt == .left,
-                    .right => all_mods.sides.alt == .right,
-                    .true => true,
-                    .false => false,
-                }
-            else
-                true;
+            const alt_prevents_text = switch (opts.macos_option_as_alt) {
+                .left => all_mods.sides.alt == .left,
+                .right => all_mods.sides.alt == .right,
+                .true => true,
+                .false => false,
+            };
 
             if (seq.mods.preventsText(alt_prevents_text)) break :associated;
 
@@ -1779,8 +1776,6 @@ test "kitty: left shift with report all" {
 }
 
 test "kitty: report associated with alt text on macOS with option" {
-    if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
     var buf: [128]u8 = undefined;
     var writer: std.Io.Writer = .fixed(&buf);
     try kitty(&writer, .{
@@ -1801,8 +1796,6 @@ test "kitty: report associated with alt text on macOS with option" {
 }
 
 test "kitty: report associated with alt text on macOS with alt" {
-    if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
     {
         // With Alt modifier
         var buf: [128]u8 = undefined;
@@ -2179,8 +2172,6 @@ test "legacy: alt+unicode without unshifted" {
 }
 
 test "legacy: alt+x macos" {
-    if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
     var buf: [128]u8 = undefined;
     var writer: std.Io.Writer = .fixed(&buf);
     try legacy(&writer, .{
@@ -2196,8 +2187,6 @@ test "legacy: alt+x macos" {
 }
 
 test "legacy: shift+alt+. macos" {
-    if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
     var buf: [128]u8 = undefined;
     var writer: std.Io.Writer = .fixed(&buf);
     try legacy(&writer, .{

@@ -28,12 +28,8 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
     deps.help_strings.addImport(build_data_exe);
 
     // Terminfo
-    terminfo: {
-        const os_tag = cfg.target.result.os.tag;
-        const terminfo_share_dir = if (os_tag == .freebsd)
-            "site-terminfo"
-        else
-            "terminfo";
+    {
+        const terminfo_share_dir = "terminfo";
 
         // Encode our terminfo
         const run = b.addRunArtifact(build_data_exe);
@@ -44,17 +40,11 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
         if (cfg.emit_terminfo) {
             const source_install = b.addInstallFile(
                 source,
-                if (os_tag == .freebsd)
-                    "share/site-terminfo/ghostty.terminfo"
-                else
-                    "share/terminfo/ghostty.terminfo",
+                "share/terminfo/ghostty.terminfo",
             );
 
             try steps.append(b.allocator, &source_install.step);
         }
-
-        // Windows doesn't have the binaries below.
-        if (os_tag == .windows) break :terminfo;
 
         // Convert to termcap source format if thats helpful to people and
         // install it. The resulting value here is the termcap source in case
@@ -68,10 +58,7 @@ pub fn init(b: *std.Build, cfg: *const Config, deps: *const SharedDeps) !NubbRes
 
             const cap_install = b.addInstallFile(
                 out_source,
-                if (os_tag == .freebsd)
-                    "share/site-terminfo/ghostty.termcap"
-                else
-                    "share/terminfo/ghostty.termcap",
+                "share/terminfo/ghostty.termcap",
             );
 
             try steps.append(b.allocator, &cap_install.step);

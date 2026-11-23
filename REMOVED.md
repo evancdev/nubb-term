@@ -61,9 +61,11 @@ inside the xcframework, which stays. The `dist` source tarball (with its
 `VERSION` file) and the website reference data went too. Man pages needed
 pandoc, which the build never had, so the app only shipped an empty `man`
 folder and set `MANPATH` to it. The standalone `nubb` executable build (for
-GTK) and the NixOS patchelf step went too. Build steps and options removed:
-`dist`, `distcheck`, `-Demit-webdata`, `-Demit-docs`, `-Demit-exe`, `-Dpie`,
-`-Dpatch-interp`, `-Dpatch-rpath`.
+GTK) and the NixOS patchelf step went too, as did the `-fsys` options that
+let distro packagers link system copies of vendored libraries. Build steps
+and options removed: `dist`, `distcheck`, `-Demit-webdata`, `-Demit-docs`,
+`-Demit-exe`, `-Dpie`, `-Dpatch-interp`, `-Dpatch-rpath`, `-fsys=oniguruma`,
+`-fsys=glslang`, `-fsys=spirv-cross`, `-fsys=simdutf`, `-fsys=highway`.
 
 - `src/build/GhosttyDist.zig`, `src/build/GhosttyDocs.zig`,
   `src/build/GhosttyExe.zig`, `src/build/GhosttyWebdata.zig`,
@@ -73,9 +75,15 @@ GTK) and the NixOS patchelf step went too. Build steps and options removed:
 
 ### Windows and WebAssembly
 
-Nubb only targets macOS.
+Nubb only targets macOS. Later, the Windows, MSVC, musl and FreeBSD
+branches in the vendored package builds and `src/build` went too, along
+with the build-host checks for a non-Mac host and the MRI-script archive
+combiner used off Darwin.
 
 - `dist/windows/`, `test/windows/`
+- `src/build/combine_archives.zig`
+- `test/fuzz-libghostty/corpus/sanitize-filenames.sh` (renamed AFL++
+  corpus files for NTFS, now `test/fuzz-libnubb/`)
 - `src/apprt/browser.zig`, `src/main_wasm.zig`
 - `src/config/Wasm.zig`, `src/datastruct/wasm_page_pool.zig`
 - `src/font/face/web_canvas.zig`, `src/font/shaper/web_canvas.zig`
@@ -88,6 +96,17 @@ Only Android targets used it, to find the NDK's libc and C++ headers for
 highway and simdutf.
 
 - `pkg/android-ndk/`
+
+### Highway CPU detection for non-Mac chips
+
+Macs use only arm64 (Apple Silicon) and x86_64 (Intel), so the runtime
+SIMD target probes for other CPUs and for Linux never ran. The x86 and
+Apple Silicon probes stay.
+
+- `pkg/highway/src/detect/aarch64_linux.zig`,
+  `pkg/highway/src/detect/linux.zig`
+- `pkg/highway/src/detect/loongarch.zig`, `pkg/highway/src/detect/ppc.zig`,
+  `pkg/highway/src/detect/riscv.zig`, `pkg/highway/src/detect/s390x.zig`
 
 ### Linux GTK app
 
@@ -109,7 +128,10 @@ pty and `dup3` paths, the Linux `madvise` path in the terminal core, the
 Linux and FreeBSD include branches in `src/pty.c`, and the Linux default
 keybinds and config defaults in `src/config/Config.zig` (ctrl+shift copy,
 paste, tabs and splits, alt+N tab switching, `font-size = 12`,
-`alpha-blending = linear-corrected`).
+`alpha-blending = linear-corrected`), and the remaining non-Darwin
+branches and test skips across `src/` and `test/` (the exit code check and
+message, ctrl as the primary modifier, the plain page allocator, the
+Windows fuzz `argv0`).
 
 - `.github/workflows/flatpak.yml`, `.github/workflows/snap.yml`
 - `dist/linux/`, `flatpak/`, `snap/`

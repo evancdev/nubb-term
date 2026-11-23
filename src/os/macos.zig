@@ -130,8 +130,6 @@ fn commonDir(
 }
 
 test "cacheDir paths" {
-    if (!builtin.target.os.tag.isDarwin()) return;
-
     const testing = std.testing;
     const alloc = testing.allocator;
 

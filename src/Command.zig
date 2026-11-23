@@ -670,11 +670,7 @@ test "Command: custom working directory" {
     };
     defer testing.allocator.free(contents);
 
-    if (builtin.target.os.tag == .macos) {
-        try testing.expectEqualStrings("/private/tmp\n", contents);
-    } else {
-        try testing.expectEqualStrings("/tmp\n", contents);
-    }
+    try testing.expectEqualStrings("/private/tmp\n", contents);
 }
 
 // Test validate an execveZ failure correctly terminates when error.ExecFailedInChild is correctly handled

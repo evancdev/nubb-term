@@ -26,16 +26,10 @@ pub fn build(b: *std.Build) !void {
         b.installArtifact(test_exe.?);
     }
 
-    const lib: union(enum) {
-        system,
-        static: *std.Build.Step.Compile,
-    } = if (b.systemIntegrationOption("oniguruma", .{}))
-        .system
-    else
-        .{ .static = try buildLib(b, .{
-            .target = target,
-            .optimize = optimize,
-        }) };
+    const lib = try buildLib(b, .{
+        .target = target,
+        .optimize = optimize,
+    });
 
     try translate_c.addImportToModule(b, "oniguruma_c", module, .{
         .source = .{ .includes = .{
@@ -43,8 +37,7 @@ pub fn build(b: *std.Build) !void {
         } },
         .target = target,
         .optimize = optimize,
-        .link_system_libs = if (lib == .system) &.{"oniguruma"} else &.{},
-        .link_libs = if (lib == .static) &.{lib.static} else &.{},
+        .link_libs = &.{lib},
     });
 }
 
@@ -62,7 +55,6 @@ fn buildLib(b: *std.Build, options: anytype) !*std.Build.Step.Compile {
         .linkage = .static,
     });
     const t = target.result;
-    const is_windows = t.os.tag == .windows;
 
     if (target.result.os.tag.isDarwin()) {
         const apple_sdk = @import("apple_sdk");
@@ -78,13 +70,13 @@ fn buildLib(b: *std.Build, options: anytype) !*std.Build.Step.Compile {
             .PACKAGE_VERSION = "6.9.9",
             .VERSION = "6.9.9",
             .HAVE_ALLOCA = true,
-            .HAVE_ALLOCA_H = !is_windows,
-            .USE_CRNL_AS_LINE_TERMINATOR = is_windows,
+            .HAVE_ALLOCA_H = true,
+            .USE_CRNL_AS_LINE_TERMINATOR = false,
             .HAVE_STDINT_H = true,
-            .HAVE_SYS_TIMES_H = !is_windows,
-            .HAVE_SYS_TIME_H = !is_windows,
+            .HAVE_SYS_TIMES_H = true,
+            .HAVE_SYS_TIME_H = true,
             .HAVE_SYS_TYPES_H = true,
-            .HAVE_UNISTD_H = !is_windows,
+            .HAVE_UNISTD_H = true,
             .HAVE_INTTYPES_H = true,
             .SIZEOF_INT = t.cTypeByteSize(.int),
             .SIZEOF_LONG = t.cTypeByteSize(.long),
@@ -92,17 +84,8 @@ fn buildLib(b: *std.Build, options: anytype) !*std.Build.Step.Compile {
             .SIZEOF_VOIDP = t.ptrBitWidth() / t.cTypeBitSize(.char).?,
         }));
 
-        var flags: std.ArrayList([]const u8) = .empty;
-        defer flags.deinit(b.allocator);
-        if (target.result.abi == .msvc) {
-            try flags.appendSlice(b.allocator, &.{
-                "-fno-sanitize=undefined",
-                "-fno-sanitize-trap=undefined",
-            });
-        }
         lib.root_module.addCSourceFiles(.{
             .root = upstream.path(""),
-            .flags = flags.items,
             .files = &.{
                 "src/regerror.c",
                 "src/regparse.c",

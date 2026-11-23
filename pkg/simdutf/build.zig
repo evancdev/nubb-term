@@ -14,13 +14,7 @@ pub fn build(b: *std.Build) !void {
             // We link libcpp even with no_libcxx because simdutf requires
             // libc++ headers at build time. But it doesn't require libc++ at
             // runtime. For Ghostty itself, we have CI tests to verify this.
-            //
-            // On MSVC, we must not use linkLibCpp because Zig unconditionally
-            // passes -nostdinc++ and then adds its bundled libc++/libc++abi
-            // include paths, which conflict with MSVC's own C++ runtime
-            // headers. The MSVC SDK include directories (added via linkLibC)
-            // contain both C and C++ headers, so linkLibCpp is not needed.
-            .link_libcpp = target.result.abi != .msvc,
+            .link_libcpp = true,
         }),
         .linkage = .static,
     });
@@ -47,29 +41,8 @@ pub fn build(b: *std.Build) !void {
         try flags.append(b.allocator, "-DSIMDUTF_NO_LIBCXX");
         try flags.append(b.allocator, "-fno-exceptions");
         try flags.append(b.allocator, "-fno-rtti");
-        if (target.result.abi == .msvc) {
-            try flags.appendSlice(b.allocator, &.{
-                "-D_USE_STD_VECTOR_ALGORITHMS=0",
-                // -fno-autolink also drops UCRT's /alternatename fallback.
-                "-D_Avx2WmemEnabledWeakValue=_Avx2WmemEnabled",
-                "-fno-autolink",
-                "-fno-stack-protector",
-            });
-        }
 
         lib.root_module.addCMacro("SIMDUTF_NO_LIBCXX", "1");
-    }
-
-    if (target.result.abi == .msvc) {
-        // On MSVC we skip linkLibCpp (see above), so the C++ standard is
-        // not set implicitly. simdutf requires C++17, so set it explicitly.
-        try flags.append(b.allocator, "-std=c++17");
-    }
-
-    if (target.result.os.tag == .freebsd or
-        target.result.abi == .musl)
-    {
-        try flags.append(b.allocator, "-fPIC");
     }
 
     lib.root_module.addCSourceFiles(.{

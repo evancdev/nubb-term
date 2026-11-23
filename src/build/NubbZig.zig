@@ -43,12 +43,8 @@ fn initVt(
 
         // SIMD requires libc. Vendored C++ dependencies are built with
         // no-libcxx mode (HWY_NO_LIBCXX / SIMDUTF_NO_LIBCXX) so we
-        // don't need libcpp. System-provided simdutf headers still
-        // use C++ stdlib headers, so we need libcpp in that case.
+        // don't need libcpp.
         .link_libc = if (cfg.simd) true else null,
-        .link_libcpp = if (cfg.simd and
-            b.systemIntegrationOption("simdutf", .{}) and
-            cfg.target.result.abi != .msvc) true else null,
     });
     vt.addOptions("build_options", general_options);
     vt_options.add(b, vt);

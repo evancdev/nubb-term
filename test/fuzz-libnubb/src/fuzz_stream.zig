@@ -1,4 +1,3 @@
-const builtin = @import("builtin");
 const std = @import("std");
 const nubb_vt = @import("nubb-vt");
 const mem = @import("mem.zig");
@@ -26,16 +25,8 @@ pub export fn zig_fuzz_test(
     const input = buf[0..len];
 
     const argv0 = "nubb-fuzz";
-    const argv0_windows = argv0_windows: {
-        var argv0_windows_buf: [std.unicode.calcUtf16LeLen(argv0) catch unreachable]u16 = undefined;
-        _ = std.unicode.utf8ToUtf16Le(&argv0_windows_buf, argv0) catch unreachable;
-        break :argv0_windows argv0_windows_buf;
-    };
     var threaded: std.Io.Threaded = .init(alloc, .{
-        .argv0 = .init(.{ .vector = if (builtin.target.os.tag == .windows)
-            &argv0_windows
-        else
-            &.{argv0} }),
+        .argv0 = .init(.{ .vector = &.{argv0} }),
     });
     defer threaded.deinit();
 

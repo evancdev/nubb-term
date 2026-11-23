@@ -46,7 +46,7 @@ pub fn initStatic(
 
     // Combine all archives into a single fat static library so
     // consumers only need to link one file.
-    const combined = CombineArchivesStep.create(b, deps.config.target, "nubb-internal", lib_list.items);
+    const combined = CombineArchivesStep.create(b, "nubb-internal", lib_list.items);
     combined.step.dependOn(&lib.step);
 
     // On Darwin, prefer libSystem's libc/libm over the bundled

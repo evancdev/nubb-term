@@ -992,10 +992,7 @@ test "image load accepts shared memory names without a leading slash" {
     // keeps concurrent test runs apart; Darwin limits names to 31 bytes.
     var buf: [32]u8 = undefined;
     const name = try std.fmt.bufPrintSentinel(&buf, "{s}{d}", .{
-        if (comptime builtin.target.os.tag.isDarwin())
-            "ghostty.test/shm-"
-        else
-            "ghostty-test-shm-",
+        "ghostty.test/shm-",
         std.c.getpid(),
     }, 0);
     const data = "\x01\x02\x03";

@@ -1259,9 +1259,6 @@ pub const ReadThread = struct {
             return;
         };
         defer gather_thread.join();
-        if (comptime !builtin.target.os.tag.isDarwin()) {
-            gather_thread.setName(global.io(), "io-gather") catch {};
-        }
 
         // This thread is the parse stage. We consume batches in ring
         // order until the gather stage reports the stream is over and
@@ -1745,8 +1742,6 @@ fn appendEnv(
 }
 
 test "execCommand darwin: shell command" {
-    if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
     const testing = std.testing;
     var arena = ArenaAllocator.init(testing.allocator);
     defer arena.deinit();
@@ -1772,8 +1767,6 @@ test "execCommand darwin: shell command" {
 }
 
 test "execCommand darwin: direct command" {
-    if (comptime !builtin.target.os.tag.isDarwin()) return error.SkipZigTest;
-
     const testing = std.testing;
     var arena = ArenaAllocator.init(testing.allocator);
     defer arena.deinit();
