@@ -6,9 +6,6 @@
 - Corpus directories follow the naming convention `corpus/<fuzzer>-<variant>`
   (e.g. `corpus/parser-initial`, `corpus/stream-cmin`).
 - Do NOT run `afl-tmin` unless explicitly requested — it is very slow.
-- After running `afl-cmin`, run `corpus/sanitize-filenames.sh`
-  before committing to replace colons with underscores (colons are invalid
-  on Windows NTFS).
 
 ## Important: stdin-based input
 
