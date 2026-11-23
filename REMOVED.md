@@ -109,7 +109,9 @@ pty and `dup3` paths, the Linux `madvise` path in the terminal core, the
 Linux and FreeBSD include branches in `src/pty.c`, and the Linux default
 keybinds and config defaults in `src/config/Config.zig` (ctrl+shift copy,
 paste, tabs and splits, alt+N tab switching, `font-size = 12`,
-`alpha-blending = linear-corrected`).
+`alpha-blending = linear-corrected`). The Zig split tree went last: only
+the GTK window code built its splits on it, and the Mac app keeps its own
+split tree in Swift (`macos/Sources/Features/Splits/SplitTree.swift`).
 
 - `.github/workflows/flatpak.yml`, `.github/workflows/snap.yml`
 - `dist/linux/`, `flatpak/`, `snap/`
@@ -119,6 +121,7 @@ paste, tabs and splits, alt+N tab switching, `font-size = 12`,
 - `pkg/gtk4-layer-shell/`
 - `src/apprt/gtk.zig`, `src/apprt/gtk/`
 - `src/build/docker/debian/`, `src/build/gtk.zig`
+- `src/datastruct/split_tree.zig`
 - `src/os/cgroup.zig`, `src/os/dbus.zig`, `src/os/flatpak.zig`,
   `src/os/kernel_info.zig`, `src/os/systemd.zig`
 
